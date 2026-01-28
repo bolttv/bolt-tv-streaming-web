@@ -1,7 +1,8 @@
 import { useParams, Link, useLocation } from "wouter";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { ArrowLeft, X } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { getSessionId } from "@/lib/session";
 
 declare global {
   interface Window {
@@ -13,6 +14,8 @@ interface Content {
   id: string;
   title: string;
   mediaId?: string;
+  posterImage?: string;
+  duration?: number;
   description?: string;
 }
 
@@ -21,11 +24,14 @@ const JW_PLAYER_LIBRARY_URL = "https://cdn.jwplayer.com/libraries/EBg26wOK.js";
 export default function Watch() {
   const { id } = useParams();
   const [, setLocation] = useLocation();
+  const queryClient = useQueryClient();
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const [playerReady, setPlayerReady] = useState(false);
   const [playerError, setPlayerError] = useState<string | null>(null);
   const [scriptLoaded, setScriptLoaded] = useState(false);
   const playerInstanceRef = useRef<any>(null);
+  const lastProgressUpdateRef = useRef<number>(0);
+  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const { data: content, isLoading } = useQuery<Content>({
     queryKey: [`/api/content/${id}`],
@@ -33,6 +39,28 @@ export default function Watch() {
   });
 
   const mediaId = content?.mediaId || id;
+
+  const saveProgress = useCallback(async (watchedSeconds: number, duration: number) => {
+    if (!content || !mediaId || duration === 0) return;
+    
+    try {
+      const sessionId = getSessionId();
+      await fetch("/api/watch-progress", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sessionId,
+          mediaId,
+          title: content.title,
+          posterImage: content.posterImage || "",
+          duration: Math.round(duration),
+          watchedSeconds: Math.round(watchedSeconds),
+        }),
+      });
+    } catch (err) {
+      console.error("Failed to save watch progress:", err);
+    }
+  }, [content, mediaId]);
 
   useEffect(() => {
     const checkAndLoadScript = () => {
@@ -123,6 +151,41 @@ export default function Watch() {
           setPlayerError(null);
         });
 
+        player.on("play", () => {
+          if (progressIntervalRef.current) {
+            clearInterval(progressIntervalRef.current);
+          }
+          progressIntervalRef.current = setInterval(() => {
+            if (playerInstanceRef.current) {
+              const position = playerInstanceRef.current.getPosition() || 0;
+              const duration = playerInstanceRef.current.getDuration() || 0;
+              
+              if (position - lastProgressUpdateRef.current >= 5) {
+                lastProgressUpdateRef.current = position;
+                saveProgress(position, duration);
+              }
+            }
+          }, 5000);
+        });
+
+        player.on("pause", () => {
+          if (playerInstanceRef.current) {
+            const position = playerInstanceRef.current.getPosition() || 0;
+            const duration = playerInstanceRef.current.getDuration() || 0;
+            saveProgress(position, duration);
+          }
+        });
+
+        player.on("complete", () => {
+          if (progressIntervalRef.current) {
+            clearInterval(progressIntervalRef.current);
+          }
+          if (playerInstanceRef.current) {
+            const duration = playerInstanceRef.current.getDuration() || 0;
+            saveProgress(duration, duration);
+          }
+        });
+
         player.on("error", (e: any) => {
           console.error("JW Player error:", e);
           setPlayerError("Unable to play this video.");
@@ -148,7 +211,15 @@ export default function Watch() {
     initPlayer();
 
     return () => {
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+      }
       if (playerInstanceRef.current) {
+        const position = playerInstanceRef.current.getPosition?.() || 0;
+        const duration = playerInstanceRef.current.getDuration?.() || 0;
+        if (position > 0 && duration > 0) {
+          saveProgress(position, duration);
+        }
         try {
           playerInstanceRef.current.remove();
         } catch (e) {
@@ -156,8 +227,9 @@ export default function Watch() {
         }
         playerInstanceRef.current = null;
       }
+      queryClient.invalidateQueries({ queryKey: ["/api/continue-watching"] });
     };
-  }, [scriptLoaded, mediaId]);
+  }, [scriptLoaded, mediaId, saveProgress, queryClient]);
 
   const handleBack = () => {
     if (content?.id) {
