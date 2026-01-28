@@ -110,17 +110,26 @@ function convertJWPlayerToHeroItem(media: JWPlayerPlaylistItem): HeroItem {
   };
 }
 
+interface SearchableContent {
+  item: RowItem;
+  title: string;
+  tags: string;
+  description: string;
+}
+
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
   private heroItems: HeroItem[];
   private contentRows: ContentRow[];
   private allContent: Map<string, HeroItem | RowItem>;
+  private searchableContent: Map<string, SearchableContent>;
   private lastFetch: number = 0;
   private isInitialized: boolean = false;
 
   constructor() {
     this.users = new Map();
     this.allContent = new Map();
+    this.searchableContent = new Map();
     this.heroItems = [];
     this.contentRows = [];
   }
@@ -179,10 +188,24 @@ export class MemStorage implements IStorage {
       ];
       
       this.allContent.clear();
+      this.searchableContent.clear();
+      
       this.heroItems.forEach(item => this.allContent.set(item.id, item));
       this.contentRows.forEach(row => {
         row.items.forEach(item => this.allContent.set(item.id, item));
       });
+      
+      const allMedia = [...featured, ...recommended, ...popular, ...newMovies, ...documentaries];
+      for (const media of allMedia) {
+        if (!this.searchableContent.has(media.mediaid)) {
+          this.searchableContent.set(media.mediaid, {
+            item: convertJWPlayerToRowItem(media),
+            title: media.title.toLowerCase(),
+            tags: (media.tags || "").toLowerCase(),
+            description: (media.description || "").toLowerCase(),
+          });
+        }
+      }
     } else {
       console.log("No JW Player content found, using fallback data");
       if (!this.isInitialized) {
@@ -385,26 +408,16 @@ export class MemStorage implements IStorage {
     const results: RowItem[] = [];
     const seenIds = new Set<string>();
 
-    for (const [id, item] of this.allContent.entries()) {
+    for (const [id, content] of this.searchableContent.entries()) {
       if (seenIds.has(id)) continue;
       
-      const title = item.title.toLowerCase();
-      const matches = title.includes(lowerQuery);
+      const matchesTitle = content.title.includes(lowerQuery);
+      const matchesTags = content.tags.includes(lowerQuery);
+      const matchesDescription = content.description.includes(lowerQuery);
       
-      if (matches) {
+      if (matchesTitle || matchesTags || matchesDescription) {
         seenIds.add(id);
-        if ('posterImage' in item) {
-          results.push(item as RowItem);
-        } else {
-          results.push({
-            id: item.id,
-            title: item.title,
-            posterImage: (item as HeroItem).heroImage,
-            rating: item.rating,
-            isNew: item.isNew,
-            mediaId: item.mediaId,
-          });
-        }
+        results.push(content.item);
       }
     }
 
