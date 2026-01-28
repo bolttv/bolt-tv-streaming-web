@@ -18,7 +18,7 @@ export default function Navbar() {
     { name: "Home", href: "/" },
     { name: "Series", href: "/" },
     { name: "Movies", href: "/" },
-    { name: "HBO", href: "/" },
+    { name: "Docs", href: "/" },
     { name: "Sports", href: "/" },
   ];
 
