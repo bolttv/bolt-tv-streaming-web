@@ -96,7 +96,9 @@ export default function Home() {
       <main className="relative z-0">
         <HeroCarousel items={heroItems} />
         
-        <div className="relative z-10 -mt-10 md:-mt-14 pb-20 space-y-1 md:space-y-2 bg-gradient-to-b from-transparent via-background/60 to-background">
+        <div className="relative z-10 -mt-10 md:-mt-14 pb-20 space-y-1 md:space-y-2 content-background">
+          {/* Gradient overlay to fade hero into content background */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-transparent h-32 pointer-events-none" />
           {rows.map((row, index) => (
             <div key={row.id}>
               <ContentRow row={row} />
