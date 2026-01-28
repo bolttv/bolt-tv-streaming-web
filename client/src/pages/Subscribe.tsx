@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { ArrowLeft, Check, Loader2 } from "lucide-react";
-import { isLoggedIn, getCleengAuth, getOffers, CleengOffer } from "@/lib/cleeng";
+import { useAuth0 } from "@auth0/auth0-react";
+import { getOffers, CleengOffer } from "@/lib/cleeng";
 
 interface PricingPlan {
   id: string;
@@ -90,12 +91,12 @@ function mapCleengOffersToPlan(offers: CleengOffer[]): PricingPlan[] {
 
 export default function Subscribe() {
   const [, setLocation] = useLocation();
+  const { isAuthenticated, loginWithRedirect } = useAuth0();
   const [allPlans, setAllPlans] = useState<PricingPlan[]>([]);
   const [billingPeriod, setBillingPeriod] = useState<"month" | "year">("month");
   const [selectedPlan, setSelectedPlan] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [loadingOffers, setLoadingOffers] = useState(true);
-  const loggedIn = isLoggedIn();
 
   const filteredPlans = allPlans
     .filter(plan => plan.period === `/${billingPeriod}`)
@@ -135,8 +136,11 @@ export default function Subscribe() {
   }, [billingPeriod, allPlans]);
 
   const handleSubscribe = async () => {
-    if (!loggedIn) {
-      setLocation("/register");
+    if (!isAuthenticated) {
+      loginWithRedirect({
+        appState: { returnTo: "/subscribe" },
+        authorizationParams: { screen_hint: "signup" },
+      });
       return;
     }
 
@@ -275,7 +279,7 @@ export default function Subscribe() {
             className="w-full bg-white text-black font-bold py-4 rounded-lg text-lg hover:bg-gray-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
             data-testid="button-subscribe"
           >
-            {loading ? "Processing..." : loggedIn ? "Continue to Payment" : "Sign Up to Subscribe"}
+            {loading ? "Processing..." : isAuthenticated ? "Continue to Payment" : "Sign Up to Subscribe"}
           </button>
 
           <p className="text-center text-white/40 text-sm mt-4">

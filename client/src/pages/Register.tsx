@@ -1,63 +1,25 @@
-import { useState } from "react";
+import { useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { ArrowLeft, Eye, EyeOff } from "lucide-react";
-import { registerCustomer, saveCleengAuth } from "@/lib/cleeng";
+import { ArrowLeft, Loader2 } from "lucide-react";
+import { useAuth0 } from "@auth0/auth0-react";
 
 export default function Register() {
   const [, setLocation] = useLocation();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const { loginWithRedirect, isAuthenticated, isLoading } = useAuth0();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
+  useEffect(() => {
+    if (isAuthenticated) {
+      setLocation("/subscribe");
     }
+  }, [isAuthenticated, setLocation]);
 
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters");
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      const response = await registerCustomer(email, password);
-      
-      if (response.errors && response.errors.length > 0) {
-        setError(response.errors[0] || "Registration failed. Please try again.");
-        setLoading(false);
-        return;
-      }
-
-      if (response.responseData?.jwt) {
-        saveCleengAuth(
-          response.responseData.jwt,
-          response.responseData.refreshToken,
-          {
-            id: response.responseData.id,
-            email: response.responseData.email,
-            locale: response.responseData.locale,
-            country: response.responseData.country,
-            currency: response.responseData.currency,
-          }
-        );
-        setLocation("/subscribe");
-      } else {
-        setError("Registration failed. Please try again.");
-      }
-    } catch (err) {
-      setError("An error occurred. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+  const handleSignUp = () => {
+    loginWithRedirect({
+      appState: { returnTo: "/subscribe" },
+      authorizationParams: {
+        screen_hint: "signup",
+      },
+    });
   };
 
   return (
@@ -83,79 +45,21 @@ export default function Register() {
             <p className="text-white/60">Sign up to start watching</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <div className="bg-red-500/20 border border-red-500 text-red-400 px-4 py-3 rounded" data-testid="error-message">
-                {error}
+          <div className="space-y-4">
+            {isLoading ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="w-8 h-8 animate-spin text-white/60" />
               </div>
+            ) : (
+              <button
+                onClick={handleSignUp}
+                className="w-full bg-white text-black font-bold py-3 rounded-lg hover:bg-gray-200 transition"
+                data-testid="button-register"
+              >
+                Create Account
+              </button>
             )}
-
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-white/80 mb-1">
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-white/50 transition"
-                placeholder="you@example.com"
-                required
-                data-testid="input-email"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="password" className="block text-sm font-medium text-white/80 mb-1">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-white/50 transition pr-12"
-                  placeholder="At least 8 characters"
-                  required
-                  data-testid="input-password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white transition"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-white/80 mb-1">
-                Confirm Password
-              </label>
-              <input
-                id="confirmPassword"
-                type={showPassword ? "text" : "password"}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full bg-zinc-900 border border-zinc-700 rounded-lg px-4 py-3 text-white placeholder-white/40 focus:outline-none focus:border-white/50 transition"
-                placeholder="Confirm your password"
-                required
-                data-testid="input-confirm-password"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-white text-black font-bold py-3 rounded-lg hover:bg-gray-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
-              data-testid="button-register"
-            >
-              {loading ? "Creating account..." : "Create Account"}
-            </button>
-          </form>
+          </div>
 
           <div className="mt-6 text-center text-white/60">
             <p>

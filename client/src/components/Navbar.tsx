@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { Search, Bell, User, Menu, ChevronDown, LogOut } from "lucide-react";
+import { Search, User, ChevronDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { isLoggedIn, getCleengAuth, clearCleengAuth, onAuthChange } from "@/lib/cleeng";
+import { useAuth0 } from "@auth0/auth0-react";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [loggedIn, setLoggedIn] = useState(isLoggedIn());
   const [, setLocation] = useLocation();
+  const { isAuthenticated, isLoading, logout, loginWithRedirect, user } = useAuth0();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -18,17 +18,12 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  useEffect(() => {
-    const unsubscribe = onAuthChange(() => {
-      setLoggedIn(isLoggedIn());
-    });
-    return unsubscribe;
-  }, []);
-
   const handleSignOut = () => {
-    clearCleengAuth();
-    setLoggedIn(false);
-    setLocation("/");
+    logout({ logoutParams: { returnTo: window.location.origin } });
+  };
+
+  const handleSignIn = () => {
+    loginWithRedirect();
   };
 
   const navLinks = [
@@ -47,7 +42,6 @@ export default function Navbar() {
       )}
     >
       <div className="flex items-center gap-8 md:gap-12">
-        {/* Logo Mockup */}
         <Link href="/">
           <img 
             src="/assets/bolt-logo-white.png" 
@@ -56,7 +50,6 @@ export default function Navbar() {
           />
         </Link>
 
-        {/* Desktop Nav */}
         <div className="hidden md:flex items-center gap-6 lg:gap-8">
           {navLinks.map((link) => (
             <Link key={link.name} href={link.href}>
@@ -87,7 +80,9 @@ export default function Navbar() {
           <ChevronDown className="w-3 h-3 md:w-4 md:h-4 stroke-[3]" />
         </button>
         
-        {loggedIn ? (
+        {isLoading ? (
+          <Loader2 className="w-5 h-5 animate-spin" />
+        ) : isAuthenticated ? (
           <button 
             onClick={handleSignOut}
             className="flex items-center gap-2 hover:text-white transition font-bold text-sm"
@@ -99,14 +94,16 @@ export default function Navbar() {
             <span className="hidden md:inline">Sign Out</span>
           </button>
         ) : (
-          <Link href="/signin">
-            <button className="flex items-center gap-2 hover:text-white transition font-bold text-sm" data-testid="button-nav-signin">
-              <div className="p-1 border-2 border-current rounded-full">
-                <User className="w-4 h-4 md:w-5 md:h-5 fill-current" />
-              </div>
-              <span className="hidden md:inline">Sign In</span>
-            </button>
-          </Link>
+          <button 
+            onClick={handleSignIn}
+            className="flex items-center gap-2 hover:text-white transition font-bold text-sm" 
+            data-testid="button-nav-signin"
+          >
+            <div className="p-1 border-2 border-current rounded-full">
+              <User className="w-4 h-4 md:w-5 md:h-5 fill-current" />
+            </div>
+            <span className="hidden md:inline">Sign In</span>
+          </button>
         )}
       </div>
     </nav>

@@ -5,6 +5,8 @@ import { storage } from "./storage";
 const CLEENG_API_URL = "https://mediastoreapi.cleeng.com";
 const CLEENG_PUBLISHER_ID = process.env.CLEENG_PUBLISHER_ID || "";
 const CLEENG_API_SECRET = process.env.CLEENG_API_SECRET || "";
+const AUTH0_DOMAIN = process.env.AUTH0_DOMAIN || "";
+const AUTH0_CLIENT_SECRET = process.env.AUTH0_CLIENT_SECRET || "";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -111,6 +113,46 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Cleeng subscriptions error:", error);
       res.status(500).json({ error: "Failed to fetch subscriptions" });
+    }
+  });
+
+  // Cleeng SSO Login - Link Auth0 user to Cleeng customer
+  app.post("/api/cleeng/sso-login", async (req, res) => {
+    try {
+      const { email, auth0Id } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ errors: ["Email is required"] });
+      }
+      
+      // Use Cleeng SSO endpoint to get/create customer
+      const response = await fetch(`${CLEENG_API_URL}/customers/sso`, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "X-Publisher-Token": CLEENG_API_SECRET,
+        },
+        body: JSON.stringify({
+          publisherId: CLEENG_PUBLISHER_ID,
+          email,
+          externalCustomerId: auth0Id || email,
+          locale: "en_US",
+          country: "US",
+          currency: "USD",
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        console.error("Cleeng SSO error:", data);
+        return res.status(response.status).json(data);
+      }
+      
+      res.json(data);
+    } catch (error) {
+      console.error("Cleeng SSO login error:", error);
+      res.status(500).json({ errors: ["SSO login failed. Please try again."] });
     }
   });
 
