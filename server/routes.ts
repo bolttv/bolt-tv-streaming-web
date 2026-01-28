@@ -2,11 +2,115 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 
+const CLEENG_API_URL = "https://mediastoreapi.cleeng.com";
+const CLEENG_PUBLISHER_ID = process.env.CLEENG_PUBLISHER_ID || "";
+
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
   
+  // Get Cleeng configuration for frontend
+  app.get("/api/cleeng/config", (req, res) => {
+    res.json({
+      publisherId: CLEENG_PUBLISHER_ID,
+      environment: "production",
+    });
+  });
+
+  // Cleeng customer registration
+  app.post("/api/cleeng/register", async (req, res) => {
+    try {
+      const { email, password, locale, country, currency } = req.body;
+      
+      const response = await fetch(`${CLEENG_API_URL}/customers`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          password,
+          locale: locale || "en_US",
+          country: country || "US",
+          currency: currency || "USD",
+          publisherId: CLEENG_PUBLISHER_ID,
+        }),
+      });
+      
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error("Cleeng registration error:", error);
+      res.status(500).json({ error: "Registration failed" });
+    }
+  });
+
+  // Cleeng customer login
+  app.post("/api/cleeng/login", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      const response = await fetch(`${CLEENG_API_URL}/auths`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          password,
+          publisherId: CLEENG_PUBLISHER_ID,
+        }),
+      });
+      
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error("Cleeng login error:", error);
+      res.status(500).json({ error: "Login failed" });
+    }
+  });
+
+  // Get customer subscriptions
+  app.get("/api/cleeng/subscriptions/:customerId", async (req, res) => {
+    try {
+      const { customerId } = req.params;
+      const token = req.headers.authorization?.replace("Bearer ", "");
+      
+      if (!token) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      
+      const response = await fetch(
+        `${CLEENG_API_URL}/customers/${customerId}/subscriptions`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+        }
+      );
+      
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error("Cleeng subscriptions error:", error);
+      res.status(500).json({ error: "Failed to fetch subscriptions" });
+    }
+  });
+
+  // Get available offers
+  app.get("/api/cleeng/offers", async (req, res) => {
+    try {
+      const response = await fetch(
+        `${CLEENG_API_URL}/publishers/${CLEENG_PUBLISHER_ID}/offers`,
+        { headers: { "Content-Type": "application/json" } }
+      );
+      
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error("Cleeng offers error:", error);
+      res.status(500).json({ error: "Failed to fetch offers" });
+    }
+  });
+
   // Get all hero items for the carousel
   app.get("/api/content/hero", async (req, res) => {
     try {
