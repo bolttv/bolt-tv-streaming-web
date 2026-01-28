@@ -1,6 +1,5 @@
 import { Row } from "@/lib/mockData";
 import PosterCard from "./PosterCard";
-import { ChevronRight } from "lucide-react";
 import { useRef } from "react";
 
 interface ContentRowProps {
@@ -20,9 +19,8 @@ export default function ContentRow({ row }: ContentRowProps) {
 
   return (
     <div className="py-4 md:py-8 pl-4 md:pl-12 group/row relative z-10">
-      <h2 className="text-lg md:text-xl font-semibold text-white mb-3 md:mb-4 flex items-center gap-2 group-hover/row:text-blue-400 transition-colors cursor-pointer w-fit">
+      <h2 className="text-lg md:text-xl font-semibold text-white mb-3 md:mb-4">
         {row.title}
-        <ChevronRight className="w-4 h-4 opacity-0 group-hover/row:opacity-100 -ml-1 transition-all duration-300" />
       </h2>
       
       <div 
