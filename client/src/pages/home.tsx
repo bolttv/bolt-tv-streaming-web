@@ -97,21 +97,22 @@ export default function Home() {
         <HeroCarousel items={heroItems} />
         
         <div className="relative z-10 -mt-24 md:-mt-32 pb-20 space-y-4 md:space-y-8 bg-gradient-to-b from-transparent via-background/60 to-background">
-          {continueWatching.length > 0 && (
-            <section className="px-4 md:px-12" data-testid="continue-watching-section">
-              <h2 className="text-lg md:text-xl font-semibold text-white mb-4 md:mb-6">
-                Continue Watching
-              </h2>
-              <div className="flex gap-3 md:gap-4 overflow-x-auto scrollbar-hide pb-4">
-                {continueWatching.map((item) => (
-                  <ContinueWatchingCard key={item.id} item={item} />
-                ))}
-              </div>
-            </section>
-          )}
-
-          {rows.map((row) => (
-            <ContentRow key={row.id} row={row} />
+          {rows.map((row, index) => (
+            <div key={row.id}>
+              <ContentRow row={row} />
+              {row.title === "Recommended For You" && continueWatching.length > 0 && (
+                <section className="px-4 md:px-12 mt-4 md:mt-8" data-testid="continue-watching-section">
+                  <h2 className="text-lg md:text-xl font-semibold text-white mb-4 md:mb-6">
+                    Continue Watching
+                  </h2>
+                  <div className="flex gap-3 md:gap-4 overflow-x-auto scrollbar-hide pb-4">
+                    {continueWatching.map((item) => (
+                      <ContinueWatchingCard key={item.id} item={item} />
+                    ))}
+                  </div>
+                </section>
+              )}
+            </div>
           ))}
 
           {sportCategories.length > 0 && (
