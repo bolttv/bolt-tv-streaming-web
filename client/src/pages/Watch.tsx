@@ -16,12 +16,15 @@ interface Content {
   description?: string;
 }
 
+const JW_PLAYER_LIBRARY_URL = "https://cdn.jwplayer.com/libraries/xQR17M0d.js";
+
 export default function Watch() {
   const { id } = useParams();
   const [, setLocation] = useLocation();
-  const playerRef = useRef<HTMLDivElement>(null);
+  const playerContainerRef = useRef<HTMLDivElement>(null);
   const [playerReady, setPlayerReady] = useState(false);
   const [playerError, setPlayerError] = useState<string | null>(null);
+  const [scriptLoaded, setScriptLoaded] = useState(false);
   const playerInstanceRef = useRef<any>(null);
 
   const { data: content, isLoading } = useQuery<Content>({
@@ -32,125 +35,129 @@ export default function Watch() {
   const mediaId = content?.mediaId || id;
 
   useEffect(() => {
-    if (!mediaId || !playerRef.current) return;
+    const checkAndLoadScript = () => {
+      if (window.jwplayer) {
+        setScriptLoaded(true);
+        return;
+      }
 
-    let cleanup: (() => void) | undefined;
-    let checkInterval: NodeJS.Timeout | undefined;
-    let loadTimeout: NodeJS.Timeout | undefined;
+      const existingScript = document.querySelector(`script[src="${JW_PLAYER_LIBRARY_URL}"]`);
+      
+      if (existingScript) {
+        const checkLoaded = setInterval(() => {
+          if (window.jwplayer) {
+            clearInterval(checkLoaded);
+            setScriptLoaded(true);
+          }
+        }, 50);
+        
+        setTimeout(() => clearInterval(checkLoaded), 10000);
+        return;
+      }
+
+      const script = document.createElement("script");
+      script.src = JW_PLAYER_LIBRARY_URL;
+      script.async = true;
+      
+      script.onload = () => {
+        const checkLoaded = setInterval(() => {
+          if (window.jwplayer) {
+            clearInterval(checkLoaded);
+            setScriptLoaded(true);
+          }
+        }, 50);
+        
+        setTimeout(() => {
+          clearInterval(checkLoaded);
+          if (!window.jwplayer) {
+            setPlayerError("Failed to initialize JW Player.");
+          }
+        }, 5000);
+      };
+      
+      script.onerror = () => {
+        setPlayerError("Failed to load video player library.");
+      };
+      
+      document.head.appendChild(script);
+    };
+
+    checkAndLoadScript();
+  }, []);
+
+  useEffect(() => {
+    if (!scriptLoaded || !mediaId || !playerContainerRef.current) return;
 
     const initPlayer = () => {
-      if (window.jwplayer && playerRef.current) {
-        try {
-          if (playerInstanceRef.current) {
-            try {
-              playerInstanceRef.current.remove();
-            } catch (e) {
-              // Ignore removal errors
-            }
+      try {
+        if (playerInstanceRef.current) {
+          try {
+            playerInstanceRef.current.remove();
+          } catch (e) {
+            // Ignore
           }
+          playerInstanceRef.current = null;
+        }
 
-          const player = window.jwplayer(playerRef.current);
-          playerInstanceRef.current = player;
-          
-          player.setup({
-            playlist: `https://cdn.jwplayer.com/v2/media/${mediaId}`,
-            width: "100%",
-            height: "100%",
-            aspectratio: "16:9",
-            autostart: true,
-            mute: false,
-            controls: true,
-            stretching: "uniform",
-          });
+        const container = playerContainerRef.current;
+        if (!container) return;
 
-          player.on("ready", () => {
+        container.id = `jwplayer-${Date.now()}`;
+
+        const player = window.jwplayer(container);
+        playerInstanceRef.current = player;
+
+        player.setup({
+          playlist: `https://cdn.jwplayer.com/v2/media/${mediaId}`,
+          width: "100%",
+          height: "100%",
+          aspectratio: "16:9",
+          autostart: true,
+          mute: false,
+          controls: true,
+          stretching: "uniform",
+        });
+
+        player.on("ready", () => {
+          setPlayerReady(true);
+          setPlayerError(null);
+        });
+
+        player.on("error", (e: any) => {
+          console.error("JW Player error:", e);
+          setPlayerError("Unable to play this video.");
+        });
+
+        player.on("setupError", (e: any) => {
+          console.error("JW Player setup error:", e);
+          setPlayerError("Video player setup failed.");
+        });
+
+        setTimeout(() => {
+          if (!playerReady && player.getState && player.getState() !== "idle") {
             setPlayerReady(true);
-            setPlayerError(null);
-          });
+          }
+        }, 2000);
 
-          player.on("error", (e: any) => {
-            console.error("JW Player error:", e);
-            setPlayerError("Unable to play video. Please try again.");
-          });
-
-          player.on("setupError", (e: any) => {
-            console.error("JW Player setup error:", e);
-            setPlayerError("Failed to initialize player.");
-          });
-        } catch (err) {
-          console.error("Player init error:", err);
-          setPlayerError("Failed to initialize player.");
-        }
+      } catch (err) {
+        console.error("Player init error:", err);
+        setPlayerError("Failed to initialize video player.");
       }
     };
 
-    const loadJWPlayerScript = () => {
-      return new Promise<void>((resolve, reject) => {
-        if (window.jwplayer) {
-          resolve();
-          return;
-        }
+    initPlayer();
 
-        const existingScript = document.querySelector('script[src*="jwplayer.com/libraries"]');
-        if (existingScript) {
-          existingScript.addEventListener('load', () => resolve());
-          existingScript.addEventListener('error', () => reject(new Error('Failed to load JW Player')));
-          return;
-        }
-
-        const script = document.createElement('script');
-        script.src = 'https://cdn.jwplayer.com/libraries/xQR17M0d.js';
-        script.async = true;
-        script.onload = () => resolve();
-        script.onerror = () => reject(new Error('Failed to load JW Player'));
-        document.head.appendChild(script);
-      });
-    };
-
-    const tryInit = async () => {
-      if (window.jwplayer) {
-        initPlayer();
-      } else {
-        try {
-          await loadJWPlayerScript();
-          checkInterval = setInterval(() => {
-            if (window.jwplayer) {
-              clearInterval(checkInterval);
-              initPlayer();
-            }
-          }, 100);
-          
-          loadTimeout = setTimeout(() => {
-            if (checkInterval) clearInterval(checkInterval);
-            if (!window.jwplayer) {
-              setPlayerError("JW Player library failed to load. Please refresh the page.");
-            }
-          }, 10000);
-        } catch (err) {
-          setPlayerError("Failed to load video player. Please refresh the page.");
-        }
-      }
-    };
-
-    tryInit();
-
-    cleanup = () => {
-      if (checkInterval) clearInterval(checkInterval);
-      if (loadTimeout) clearTimeout(loadTimeout);
+    return () => {
       if (playerInstanceRef.current) {
         try {
           playerInstanceRef.current.remove();
-          playerInstanceRef.current = null;
         } catch (e) {
           // Ignore cleanup errors
         }
+        playerInstanceRef.current = null;
       }
     };
-
-    return () => {
-      if (cleanup) cleanup();
-    };
-  }, [mediaId]);
+  }, [scriptLoaded, mediaId]);
 
   const handleBack = () => {
     if (content?.id) {
@@ -188,7 +195,7 @@ export default function Watch() {
       <div className="flex items-center justify-center min-h-screen bg-black pt-16">
         <div className="w-full max-w-screen-2xl aspect-video relative">
           {(isLoading || !playerReady) && !playerError && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black z-10">
+            <div className="absolute inset-0 flex items-center justify-center bg-black z-10 pointer-events-none">
               <div className="text-xl text-gray-400">Loading player...</div>
             </div>
           )}
@@ -204,8 +211,7 @@ export default function Watch() {
             </div>
           )}
           <div 
-            ref={playerRef} 
-            id="jwplayer-container"
+            ref={playerContainerRef}
             className="w-full h-full"
             data-testid="video-player"
           />
