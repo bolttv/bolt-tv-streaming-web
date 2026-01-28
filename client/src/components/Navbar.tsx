@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
-import { Search, Bell, User, Menu } from "lucide-react";
+import { Search, Bell, User, Menu, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -52,18 +53,27 @@ export default function Navbar() {
       </div>
 
       <div className="flex items-center gap-4 md:gap-6 text-white/80">
-        <button className="hover:text-white transition p-1">
+        <button 
+          className="hover:text-white transition p-1"
+          onClick={() => setSearchOpen(!searchOpen)}
+        >
           <Search className="w-5 h-5 md:w-6 md:h-6" />
         </button>
-        <button className="hidden md:block hover:text-white transition p-1">
-          <Bell className="w-5 h-5 md:w-6 md:h-6" />
+        
+        <button className="hidden md:block bg-white text-black font-bold px-4 py-1.5 rounded hover:bg-gray-200 transition text-sm">
+          Subscribe
         </button>
-        <button className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 border border-white/20 hover:border-white transition overflow-hidden">
-          <img 
-            src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" 
-            alt="Profile" 
-            className="w-full h-full object-cover"
-          />
+        
+        <button className="hidden md:flex items-center gap-1 hover:text-white transition cursor-pointer font-bold text-sm">
+          <span>EN</span>
+          <ChevronDown className="w-3 h-3 md:w-4 md:h-4 stroke-[3]" />
+        </button>
+        
+        <button className="flex items-center gap-2 hover:text-white transition font-bold text-sm">
+          <div className="p-1 border-2 border-current rounded-full">
+            <User className="w-4 h-4 md:w-5 md:h-5 fill-current" />
+          </div>
+          <span className="hidden md:inline">Sign In</span>
         </button>
       </div>
     </nav>
