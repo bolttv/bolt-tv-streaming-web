@@ -94,10 +94,12 @@ export default function ContentDetails() {
               </div>
 
               <div className="flex flex-wrap items-center gap-4 pt-2">
-                <button className="flex items-center gap-2 bg-white text-black hover:bg-white/90 transition-colors h-12 px-8 rounded font-bold tracking-wide">
-                  <Play className="w-5 h-5 fill-current" />
-                  Watch S1 E1
-                </button>
+                <Link href={`/watch/${id}`}>
+                  <button className="flex items-center gap-2 bg-white text-black hover:bg-white/90 transition-colors h-12 px-8 rounded font-bold tracking-wide" data-testid="button-watch">
+                    <Play className="w-5 h-5 fill-current" />
+                    Watch Now
+                  </button>
+                </Link>
                 
                 <div className="flex items-center gap-6 px-2">
                     <button className="flex flex-col items-center gap-1 group text-gray-300 hover:text-white transition">
