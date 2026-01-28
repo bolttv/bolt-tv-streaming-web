@@ -90,15 +90,13 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-white selection:bg-white/20 overflow-x-hidden">
+    <div className="min-h-screen bg-background text-white selection:bg-white/20">
       <Navbar />
       
       <main className="relative z-0">
         <HeroCarousel items={heroItems} />
         
-        <div className="relative z-10 -mt-10 md:-mt-14 pb-20 space-y-1 md:space-y-2 content-background">
-          {/* Gradient overlay to fade hero into content background */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-transparent h-32 pointer-events-none" />
+        <div className="relative z-10 -mt-10 md:-mt-14 pb-20 space-y-1 md:space-y-2 bg-gradient-to-b from-transparent via-background/60 to-background">
           {rows.map((row, index) => (
             <div key={row.id}>
               <ContentRow row={row} />

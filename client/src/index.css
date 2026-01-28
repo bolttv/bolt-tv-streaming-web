@@ -47,24 +47,6 @@ body {
   background-color: #000000; /* Pure OLED black */
 }
 
-/* Content background that starts below hero */
-.content-background {
-  background-image: url('/background.png');
-  background-size: 100vw auto;
-  background-position: top left;
-  background-repeat: no-repeat;
-}
-
-/* Hide scrollbar but allow scrolling */
-html {
-  overflow-x: hidden;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-html::-webkit-scrollbar {
-  display: none;
-}
 
 /* Custom Gradients for Cinematic Feel */
 .hero-gradient-overlay {
