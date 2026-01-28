@@ -101,7 +101,7 @@ export default function Navbar() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by title, actor or genre..."
+                placeholder="Search by title, athlete or genre..."
                 className={cn(
                   "flex-1 bg-transparent text-white text-sm placeholder:text-white/40 outline-none min-w-0 transition-opacity duration-200",
                   searchOpen ? "opacity-100" : "opacity-0"
