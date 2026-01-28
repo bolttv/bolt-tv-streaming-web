@@ -1,6 +1,6 @@
 import { type User, type InsertUser } from "@shared/schema";
 import { randomUUID } from "crypto";
-import { fetchJWPlayerMedia, getJWPlayerThumbnail, getJWPlayerHeroImage, JWPlayerMedia } from "./jwplayer";
+import { fetchAllJWPlayerMedia, getJWPlayerThumbnail, getJWPlayerHeroImage, JWPlayerPlaylistItem } from "./jwplayer";
 
 export interface HeroItem {
   id: string;
@@ -47,36 +47,36 @@ export interface IStorage {
   refreshJWPlayerContent(): Promise<void>;
 }
 
-function convertJWPlayerToRowItem(media: JWPlayerMedia): RowItem {
-  const tags = media.metadata?.tags || [];
-  const isNew = (Date.now() - new Date(media.created).getTime()) < 7 * 24 * 60 * 60 * 1000;
+function convertJWPlayerToRowItem(media: JWPlayerPlaylistItem): RowItem {
+  const tags = media.tags?.split(",") || [];
+  const isNew = media.pubdate ? (Date.now() / 1000 - media.pubdate) < 7 * 24 * 60 * 60 : false;
   
   return {
-    id: media.id,
+    id: media.mediaid,
     title: media.title,
-    posterImage: getJWPlayerThumbnail(media.id),
-    rating: media.metadata?.custom_params?.rating || "TV-MA",
+    posterImage: media.image || getJWPlayerThumbnail(media.mediaid),
+    rating: "TV-MA",
     isNew,
     isNewEpisode: false,
-    mediaId: media.id,
+    mediaId: media.mediaid,
     duration: media.duration,
   };
 }
 
-function convertJWPlayerToHeroItem(media: JWPlayerMedia, index: number): HeroItem {
-  const tags = media.metadata?.tags || [];
-  const isNew = (Date.now() - new Date(media.created).getTime()) < 7 * 24 * 60 * 60 * 1000;
+function convertJWPlayerToHeroItem(media: JWPlayerPlaylistItem): HeroItem {
+  const tags = media.tags?.split(",") || [];
+  const isNew = media.pubdate ? (Date.now() / 1000 - media.pubdate) < 7 * 24 * 60 * 60 : false;
   
   return {
-    id: media.id,
+    id: media.mediaid,
     title: media.title.toUpperCase(),
     type: tags.includes("movie") ? "movie" : "series",
-    heroImage: getJWPlayerHeroImage(media.id),
-    rating: media.metadata?.custom_params?.rating || "TV-MA",
+    heroImage: getJWPlayerHeroImage(media.mediaid),
+    rating: "TV-MA",
     genres: tags.length > 0 ? tags.slice(0, 2) : ["Entertainment"],
     description: media.description || "Watch this exclusive content now available on Bolt TV.",
     isNew,
-    mediaId: media.id,
+    mediaId: media.mediaid,
   };
 }
 
@@ -85,8 +85,9 @@ export class MemStorage implements IStorage {
   private heroItems: HeroItem[];
   private contentRows: ContentRow[];
   private allContent: Map<string, HeroItem | RowItem>;
-  private jwPlayerMedia: JWPlayerMedia[] = [];
+  private jwPlayerMedia: JWPlayerPlaylistItem[] = [];
   private lastFetch: number = 0;
+  private isInitialized: boolean = false;
 
   constructor() {
     this.users = new Map();
@@ -97,17 +98,20 @@ export class MemStorage implements IStorage {
 
   async refreshJWPlayerContent(): Promise<void> {
     const now = Date.now();
-    if (now - this.lastFetch < 60000 && this.jwPlayerMedia.length > 0) {
+    if (now - this.lastFetch < 60000 && this.isInitialized) {
       return;
     }
 
-    const media = await fetchJWPlayerMedia();
+    console.log("Fetching content from JW Player...");
+    const media = await fetchAllJWPlayerMedia();
     
     if (media.length > 0) {
+      console.log(`Found ${media.length} items from JW Player`);
       this.jwPlayerMedia = media;
       this.lastFetch = now;
+      this.isInitialized = true;
       
-      this.heroItems = media.slice(0, 3).map((m, i) => convertJWPlayerToHeroItem(m, i));
+      this.heroItems = media.slice(0, 3).map(m => convertJWPlayerToHeroItem(m));
       
       const allItems = media.map(m => convertJWPlayerToRowItem(m));
       
@@ -154,7 +158,11 @@ export class MemStorage implements IStorage {
         row.items.forEach(item => this.allContent.set(item.id, item));
       });
     } else {
-      this.initializeFallbackContent();
+      console.log("No JW Player content found, using fallback data");
+      if (!this.isInitialized) {
+        this.initializeFallbackContent();
+        this.isInitialized = true;
+      }
     }
   }
 
