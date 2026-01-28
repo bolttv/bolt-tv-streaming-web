@@ -18,7 +18,7 @@ export default function ContentRow({ row }: ContentRowProps) {
   const isContinueWatching = row.title === "Continue Watching";
 
   return (
-    <div className="py-4 md:py-8 pl-4 md:pl-12 group/row relative z-10">
+    <div className="py-2 md:py-3 pl-4 md:pl-12 group/row relative z-10">
       <h2 className="text-lg md:text-xl font-semibold text-white mb-3 md:mb-4">
         {row.title}
       </h2>
