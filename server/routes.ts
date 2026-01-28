@@ -43,5 +43,26 @@ export async function registerRoutes(
     }
   });
 
+  // Get sport categories for "Browse by Sport" section
+  app.get("/api/sports", async (req, res) => {
+    try {
+      const categories = await storage.getSportCategories();
+      res.json(categories);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch sport categories" });
+    }
+  });
+
+  // Get content for a specific sport playlist
+  app.get("/api/sports/:playlistId/content", async (req, res) => {
+    try {
+      const { playlistId } = req.params;
+      const content = await storage.getSportContent(playlistId);
+      res.json(content);
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch sport content" });
+    }
+  });
+
   return httpServer;
 }

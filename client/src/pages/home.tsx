@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import HeroCarousel from "@/components/HeroCarousel";
 import ContentRow from "@/components/ContentRow";
+import SportCategoryCard from "@/components/SportCategoryCard";
 import Footer from "@/components/Footer";
 import { useQuery } from "@tanstack/react-query";
 
@@ -35,6 +36,14 @@ interface Row {
   items: RowItem[];
 }
 
+interface SportCategory {
+  id: string;
+  name: string;
+  slug: string;
+  playlistId: string;
+  thumbnailImage: string;
+}
+
 export default function Home() {
   const { data: heroItems = [], isLoading: heroLoading } = useQuery<HeroItem[]>({
     queryKey: ["/api/content/hero"],
@@ -42,6 +51,10 @@ export default function Home() {
 
   const { data: rows = [], isLoading: rowsLoading } = useQuery<Row[]>({
     queryKey: ["/api/content/rows"],
+  });
+
+  const { data: sportCategories = [] } = useQuery<SportCategory[]>({
+    queryKey: ["/api/sports"],
   });
 
   if (heroLoading || rowsLoading) {
@@ -63,6 +76,19 @@ export default function Home() {
           {rows.map((row) => (
             <ContentRow key={row.id} row={row} />
           ))}
+
+          {sportCategories.length > 0 && (
+            <section className="px-4 md:px-12 pt-8" data-testid="browse-by-sport-section">
+              <h2 className="text-lg md:text-xl font-semibold text-white mb-4 md:mb-6">
+                Browse by Sport
+              </h2>
+              <div className="flex gap-3 md:gap-4 overflow-x-auto scrollbar-hide pb-4">
+                {sportCategories.map((category) => (
+                  <SportCategoryCard key={category.id} category={category} />
+                ))}
+              </div>
+            </section>
+          )}
         </div>
       </main>
 

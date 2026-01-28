@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import Home from "@/pages/home";
 import ContentDetails from "@/pages/ContentDetails";
 import Watch from "@/pages/Watch";
+import SportCategory from "@/pages/SportCategory";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -13,6 +14,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/content/:id" component={ContentDetails} />
       <Route path="/watch/:id" component={Watch} />
+      <Route path="/sport/:playlistId" component={SportCategory} />
       <Route component={NotFound} />
     </Switch>
   );

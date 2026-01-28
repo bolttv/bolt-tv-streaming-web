@@ -1,6 +1,6 @@
 import { type User, type InsertUser } from "@shared/schema";
 import { randomUUID } from "crypto";
-import { fetchJWPlayerPlaylist, getJWPlayerThumbnail, getJWPlayerHeroImage, getJWPlayerVerticalPoster, JWPlayerPlaylistItem, PLAYLISTS } from "./jwplayer";
+import { fetchJWPlayerPlaylist, getJWPlayerThumbnail, getJWPlayerHeroImage, getJWPlayerVerticalPoster, JWPlayerPlaylistItem, PLAYLISTS, SPORT_PLAYLISTS } from "./jwplayer";
 
 export interface HeroItem {
   id: string;
@@ -37,6 +37,14 @@ export interface ContentRow {
   items: RowItem[];
 }
 
+export interface SportCategory {
+  id: string;
+  name: string;
+  slug: string;
+  playlistId: string;
+  thumbnailImage: string;
+}
+
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
@@ -45,6 +53,8 @@ export interface IStorage {
   getHeroItems(): Promise<HeroItem[]>;
   getContentRows(): Promise<ContentRow[]>;
   getContentById(id: string): Promise<HeroItem | RowItem | undefined>;
+  getSportCategories(): Promise<SportCategory[]>;
+  getSportContent(playlistId: string): Promise<RowItem[]>;
   refreshJWPlayerContent(): Promise<void>;
 }
 
@@ -256,6 +266,21 @@ export class MemStorage implements IStorage {
   async getContentById(id: string): Promise<HeroItem | RowItem | undefined> {
     await this.refreshJWPlayerContent();
     return this.allContent.get(id);
+  }
+
+  async getSportCategories(): Promise<SportCategory[]> {
+    return SPORT_PLAYLISTS.map(sport => ({
+      id: sport.slug,
+      name: sport.name,
+      slug: sport.slug,
+      playlistId: sport.id,
+      thumbnailImage: `/assets/sport-${sport.slug}.jpg`,
+    }));
+  }
+
+  async getSportContent(playlistId: string): Promise<RowItem[]> {
+    const media = await fetchJWPlayerPlaylist(playlistId);
+    return media.map(m => convertJWPlayerToRowItem(m));
   }
 }
 
