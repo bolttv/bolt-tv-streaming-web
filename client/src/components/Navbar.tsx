@@ -87,7 +87,7 @@ export default function Navbar() {
             className={cn(
               "flex items-center bg-zinc-800 rounded-full overflow-hidden transition-all duration-[285ms] ease-out",
               searchOpen 
-                ? "w-[calc(100vw-120px)] sm:w-[280px] md:w-[360px] lg:w-[474px] px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 md:py-[13px] mr-2 sm:mr-3" 
+                ? "w-[calc(100vw-120px)] sm:w-[280px] md:w-[360px] lg:w-[30vw] xl:w-[35vw] 2xl:w-[40vw] max-w-[700px] px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 md:py-[13px] mr-2 sm:mr-3" 
                 : "w-0 px-0 py-0"
             )}
           >
