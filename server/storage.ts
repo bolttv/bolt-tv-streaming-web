@@ -1,6 +1,8 @@
-import { type User, type InsertUser } from "@shared/schema";
+import { type User, type InsertUser, type WatchHistory, type InsertWatchHistory, watchHistory } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { fetchJWPlayerPlaylist, getJWPlayerThumbnail, getJWPlayerHeroImage, getJWPlayerVerticalPoster, JWPlayerPlaylistItem, PLAYLISTS, SPORT_PLAYLISTS } from "./jwplayer";
+import { db } from "./db";
+import { eq, and, desc, sql } from "drizzle-orm";
 
 export interface HeroItem {
   id: string;
@@ -45,6 +47,17 @@ export interface SportCategory {
   thumbnailImage: string;
 }
 
+export interface ContinueWatchingItem {
+  id: string;
+  mediaId: string;
+  title: string;
+  posterImage: string;
+  duration: number;
+  watchedSeconds: number;
+  progress: number;
+  lastWatchedAt: Date;
+}
+
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
@@ -56,6 +69,10 @@ export interface IStorage {
   getSportCategories(): Promise<SportCategory[]>;
   getSportContent(playlistId: string): Promise<RowItem[]>;
   refreshJWPlayerContent(): Promise<void>;
+  
+  updateWatchProgress(sessionId: string, mediaId: string, title: string, posterImage: string, duration: number, watchedSeconds: number): Promise<WatchHistory>;
+  getContinueWatching(sessionId: string): Promise<ContinueWatchingItem[]>;
+  removeFromContinueWatching(sessionId: string, mediaId: string): Promise<void>;
 }
 
 function convertJWPlayerToRowItem(media: JWPlayerPlaylistItem): RowItem {
@@ -281,6 +298,83 @@ export class MemStorage implements IStorage {
   async getSportContent(playlistId: string): Promise<RowItem[]> {
     const media = await fetchJWPlayerPlaylist(playlistId);
     return media.map(m => convertJWPlayerToRowItem(m));
+  }
+
+  async updateWatchProgress(
+    sessionId: string,
+    mediaId: string,
+    title: string,
+    posterImage: string,
+    duration: number,
+    watchedSeconds: number
+  ): Promise<WatchHistory> {
+    const progress = duration > 0 ? Math.min(watchedSeconds / duration, 1) : 0;
+    
+    const existing = await db
+      .select()
+      .from(watchHistory)
+      .where(and(eq(watchHistory.sessionId, sessionId), eq(watchHistory.mediaId, mediaId)))
+      .limit(1);
+
+    if (existing.length > 0) {
+      const [updated] = await db
+        .update(watchHistory)
+        .set({
+          watchedSeconds,
+          progress,
+          lastWatchedAt: new Date(),
+          title,
+          posterImage,
+          duration,
+        })
+        .where(eq(watchHistory.id, existing[0].id))
+        .returning();
+      return updated;
+    } else {
+      const [created] = await db
+        .insert(watchHistory)
+        .values({
+          sessionId,
+          mediaId,
+          title,
+          posterImage,
+          duration,
+          watchedSeconds,
+          progress,
+        })
+        .returning();
+      return created;
+    }
+  }
+
+  async getContinueWatching(sessionId: string): Promise<ContinueWatchingItem[]> {
+    const items = await db
+      .select()
+      .from(watchHistory)
+      .where(and(
+        eq(watchHistory.sessionId, sessionId),
+        sql`${watchHistory.progress} > 0.01`,
+        sql`${watchHistory.progress} < 0.95`
+      ))
+      .orderBy(desc(watchHistory.lastWatchedAt))
+      .limit(20);
+
+    return items.map(item => ({
+      id: item.id,
+      mediaId: item.mediaId,
+      title: item.title,
+      posterImage: item.posterImage || "",
+      duration: item.duration,
+      watchedSeconds: item.watchedSeconds,
+      progress: item.progress,
+      lastWatchedAt: item.lastWatchedAt,
+    }));
+  }
+
+  async removeFromContinueWatching(sessionId: string, mediaId: string): Promise<void> {
+    await db
+      .delete(watchHistory)
+      .where(and(eq(watchHistory.sessionId, sessionId), eq(watchHistory.mediaId, mediaId)));
   }
 }
 
