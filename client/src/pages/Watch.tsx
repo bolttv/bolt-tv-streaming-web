@@ -16,7 +16,7 @@ interface Content {
   description?: string;
 }
 
-const JW_PLAYER_LIBRARY_URL = "https://cdn.jwplayer.com/libraries/xQR17M0d.js";
+const JW_PLAYER_LIBRARY_URL = "https://cdn.jwplayer.com/libraries/EBg26wOK.js";
 
 export default function Watch() {
   const { id } = useParams();
