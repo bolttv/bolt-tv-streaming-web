@@ -87,7 +87,7 @@ export default function Navbar() {
             className={cn(
               "flex items-center bg-zinc-800 rounded-full overflow-hidden transition-all duration-300 ease-out",
               searchOpen 
-                ? "w-48 md:w-80 px-4 py-2 mr-2" 
+                ? "w-64 md:w-96 px-5 py-3 mr-3" 
                 : "w-0 px-0 py-0"
             )}
           >
