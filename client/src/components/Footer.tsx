@@ -14,7 +14,7 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="bg-black/50 border-t border-white/5 py-12 md:py-16 px-4 md:px-12 mt-12 md:mt-24">
+    <footer className="bg-black border-t border-white/5 py-12 md:py-16 px-4 md:px-12 mt-12 md:mt-24">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-8 md:gap-4">
         {/* Left Side: Social Icons */}
         <div className="flex gap-4">
