@@ -1,4 +1,4 @@
-import { useParams } from "wouter";
+import { useParams, Link } from "wouter";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Play, Plus, ThumbsUp, Film, ChevronDown } from "lucide-react";
@@ -44,10 +44,10 @@ export default function ContentDetails() {
   if (!content) return <div className="min-h-screen bg-black" />;
 
   const episodes = [
-    { id: 1, title: "Episode 1", duration: "55m", image: "/assets/poster-action_1.jpg", desc: "The team preps for a Black Friday battle vs. the Bears in the wake of a tough loss to the Cowboys." },
-    { id: 2, title: "Episode 2", duration: "57m", image: "/assets/poster-action_2.jpg", desc: "Dak Prescott and the Cowboys look to stay hot while the Giants, Eagles, and Commanders all try to turn their luck around." },
-    { id: 3, title: "Episode 3", duration: "55m", image: "/assets/poster-action_3.jpg", desc: "While the Eagles and Cowboys look to rebound from tough losses, the Giants and Commanders face off on a snowy Sunday." },
-    { id: 4, title: "Episode 4", duration: "54m", image: "/assets/poster-comedy_1.jpg", desc: "Each of the NFC East teams prepares for Christmas...even if only the Eagles will find a playoff ticket under the tree." },
+    { id: 1, title: "Episode 1", duration: "55m", image: "/assets/poster-action_1.jpg", desc: "The team preps for a Black Friday battle vs. the Bears in the wake of a tough loss to the Cowboys.", contentId: "action-1" },
+    { id: 2, title: "Episode 2", duration: "57m", image: "/assets/poster-action_2.jpg", desc: "Dak Prescott and the Cowboys look to stay hot while the Giants, Eagles, and Commanders all try to turn their luck around.", contentId: "action-2" },
+    { id: 3, title: "Episode 3", duration: "55m", image: "/assets/poster-action_3.jpg", desc: "While the Eagles and Cowboys look to rebound from tough losses, the Giants and Commanders face off on a snowy Sunday.", contentId: "action-3" },
+    { id: 4, title: "Episode 4", duration: "54m", image: "/assets/poster-comedy_1.jpg", desc: "Each of the NFC East teams prepares for Christmas...even if only the Eagles will find a playoff ticket under the tree.", contentId: "comedy-1" },
   ];
 
   return (
@@ -129,21 +129,23 @@ export default function ContentDetails() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {episodes.map(ep => (
-                    <div key={ep.id} className="group cursor-pointer space-y-3">
-                        <div className="relative aspect-video bg-zinc-800 rounded overflow-hidden">
-                            <img src={ep.image} alt={ep.title} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition" />
-                            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition bg-black/40">
-                                <div className="bg-white/20 p-3 rounded-full backdrop-blur-sm">
-                                    <Play className="w-6 h-6 fill-white text-white" />
-                                </div>
-                            </div>
-                            <div className="absolute bottom-2 left-2 bg-black/60 px-1.5 py-0.5 rounded text-[10px] font-bold">{ep.duration}</div>
-                        </div>
-                        <div>
-                            <div className="font-bold text-sm mb-1">{ep.id}: {ep.title}</div>
-                            <p className="text-xs text-gray-400 line-clamp-3 leading-relaxed">{ep.desc}</p>
-                        </div>
-                    </div>
+                    <Link key={ep.id} href={`/content/${ep.contentId}`}>
+                      <div className="group cursor-pointer space-y-3">
+                          <div className="relative aspect-video bg-zinc-800 rounded overflow-hidden">
+                              <img src={ep.image} alt={ep.title} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition" />
+                              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition bg-black/40">
+                                  <div className="bg-white/20 p-3 rounded-full backdrop-blur-sm">
+                                      <Play className="w-6 h-6 fill-white text-white" />
+                                  </div>
+                              </div>
+                              <div className="absolute bottom-2 left-2 bg-black/60 px-1.5 py-0.5 rounded text-[10px] font-bold">{ep.duration}</div>
+                          </div>
+                          <div>
+                              <div className="font-bold text-sm mb-1">{ep.id}: {ep.title}</div>
+                              <p className="text-xs text-gray-400 line-clamp-3 leading-relaxed">{ep.desc}</p>
+                          </div>
+                      </div>
+                    </Link>
                 ))}
             </div>
         </div>
