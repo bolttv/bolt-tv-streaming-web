@@ -73,6 +73,7 @@ export interface IStorage {
   updateWatchProgress(sessionId: string, mediaId: string, title: string, posterImage: string, duration: number, watchedSeconds: number): Promise<WatchHistory>;
   getContinueWatching(sessionId: string): Promise<ContinueWatchingItem[]>;
   removeFromContinueWatching(sessionId: string, mediaId: string): Promise<void>;
+  searchContent(query: string): Promise<RowItem[]>;
 }
 
 function convertJWPlayerToRowItem(media: JWPlayerPlaylistItem): RowItem {
@@ -375,6 +376,60 @@ export class MemStorage implements IStorage {
     await db
       .delete(watchHistory)
       .where(and(eq(watchHistory.sessionId, sessionId), eq(watchHistory.mediaId, mediaId)));
+  }
+
+  async searchContent(query: string): Promise<RowItem[]> {
+    await this.refreshJWPlayerContent();
+    
+    const lowerQuery = query.toLowerCase();
+    const results: RowItem[] = [];
+    const seenIds = new Set<string>();
+
+    for (const [id, item] of this.allContent.entries()) {
+      if (seenIds.has(id)) continue;
+      
+      const title = item.title.toLowerCase();
+      const matches = title.includes(lowerQuery);
+      
+      if (matches) {
+        seenIds.add(id);
+        if ('posterImage' in item) {
+          results.push(item as RowItem);
+        } else {
+          results.push({
+            id: item.id,
+            title: item.title,
+            posterImage: (item as HeroItem).heroImage,
+            rating: item.rating,
+            isNew: item.isNew,
+            mediaId: item.mediaId,
+          });
+        }
+      }
+    }
+
+    for (const sport of SPORT_PLAYLISTS) {
+      const sportContent = await fetchJWPlayerPlaylist(sport.id);
+      for (const media of sportContent) {
+        if (seenIds.has(media.mediaid)) continue;
+        
+        const title = media.title.toLowerCase();
+        const tags = media.tags?.toLowerCase() || "";
+        const description = media.description?.toLowerCase() || "";
+        
+        const matchesTitle = title.includes(lowerQuery);
+        const matchesTags = tags.includes(lowerQuery);
+        const matchesDescription = description.includes(lowerQuery);
+        const matchesSport = sport.name.toLowerCase().includes(lowerQuery);
+        
+        if (matchesTitle || matchesTags || matchesDescription || matchesSport) {
+          seenIds.add(media.mediaid);
+          results.push(convertJWPlayerToRowItem(media));
+        }
+      }
+    }
+
+    return results;
   }
 }
 

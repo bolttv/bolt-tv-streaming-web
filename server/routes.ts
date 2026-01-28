@@ -297,5 +297,20 @@ export async function registerRoutes(
     }
   });
 
+  // Search content
+  app.get("/api/search", async (req, res) => {
+    try {
+      const query = req.query.q as string;
+      if (!query || query.trim().length === 0) {
+        return res.json([]);
+      }
+      const results = await storage.searchContent(query.trim());
+      res.json(results);
+    } catch (error) {
+      console.error("Error searching content:", error);
+      res.status(500).json({ error: "Failed to search content" });
+    }
+  });
+
   return httpServer;
 }
