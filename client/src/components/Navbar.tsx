@@ -59,69 +59,34 @@ export default function Navbar() {
         scrolled ? "bg-black/90 backdrop-blur-md" : "bg-gradient-to-b from-black/80 to-transparent"
       )}
     >
-      {/* Search overlay that appears on top */}
+      {/* Bubble search bar overlay */}
       <div
         className={cn(
-          "absolute inset-0 flex items-center px-4 md:px-12 bg-zinc-900/98 backdrop-blur-md transition-all duration-300 ease-out",
+          "absolute left-4 right-4 md:left-12 md:right-auto top-1/2 -translate-y-1/2 flex items-center bg-zinc-800 rounded-full px-4 py-2 md:py-2.5 shadow-lg shadow-black/50 transition-all duration-300 ease-out origin-right",
           searchOpen 
-            ? "opacity-100 pointer-events-auto" 
-            : "opacity-0 pointer-events-none"
+            ? "opacity-100 scale-x-100 md:w-[500px] pointer-events-auto" 
+            : "opacity-0 scale-x-0 w-0 pointer-events-none"
         )}
       >
-        <form onSubmit={handleSearchSubmit} className="flex-1 flex items-center gap-4">
-          <Search className="w-5 h-5 md:w-6 md:h-6 text-white/60 flex-shrink-0" />
+        <form onSubmit={handleSearchSubmit} className="flex-1 flex items-center gap-3">
+          <Search className="w-5 h-5 text-white/60 flex-shrink-0" />
           <input
             ref={searchInputRef}
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by title, actor or genre..."
-            className="flex-1 bg-transparent text-white text-sm md:text-base placeholder:text-white/40 outline-none"
+            className="flex-1 bg-transparent text-white text-sm placeholder:text-white/40 outline-none"
             data-testid="input-search"
           />
         </form>
         <button
           onClick={handleSearchClose}
-          className="p-2 hover:bg-white/10 rounded-full transition-colors"
+          className="p-1.5 hover:bg-white/10 rounded-full transition-colors ml-2"
           data-testid="button-search-close"
         >
-          <X className="w-5 h-5 md:w-6 md:h-6 text-white/80 hover:text-white" />
+          <X className="w-4 h-4 text-white/60 hover:text-white" />
         </button>
-        
-        <div className="hidden md:flex items-center gap-4 ml-4 border-l border-white/10 pl-4">
-          <Link href="/subscribe">
-            <button className="bg-white text-black font-bold px-4 py-1.5 rounded hover:bg-gray-200 transition text-sm">
-              Subscribe
-            </button>
-          </Link>
-          
-          <button className="flex items-center gap-1 text-white/80 hover:text-white transition cursor-pointer font-bold text-sm">
-            <span>EN</span>
-            <ChevronDown className="w-3 h-3 md:w-4 md:h-4 stroke-[3]" />
-          </button>
-          
-          {isAuthenticated ? (
-            <button 
-              onClick={handleSignOut}
-              className="flex items-center gap-2 text-white/80 hover:text-white transition font-bold text-sm"
-            >
-              <div className="p-1 border-2 border-current rounded-full">
-                <User className="w-4 h-4 md:w-5 md:h-5 fill-current" />
-              </div>
-              <span>Sign Out</span>
-            </button>
-          ) : (
-            <button 
-              onClick={() => loginWithRedirect()}
-              className="flex items-center gap-2 text-white/80 hover:text-white transition font-bold text-sm"
-            >
-              <div className="p-1 border-2 border-current rounded-full">
-                <User className="w-4 h-4 md:w-5 md:h-5 fill-current" />
-              </div>
-              <span>Sign In</span>
-            </button>
-          )}
-        </div>
       </div>
 
       {/* Regular nav content */}
