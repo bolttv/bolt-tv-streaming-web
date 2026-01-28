@@ -64,5 +64,54 @@ export async function registerRoutes(
     }
   });
 
+  // Update watch progress
+  app.post("/api/watch-progress", async (req, res) => {
+    try {
+      const { sessionId, mediaId, title, posterImage, duration, watchedSeconds } = req.body;
+      
+      if (!sessionId || !mediaId || !title || duration === undefined || watchedSeconds === undefined) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+      
+      const result = await storage.updateWatchProgress(
+        sessionId,
+        mediaId,
+        title,
+        posterImage || "",
+        duration,
+        watchedSeconds
+      );
+      
+      res.json(result);
+    } catch (error) {
+      console.error("Error updating watch progress:", error);
+      res.status(500).json({ error: "Failed to update watch progress" });
+    }
+  });
+
+  // Get continue watching items
+  app.get("/api/continue-watching/:sessionId", async (req, res) => {
+    try {
+      const { sessionId } = req.params;
+      const items = await storage.getContinueWatching(sessionId);
+      res.json(items);
+    } catch (error) {
+      console.error("Error fetching continue watching:", error);
+      res.status(500).json({ error: "Failed to fetch continue watching" });
+    }
+  });
+
+  // Remove item from continue watching
+  app.delete("/api/continue-watching/:sessionId/:mediaId", async (req, res) => {
+    try {
+      const { sessionId, mediaId } = req.params;
+      await storage.removeFromContinueWatching(sessionId, mediaId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error removing from continue watching:", error);
+      res.status(500).json({ error: "Failed to remove from continue watching" });
+    }
+  });
+
   return httpServer;
 }
