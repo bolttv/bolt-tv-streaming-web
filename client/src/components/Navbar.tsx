@@ -85,7 +85,7 @@ export default function Navbar() {
         <div className="flex items-center">
           <div
             className={cn(
-              "flex items-center bg-zinc-800 rounded-full overflow-hidden transition-all duration-300 ease-out",
+              "flex items-center bg-zinc-800 rounded-full overflow-hidden transition-all duration-[285ms] ease-out",
               searchOpen 
                 ? "w-72 md:w-[474px] px-5 py-[13px] mr-3" 
                 : "w-0 px-0 py-0"
