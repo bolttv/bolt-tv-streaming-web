@@ -131,7 +131,7 @@ export default function ContentDetails() {
                 {episodes.map(ep => (
                     <Link key={ep.id} href={`/content/${ep.contentId}`}>
                       <div className="group cursor-pointer space-y-3">
-                          <div className="relative aspect-video bg-zinc-800 rounded-md overflow-hidden border-2 border-transparent transition-all duration-300 group-hover:border-white group-hover:scale-105">
+                          <div className="relative aspect-video bg-zinc-800 rounded-md overflow-hidden border-2 border-transparent transition-all duration-300 group-hover:border-white">
                               <img src={ep.image} alt={ep.title} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition" />
                               <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition bg-black/40">
                                   <div className="bg-white/20 p-3 rounded-full backdrop-blur-sm">

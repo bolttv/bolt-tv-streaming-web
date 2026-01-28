@@ -21,7 +21,7 @@ export default function PosterCard({ item, width = "w-[160px] md:w-[220px]", isW
       >
         <div 
           className={cn(
-            "relative overflow-hidden rounded-md border-2 border-transparent transition-all duration-300 group-hover:border-white/90 group-hover:scale-105 group-hover:z-10 bg-zinc-900",
+            "relative overflow-hidden rounded-md border-2 border-transparent transition-all duration-300 group-hover:border-white/90 group-hover:z-10 bg-zinc-900",
             isWide ? "aspect-video" : "aspect-[2/3]"
           )}
         >
