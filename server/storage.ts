@@ -117,6 +117,16 @@ interface SearchableContent {
   description: string;
 }
 
+function decodeHtmlEntities(text: string): string {
+  return text
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'");
+}
+
 export class MemStorage implements IStorage {
   private users: Map<string, User>;
   private heroItems: HeroItem[];
@@ -200,9 +210,9 @@ export class MemStorage implements IStorage {
         if (!this.searchableContent.has(media.mediaid)) {
           this.searchableContent.set(media.mediaid, {
             item: convertJWPlayerToRowItem(media),
-            title: media.title.toLowerCase(),
-            tags: (media.tags || "").toLowerCase(),
-            description: (media.description || "").toLowerCase(),
+            title: decodeHtmlEntities(media.title).toLowerCase(),
+            tags: decodeHtmlEntities(media.tags || "").toLowerCase(),
+            description: decodeHtmlEntities(media.description || "").toLowerCase(),
           });
         }
       }
@@ -426,9 +436,9 @@ export class MemStorage implements IStorage {
       for (const media of sportContent) {
         if (seenIds.has(media.mediaid)) continue;
         
-        const title = media.title.toLowerCase();
-        const tags = media.tags?.toLowerCase() || "";
-        const description = media.description?.toLowerCase() || "";
+        const title = decodeHtmlEntities(media.title).toLowerCase();
+        const tags = decodeHtmlEntities(media.tags || "").toLowerCase();
+        const description = decodeHtmlEntities(media.description || "").toLowerCase();
         
         const matchesTitle = title.includes(lowerQuery);
         const matchesTags = tags.includes(lowerQuery);
