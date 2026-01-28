@@ -87,11 +87,11 @@ export default function Navbar() {
             className={cn(
               "flex items-center bg-zinc-800 rounded-full overflow-hidden transition-all duration-[285ms] ease-out",
               searchOpen 
-                ? "w-72 md:w-[474px] px-5 py-[13px] mr-3" 
+                ? "w-[calc(100vw-120px)] sm:w-[280px] md:w-[360px] lg:w-[474px] px-3 sm:px-4 md:px-5 py-2.5 sm:py-3 md:py-[13px] mr-2 sm:mr-3" 
                 : "w-0 px-0 py-0"
             )}
           >
-            <form onSubmit={handleSearchSubmit} className="flex-1 flex items-center gap-3">
+            <form onSubmit={handleSearchSubmit} className="flex-1 flex items-center gap-2 sm:gap-3">
               <Search className={cn(
                 "w-4 h-4 text-white/60 flex-shrink-0 transition-opacity duration-200",
                 searchOpen ? "opacity-100" : "opacity-0"
@@ -103,7 +103,7 @@ export default function Navbar() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search by title, athlete or genre..."
                 className={cn(
-                  "flex-1 bg-transparent text-white text-sm placeholder:text-white/40 outline-none min-w-0 transition-opacity duration-200",
+                  "flex-1 bg-transparent text-white text-xs sm:text-sm placeholder:text-white/40 outline-none min-w-0 transition-opacity duration-200",
                   searchOpen ? "opacity-100" : "opacity-0"
                 )}
                 data-testid="input-search"
@@ -113,12 +113,12 @@ export default function Navbar() {
               type="button"
               onClick={handleSearchClose}
               className={cn(
-                "p-1 hover:bg-white/10 rounded-full transition-all duration-200 flex-shrink-0",
+                "p-0.5 sm:p-1 hover:bg-white/10 rounded-full transition-all duration-200 flex-shrink-0",
                 searchOpen ? "opacity-100" : "opacity-0"
               )}
               data-testid="button-search-close"
             >
-              <X className="w-4 h-4 text-white/60 hover:text-white" />
+              <X className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white/60 hover:text-white" />
             </button>
           </div>
           
