@@ -70,7 +70,7 @@ export default function Navbar() {
             />
           </Link>
 
-          <div className="hidden md:flex items-center gap-6 lg:gap-8">
+          <div className="hidden md:flex items-center gap-6 lg:gap-8 pr-4 lg:pr-6">
             {navLinks.map((link) => (
               <Link key={link.name} href={link.href}>
                 <span className="text-sm font-medium text-white/70 hover:text-white transition-colors duration-200 cursor-pointer whitespace-nowrap">
@@ -81,7 +81,7 @@ export default function Navbar() {
           </div>
         </div>
 
-        <div className="flex items-center gap-4 md:gap-6 text-white/80 flex-shrink-0">
+        <div className="flex items-center gap-4 md:gap-6 text-white/80 flex-shrink-0 ml-auto">
           <div className="hidden lg:flex items-center">
             <div
               className={cn(
