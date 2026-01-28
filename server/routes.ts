@@ -72,14 +72,21 @@ export async function registerRoutes(
       if (!sessionId || !mediaId || !title || duration === undefined || watchedSeconds === undefined) {
         return res.status(400).json({ error: "Missing required fields" });
       }
+
+      const validDuration = Math.max(0, Number(duration) || 0);
+      const validWatchedSeconds = Math.max(0, Math.min(Number(watchedSeconds) || 0, validDuration));
+      
+      if (validDuration === 0) {
+        return res.status(400).json({ error: "Invalid duration" });
+      }
       
       const result = await storage.updateWatchProgress(
         sessionId,
         mediaId,
         title,
         posterImage || "",
-        duration,
-        watchedSeconds
+        validDuration,
+        validWatchedSeconds
       );
       
       res.json(result);

@@ -227,7 +227,7 @@ export default function Watch() {
         }
         playerInstanceRef.current = null;
       }
-      queryClient.invalidateQueries({ queryKey: ["/api/continue-watching"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/continue-watching", getSessionId()] });
     };
   }, [scriptLoaded, mediaId, saveProgress, queryClient]);
 
