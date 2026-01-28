@@ -103,14 +103,15 @@ export class MemStorage implements IStorage {
 
     console.log("Fetching content from JW Player playlists...");
     
-    const [featured, popular, newMovies, documentaries] = await Promise.all([
+    const [featured, recommended, popular, newMovies, documentaries] = await Promise.all([
       fetchJWPlayerPlaylist(PLAYLISTS.featured),
+      fetchJWPlayerPlaylist(PLAYLISTS.recommended),
       fetchJWPlayerPlaylist(PLAYLISTS.popular),
       fetchJWPlayerPlaylist(PLAYLISTS.newMovies),
       fetchJWPlayerPlaylist(PLAYLISTS.documentaries),
     ]);
 
-    const totalItems = featured.length + popular.length + newMovies.length + documentaries.length;
+    const totalItems = featured.length + recommended.length + popular.length + newMovies.length + documentaries.length;
     
     if (totalItems > 0) {
       console.log(`Found ${totalItems} total items from JW Player playlists`);
@@ -127,16 +128,21 @@ export class MemStorage implements IStorage {
         },
         {
           id: "r2",
+          title: "Recommended For You",
+          items: recommended.map(m => convertJWPlayerToRowItem(m))
+        },
+        {
+          id: "r3",
           title: "Popular",
           items: popular.map(m => convertJWPlayerToRowItem(m))
         },
         {
-          id: "r3",
+          id: "r4",
           title: "New Movies",
           items: newMovies.map(m => convertJWPlayerToRowItem(m))
         },
         {
-          id: "r4",
+          id: "r5",
           title: "Documentaries",
           items: documentaries.map(m => convertJWPlayerToRowItem(m))
         }
@@ -205,9 +211,10 @@ export class MemStorage implements IStorage {
 
     this.contentRows = [
       { id: "r1", title: "Featured", items: featuredItems },
-      { id: "r2", title: "Popular", items: featuredItems },
-      { id: "r3", title: "New Movies", items: featuredItems.filter(i => i.isNew) },
-      { id: "r4", title: "Documentaries", items: featuredItems.slice(2, 6) }
+      { id: "r2", title: "Recommended For You", items: featuredItems.slice(0, 5) },
+      { id: "r3", title: "Popular", items: featuredItems },
+      { id: "r4", title: "New Movies", items: featuredItems.filter(i => i.isNew) },
+      { id: "r5", title: "Documentaries", items: featuredItems.slice(2, 6) }
     ];
 
     this.allContent.clear();
