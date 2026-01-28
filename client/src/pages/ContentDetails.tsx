@@ -64,7 +64,7 @@ export default function ContentDetails() {
 
       <main>
         {/* Hero Section */}
-        <div className="relative h-[80vh] w-full">
+        <div className="relative h-[70vh] sm:h-[75vh] md:h-[80vh] w-full">
           <div className="absolute inset-0">
             <img 
               src={displayImage} 
@@ -78,9 +78,9 @@ export default function ContentDetails() {
           <div className="absolute bottom-0 left-0 right-0 px-4 md:px-12 pb-12 z-10">
             <div className="max-w-2xl space-y-6">
               {content.logoImage ? (
-                 <img src={content.logoImage} alt={content.title} className="h-24 md:h-32 object-contain" />
+                 <img src={content.logoImage} alt={content.title} className="h-16 sm:h-24 md:h-32 object-contain" />
               ) : (
-                 <h1 className="text-4xl md:text-6xl font-display font-black uppercase leading-none drop-shadow-xl">{content.title}</h1>
+                 <h1 className="text-3xl sm:text-4xl md:text-6xl font-display font-black uppercase leading-none drop-shadow-xl">{content.title}</h1>
               )}
 
               <div className="flex items-center gap-3 text-sm font-medium text-gray-300">
@@ -93,26 +93,26 @@ export default function ContentDetails() {
                 <span className="border border-white/20 px-1 rounded text-[10px]">AD</span>
               </div>
 
-              <div className="flex flex-wrap items-center gap-4 pt-2">
+              <div className="flex flex-wrap items-center gap-3 sm:gap-4 pt-2">
                 <Link href={`/watch/${id}`}>
-                  <button className="flex items-center gap-2 bg-white text-black hover:bg-white/90 transition-colors h-12 px-8 rounded font-bold tracking-wide" data-testid="button-watch">
-                    <Play className="w-5 h-5 fill-current" />
+                  <button className="flex items-center gap-2 bg-white text-black hover:bg-white/90 transition-colors h-10 sm:h-12 px-5 sm:px-8 rounded font-bold tracking-wide text-sm sm:text-base" data-testid="button-watch">
+                    <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />
                     Watch Now
                   </button>
                 </Link>
                 
-                <div className="flex items-center gap-6 px-2">
+                <div className="flex items-center gap-4 sm:gap-6 px-2">
                     <button className="flex flex-col items-center gap-1 group text-gray-300 hover:text-white transition">
-                        <Plus className="w-6 h-6" />
-                        <span className="text-[10px] uppercase tracking-wider font-bold">My List</span>
+                        <Plus className="w-5 h-5 sm:w-6 sm:h-6" />
+                        <span className="text-[9px] sm:text-[10px] uppercase tracking-wider font-bold">My List</span>
                     </button>
                     <button className="flex flex-col items-center gap-1 group text-gray-300 hover:text-white transition">
-                        <ThumbsUp className="w-6 h-6" />
-                        <span className="text-[10px] uppercase tracking-wider font-bold">Rate</span>
+                        <ThumbsUp className="w-5 h-5 sm:w-6 sm:h-6" />
+                        <span className="text-[9px] sm:text-[10px] uppercase tracking-wider font-bold">Rate</span>
                     </button>
                     <button className="flex flex-col items-center gap-1 group text-gray-300 hover:text-white transition">
-                        <Film className="w-6 h-6" />
-                        <span className="text-[10px] uppercase tracking-wider font-bold">Trailer</span>
+                        <Film className="w-5 h-5 sm:w-6 sm:h-6" />
+                        <span className="text-[9px] sm:text-[10px] uppercase tracking-wider font-bold">Trailer</span>
                     </button>
                 </div>
               </div>
@@ -137,7 +137,7 @@ export default function ContentDetails() {
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                 {episodes.map(ep => (
                     <Link key={ep.id} href={`/content/${ep.contentId}`}>
                       <div className="group cursor-pointer space-y-3">
@@ -163,7 +163,7 @@ export default function ContentDetails() {
         {/* You May Also Like */}
         <div className="px-4 md:px-12 py-12 space-y-6">
             <h2 className="text-xl font-bold">You May Also Like</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
                 {rows[1]?.items?.slice(0, 5).map((item: any) => (
                     <PosterCard key={item.id} item={item} width="w-full" />
                 ))}

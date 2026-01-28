@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
-import { Search, User, ChevronDown, Loader2, X } from "lucide-react";
+import { Search, User, ChevronDown, Loader2, X, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth0 } from "@auth0/auth0-react";
 
@@ -8,6 +8,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [, setLocation] = useLocation();
   const { isAuthenticated, isLoading, logout, loginWithRedirect } = useAuth0();
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -170,7 +171,41 @@ export default function Navbar() {
             <span className="hidden md:inline">Sign In</span>
           </button>
         )}
+        
+        <button 
+          className="md:hidden hover:text-white transition p-1"
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          data-testid="button-mobile-menu"
+        >
+          <Menu className="w-6 h-6" />
+        </button>
       </div>
+      
+      {mobileMenuOpen && (
+        <div className="absolute top-full left-0 right-0 bg-black/95 backdrop-blur-md md:hidden border-t border-white/10">
+          <div className="flex flex-col p-4 space-y-4">
+            {navLinks.map((link) => (
+              <Link key={link.name} href={link.href}>
+                <span 
+                  className="block text-base font-medium text-white/80 hover:text-white transition-colors py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {link.name}
+                </span>
+              </Link>
+            ))}
+            <Link href="/subscribe">
+              <button 
+                className="w-full bg-white text-black font-bold px-4 py-3 rounded hover:bg-gray-200 transition text-sm mt-2"
+                onClick={() => setMobileMenuOpen(false)}
+                data-testid="button-mobile-subscribe"
+              >
+                Subscribe
+              </button>
+            </Link>
+          </div>
+        </div>
+      )}
     </nav>
   );
 }

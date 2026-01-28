@@ -36,7 +36,7 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
   };
 
   return (
-    <div className="relative w-full h-[85vh] md:h-[90vh] overflow-hidden group">
+    <div className="relative w-full h-[70vh] sm:h-[75vh] md:h-[80vh] lg:h-[90vh] overflow-hidden group">
       <div className="absolute inset-0 z-0" ref={emblaRef}>
         <div className="flex h-full">
           {items.map((item) => (
@@ -54,37 +54,37 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
               </div>
 
               {/* Content */}
-              <div className="absolute bottom-32 md:bottom-36 left-4 md:left-12 max-w-xl z-20 space-y-4 md:space-y-6 animate-in slide-in-from-left-4 fade-in duration-700 delay-300 fill-mode-both">
+              <div className="absolute bottom-24 sm:bottom-32 md:bottom-36 left-4 md:left-12 max-w-xl z-20 space-y-3 sm:space-y-4 md:space-y-6 animate-in slide-in-from-left-4 fade-in duration-700 delay-300 fill-mode-both">
                 {item.logoImage ? (
-                  <img src={item.logoImage} alt={item.title} className="h-20 md:h-32 object-contain mb-4" />
+                  <img src={item.logoImage} alt={item.title} className="h-14 sm:h-20 md:h-32 object-contain mb-2 sm:mb-4" />
                 ) : (
-                  <h1 className="text-5xl md:text-7xl font-display font-black text-white leading-[0.9] tracking-tight uppercase drop-shadow-2xl">
+                  <h1 className="text-3xl sm:text-5xl md:text-7xl font-display font-black text-white leading-[0.9] tracking-tight uppercase drop-shadow-2xl">
                     {item.title}
                   </h1>
                 )}
 
                 {/* Metadata Line */}
-                <div className="flex items-center gap-3 text-sm md:text-base font-medium text-gray-300">
-                  <span className="bg-white/10 px-1.5 py-0.5 rounded text-white border border-white/20">{item.rating}</span>
+                <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm md:text-base font-medium text-gray-300">
+                  <span className="bg-white/10 px-1 sm:px-1.5 py-0.5 rounded text-white border border-white/20">{item.rating}</span>
                   {item.seasonCount && <span>{item.seasonCount} Seasons</span>}
                   <span className="w-1 h-1 bg-gray-400 rounded-full" />
                   <span>{item.genres[0]}</span>
-                  {item.isNew && <span className="text-blue-400 font-bold uppercase tracking-wider">New Episode</span>}
+                  {item.isNew && <span className="text-blue-400 font-bold uppercase tracking-wider hidden sm:inline">New Episode</span>}
                 </div>
 
-                <p className="text-gray-200 text-sm md:text-lg line-clamp-2 md:line-clamp-3 leading-relaxed max-w-lg drop-shadow-md">
+                <p className="text-gray-200 text-xs sm:text-sm md:text-lg line-clamp-2 md:line-clamp-3 leading-relaxed max-w-lg drop-shadow-md">
                   {item.description}
                 </p>
 
-                <div className="flex items-center gap-3 md:gap-4 pt-2">
+                <div className="flex items-center gap-2 sm:gap-3 md:gap-4 pt-1 sm:pt-2">
                   <Link href={`/content/${item.id}`}>
-                    <button className="flex items-center justify-center gap-2 bg-white text-black hover:bg-white/90 transition-colors h-10 md:h-12 px-6 md:px-8 rounded font-semibold tracking-wide text-sm md:text-base cursor-pointer">
-                      <Play className="w-4 h-4 md:w-5 md:h-5 fill-current" />
+                    <button className="flex items-center justify-center gap-1.5 sm:gap-2 bg-white text-black hover:bg-white/90 transition-colors h-9 sm:h-10 md:h-12 px-4 sm:px-6 md:px-8 rounded font-semibold tracking-wide text-xs sm:text-sm md:text-base cursor-pointer">
+                      <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 fill-current" />
                       {item.type === "series" ? "Watch S1 E1" : "Watch Now"}
                     </button>
                   </Link>
-                  <button className="flex items-center justify-center bg-white/10 hover:bg-white/20 border border-white/10 text-white transition-colors h-10 w-10 md:h-12 md:w-12 rounded backdrop-blur-sm">
-                    <Plus className="w-5 h-5 md:w-6 md:h-6" />
+                  <button className="flex items-center justify-center bg-white/10 hover:bg-white/20 border border-white/10 text-white transition-colors h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 rounded backdrop-blur-sm">
+                    <Plus className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
                   </button>
                 </div>
               </div>
