@@ -45,6 +45,11 @@
 body {
   @apply bg-background text-foreground font-sans antialiased;
   background-color: #000000; /* Pure OLED black */
+  background-image: url('/background.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
 }
 
 /* Custom Gradients for Cinematic Feel */
