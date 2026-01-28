@@ -32,9 +32,11 @@ export default function Navbar() {
       <div className="flex items-center gap-8 md:gap-12">
         {/* Logo Mockup */}
         <Link href="/">
-          <span className="text-2xl md:text-3xl font-bold tracking-tighter text-white font-display uppercase hover:text-white/90 transition cursor-pointer">
-            HBO<span className="font-light opacity-80">MAX</span>
-          </span>
+          <img 
+            src="/assets/bolt-logo-white.png" 
+            alt="Bolt Logo" 
+            className="h-6 md:h-8 w-auto hover:opacity-90 transition cursor-pointer" 
+          />
         </Link>
 
         {/* Desktop Nav */}

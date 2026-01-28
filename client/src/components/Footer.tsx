@@ -15,9 +15,11 @@ export default function Footer() {
     <footer className="bg-black/50 border-t border-white/5 py-12 md:py-16 px-4 md:px-12 mt-12 md:mt-24">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start gap-8">
         <div className="space-y-4">
-          <div className="text-2xl font-display font-bold text-white tracking-tighter uppercase opacity-50">
-            HBO<span className="font-light">MAX</span>
-          </div>
+          <img 
+            src="/assets/bolt-logo-white.png" 
+            alt="Bolt Logo" 
+            className="h-6 w-auto opacity-50" 
+          />
           <div className="flex gap-4">
              {/* Social placeholders */}
              {[1, 2, 3, 4].map(i => (
@@ -38,7 +40,7 @@ export default function Footer() {
       </div>
       
       <div className="mt-12 text-[10px] text-zinc-600 text-center md:text-left">
-        © 2026 WarnerMedia Direct, LLC. All rights reserved. HBO Max™ is used under license.
+        © 2026 Bolt Streaming, LLC. All rights reserved.
       </div>
     </footer>
   );
