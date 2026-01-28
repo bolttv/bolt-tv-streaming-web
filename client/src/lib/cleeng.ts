@@ -34,6 +34,7 @@ export interface CleengOffer {
   period?: string;
   freePeriods?: number;
   active?: boolean;
+  tags?: string[];
 }
 
 const CLEENG_AUTH_KEY = "cleeng_auth";
@@ -110,6 +111,7 @@ export async function getOffers(): Promise<CleengOffer[]> {
       currency: offer.price?.currency || "USD",
       period: offer.billingCycle?.periodUnit,
       active: offer.active,
+      tags: offer.tags || [],
     }));
   }
   return [];

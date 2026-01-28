@@ -11,6 +11,7 @@ interface PricingPlan {
   period: string;
   features: string[];
   popular?: boolean;
+  badge?: string;
 }
 
 const defaultPlans: PricingPlan[] = [
@@ -65,19 +66,26 @@ function formatCurrency(price: number, currency: string): string {
 function mapCleengOffersToPlan(offers: CleengOffer[]): PricingPlan[] {
   if (!offers || offers.length === 0) return defaultPlans;
   
-  return offers.map((offer, index) => ({
-    id: offer.offerId,
-    offerId: offer.offerId,
-    name: offer.offerTitle || `Plan ${index + 1}`,
-    price: formatCurrency(offer.price, offer.currency),
-    period: offer.period ? `/${offer.period}` : "/month",
-    features: [
-      "Unlimited streaming",
-      "HD quality",
-      "Cancel anytime",
-    ],
-    popular: index === 0,
-  }));
+  return offers.map((offer, index) => {
+    // Check for badge tags like "Most Popular", "Most Value", etc.
+    const badgeTags = ["Most Popular", "Most Value", "Best Value"];
+    const badge = offer.tags?.find(tag => badgeTags.some(b => tag.toLowerCase().includes(b.toLowerCase())));
+    
+    return {
+      id: offer.offerId,
+      offerId: offer.offerId,
+      name: offer.offerTitle || `Plan ${index + 1}`,
+      price: formatCurrency(offer.price, offer.currency),
+      period: offer.period ? `/${offer.period}` : "/month",
+      features: [
+        "Unlimited streaming",
+        "HD quality",
+        "Cancel anytime",
+      ],
+      popular: !!badge,
+      badge: badge,
+    };
+  });
 }
 
 export default function Subscribe() {
@@ -219,9 +227,9 @@ export default function Subscribe() {
               }`}
               data-testid={`plan-card-${plan.id}`}
             >
-              {plan.popular && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full">
-                  MOST POPULAR
+              {plan.badge && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase">
+                  {plan.badge}
                 </div>
               )}
 
