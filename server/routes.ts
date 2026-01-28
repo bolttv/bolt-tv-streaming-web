@@ -4,6 +4,7 @@ import { storage } from "./storage";
 
 const CLEENG_API_URL = "https://mediastoreapi.cleeng.com";
 const CLEENG_PUBLISHER_ID = process.env.CLEENG_PUBLISHER_ID || "";
+const CLEENG_API_SECRET = process.env.CLEENG_API_SECRET || "";
 
 export async function registerRoutes(
   httpServer: Server,
@@ -118,10 +119,21 @@ export async function registerRoutes(
     try {
       const response = await fetch(
         `${CLEENG_API_URL}/publishers/${CLEENG_PUBLISHER_ID}/offers`,
-        { headers: { "Content-Type": "application/json" } }
+        { 
+          headers: { 
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${CLEENG_API_SECRET}`,
+          } 
+        }
       );
       
       const data = await response.json();
+      
+      if (!response.ok) {
+        console.error("Cleeng offers API error:", data);
+        return res.status(response.status).json(data);
+      }
+      
       res.json(data);
     } catch (error) {
       console.error("Cleeng offers error:", error);
