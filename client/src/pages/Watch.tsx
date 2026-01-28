@@ -35,12 +35,18 @@ export default function Watch() {
     if (!mediaId || !playerRef.current) return;
 
     let cleanup: (() => void) | undefined;
+    let checkInterval: NodeJS.Timeout | undefined;
+    let loadTimeout: NodeJS.Timeout | undefined;
 
     const initPlayer = () => {
       if (window.jwplayer && playerRef.current) {
         try {
           if (playerInstanceRef.current) {
-            playerInstanceRef.current.remove();
+            try {
+              playerInstanceRef.current.remove();
+            } catch (e) {
+              // Ignore removal errors
+            }
           }
 
           const player = window.jwplayer(playerRef.current);
@@ -71,13 +77,6 @@ export default function Watch() {
             console.error("JW Player setup error:", e);
             setPlayerError("Failed to initialize player.");
           });
-
-          cleanup = () => {
-            if (playerInstanceRef.current) {
-              playerInstanceRef.current.remove();
-              playerInstanceRef.current = null;
-            }
-          };
         } catch (err) {
           console.error("Player init error:", err);
           setPlayerError("Failed to initialize player.");
@@ -85,28 +84,68 @@ export default function Watch() {
       }
     };
 
-    if (window.jwplayer) {
-      initPlayer();
-    } else {
-      const checkPlayer = setInterval(() => {
+    const loadJWPlayerScript = () => {
+      return new Promise<void>((resolve, reject) => {
         if (window.jwplayer) {
-          clearInterval(checkPlayer);
-          initPlayer();
+          resolve();
+          return;
         }
-      }, 100);
-      
-      const timeout = setTimeout(() => {
-        clearInterval(checkPlayer);
-        if (!window.jwplayer) {
-          setPlayerError("JW Player library failed to load.");
-        }
-      }, 5000);
 
-      cleanup = () => {
-        clearInterval(checkPlayer);
-        clearTimeout(timeout);
-      };
-    }
+        const existingScript = document.querySelector('script[src*="jwplayer.com/libraries"]');
+        if (existingScript) {
+          existingScript.addEventListener('load', () => resolve());
+          existingScript.addEventListener('error', () => reject(new Error('Failed to load JW Player')));
+          return;
+        }
+
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jwplayer.com/libraries/xQR17M0d.js';
+        script.async = true;
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error('Failed to load JW Player'));
+        document.head.appendChild(script);
+      });
+    };
+
+    const tryInit = async () => {
+      if (window.jwplayer) {
+        initPlayer();
+      } else {
+        try {
+          await loadJWPlayerScript();
+          checkInterval = setInterval(() => {
+            if (window.jwplayer) {
+              clearInterval(checkInterval);
+              initPlayer();
+            }
+          }, 100);
+          
+          loadTimeout = setTimeout(() => {
+            if (checkInterval) clearInterval(checkInterval);
+            if (!window.jwplayer) {
+              setPlayerError("JW Player library failed to load. Please refresh the page.");
+            }
+          }, 10000);
+        } catch (err) {
+          setPlayerError("Failed to load video player. Please refresh the page.");
+        }
+      }
+    };
+
+    tryInit();
+
+    cleanup = () => {
+      if (checkInterval) clearInterval(checkInterval);
+      if (loadTimeout) clearTimeout(loadTimeout);
+      if (playerInstanceRef.current) {
+        try {
+          playerInstanceRef.current.remove();
+          playerInstanceRef.current = null;
+        } catch (e) {
+          // Ignore cleanup errors
+        }
+      }
+    };
 
     return () => {
       if (cleanup) cleanup();
