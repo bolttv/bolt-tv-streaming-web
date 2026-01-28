@@ -90,7 +90,7 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
       </div>
 
       {/* Dots Indicator */}
-      <div className="absolute bottom-9 md:bottom-[52px] left-0 right-0 flex justify-center gap-2 md:gap-3 z-30">
+      <div className="absolute bottom-[48px] md:bottom-[64px] left-0 right-0 flex justify-center gap-2 md:gap-3 z-30">
         {items.map((_, index) => (
           <button
             key={index}
