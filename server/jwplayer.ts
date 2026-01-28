@@ -17,6 +17,12 @@ export interface JWPlayerMediaSource {
   label?: string;
 }
 
+export interface JWPlayerImage {
+  src: string;
+  width: number;
+  type: string;
+}
+
 export interface JWPlayerPlaylistItem {
   mediaid: string;
   title: string;
@@ -24,12 +30,13 @@ export interface JWPlayerPlaylistItem {
   duration: number;
   pubdate: number;
   image: string;
-  images?: Array<{ src: string; width: number; type: string }>;
+  images?: JWPlayerImage[];
   sources: JWPlayerMediaSource[];
   tracks?: Array<{ file: string; kind: string; label?: string }>;
   tags?: string;
   feedid?: string;
   link?: string;
+  variations?: Record<string, { images?: JWPlayerImage[] }>;
 }
 
 export interface JWPlayerPlaylistResponse {
@@ -163,8 +170,31 @@ export function getJWPlayerThumbnail(mediaId: string, width: number = 640): stri
   return `https://cdn.jwplayer.com/v2/media/${mediaId}/poster.jpg?width=${width}`;
 }
 
+export function getJWPlayerVerticalPoster(mediaId: string, width: number = 400): string {
+  return `https://cdn.jwplayer.com/thumbs/${mediaId}-vertical-poster.jpg`;
+}
+
 export function getJWPlayerHeroImage(mediaId: string): string {
   return `https://cdn.jwplayer.com/v2/media/${mediaId}/poster.jpg?width=1920`;
+}
+
+export function findVerticalPoster(media: JWPlayerPlaylistItem): string | null {
+  if (media.images) {
+    const verticalImage = media.images.find(img => 
+      img.src.toLowerCase().includes('vertical-poster') || 
+      img.src.toLowerCase().includes('vertical_poster')
+    );
+    if (verticalImage) return verticalImage.src;
+  }
+  
+  if (media.variations) {
+    const verticalVariation = media.variations['vertical-poster'] || media.variations['vertical_poster'];
+    if (verticalVariation?.images?.[0]) {
+      return verticalVariation.images[0].src;
+    }
+  }
+  
+  return null;
 }
 
 export function getJWPlayerPlayerUrl(mediaId: string): string {

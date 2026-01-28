@@ -26,10 +26,16 @@ export default function PosterCard({ item, width = "w-[160px] md:w-[220px]", isW
           )}
         >
           <img
-            src={item.posterImage}
+            src={isWide ? item.posterImage : (item.verticalPosterImage || item.posterImage)}
             alt={item.title}
             className="h-full w-full object-cover transition-opacity duration-300 group-hover:opacity-80"
             loading="lazy"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              if (target.src !== item.posterImage) {
+                target.src = item.posterImage;
+              }
+            }}
           />
           
           {/* Overlays */}

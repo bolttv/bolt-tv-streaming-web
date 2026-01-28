@@ -1,6 +1,6 @@
 import { type User, type InsertUser } from "@shared/schema";
 import { randomUUID } from "crypto";
-import { fetchJWPlayerPlaylist, getJWPlayerThumbnail, getJWPlayerHeroImage, JWPlayerPlaylistItem, PLAYLISTS } from "./jwplayer";
+import { fetchJWPlayerPlaylist, getJWPlayerThumbnail, getJWPlayerHeroImage, getJWPlayerVerticalPoster, findVerticalPoster, JWPlayerPlaylistItem, PLAYLISTS } from "./jwplayer";
 
 export interface HeroItem {
   id: string;
@@ -20,6 +20,7 @@ export interface RowItem {
   id: string;
   title: string;
   posterImage: string;
+  verticalPosterImage?: string;
   rating: string;
   seasonCount?: number;
   isNew: boolean;
@@ -51,10 +52,14 @@ function convertJWPlayerToRowItem(media: JWPlayerPlaylistItem): RowItem {
   const tags = media.tags?.split(",").map(t => t.trim()) || [];
   const isNew = media.pubdate ? (Date.now() / 1000 - media.pubdate) < 30 * 24 * 60 * 60 : false;
   
+  const verticalPoster = findVerticalPoster(media);
+  const posterImage = verticalPoster || media.image || getJWPlayerThumbnail(media.mediaid);
+  
   return {
     id: media.mediaid,
     title: media.title,
-    posterImage: media.image || getJWPlayerThumbnail(media.mediaid),
+    posterImage,
+    verticalPosterImage: verticalPoster || getJWPlayerVerticalPoster(media.mediaid),
     rating: "TV-MA",
     isNew,
     isNewEpisode: false,

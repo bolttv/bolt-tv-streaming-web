@@ -15,12 +15,15 @@ export interface RowItem {
   id: string;
   title: string;
   posterImage: string;
+  verticalPosterImage?: string;
   rating: string;
   seasonCount?: number;
   isNew: boolean;
   isNewEpisode?: boolean;
   continueProgress?: number; // 0 to 1
   seasonEpisodeLabel?: string;
+  mediaId?: string;
+  duration?: number;
 }
 
 export interface Row {
