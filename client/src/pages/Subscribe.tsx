@@ -82,11 +82,14 @@ function mapCleengOffersToPlan(offers: CleengOffer[]): PricingPlan[] {
 
 export default function Subscribe() {
   const [, setLocation] = useLocation();
-  const [plans, setPlans] = useState<PricingPlan[]>(defaultPlans);
-  const [selectedPlan, setSelectedPlan] = useState<string>("annual");
+  const [allPlans, setAllPlans] = useState<PricingPlan[]>([]);
+  const [billingPeriod, setBillingPeriod] = useState<"month" | "year">("month");
+  const [selectedPlan, setSelectedPlan] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [loadingOffers, setLoadingOffers] = useState(true);
   const loggedIn = isLoggedIn();
+
+  const filteredPlans = allPlans.filter(plan => plan.period === `/${billingPeriod}`);
 
   useEffect(() => {
     const fetchOffers = async () => {
@@ -96,9 +99,11 @@ export default function Subscribe() {
         const activeOffers = offers.filter((o: any) => o.active !== false);
         if (activeOffers.length > 0) {
           const mappedPlans = mapCleengOffersToPlan(activeOffers);
-          setPlans(mappedPlans);
-          if (mappedPlans.length > 0) {
-            setSelectedPlan(mappedPlans[0].id);
+          setAllPlans(mappedPlans);
+          // Select first monthly plan by default
+          const monthlyPlans = mappedPlans.filter(p => p.period === "/month");
+          if (monthlyPlans.length > 0) {
+            setSelectedPlan(monthlyPlans[0].id);
           }
         }
       } catch (error) {
@@ -111,6 +116,14 @@ export default function Subscribe() {
     fetchOffers();
   }, []);
 
+  // Update selected plan when billing period changes
+  useEffect(() => {
+    const plansForPeriod = allPlans.filter(p => p.period === `/${billingPeriod}`);
+    if (plansForPeriod.length > 0 && !plansForPeriod.find(p => p.id === selectedPlan)) {
+      setSelectedPlan(plansForPeriod[0].id);
+    }
+  }, [billingPeriod, allPlans]);
+
   const handleSubscribe = async () => {
     if (!loggedIn) {
       setLocation("/register");
@@ -119,7 +132,7 @@ export default function Subscribe() {
 
     setLoading(true);
     
-    const selectedPlanData = plans.find(p => p.id === selectedPlan);
+    const selectedPlanData = allPlans.find(p => p.id === selectedPlan);
     
     // In production, this would initiate the Cleeng/Adyen checkout flow
     // The offerId would be used to create an order via the Cleeng API
@@ -155,6 +168,36 @@ export default function Subscribe() {
           <p className="text-xl text-white/60">
             Start streaming today with unlimited access to all content
           </p>
+
+          <div className="flex justify-center mt-8">
+            <div className="inline-flex bg-zinc-900 rounded-full p-1" data-testid="billing-toggle">
+              <button
+                onClick={() => setBillingPeriod("month")}
+                className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${
+                  billingPeriod === "month"
+                    ? "bg-white text-black"
+                    : "text-white/70 hover:text-white"
+                }`}
+                data-testid="button-monthly"
+              >
+                Monthly
+              </button>
+              <button
+                onClick={() => setBillingPeriod("year")}
+                className={`px-6 py-2 rounded-full text-sm font-medium transition-all flex items-center gap-2 ${
+                  billingPeriod === "year"
+                    ? "bg-white text-black"
+                    : "text-white/70 hover:text-white"
+                }`}
+                data-testid="button-yearly"
+              >
+                Yearly
+                <span className={`text-xs ${billingPeriod === "year" ? "text-green-600" : "text-green-500"}`}>
+                  Save 16%
+                </span>
+              </button>
+            </div>
+          </div>
         </div>
 
         {loadingOffers ? (
@@ -162,8 +205,8 @@ export default function Subscribe() {
             <Loader2 className="w-8 h-8 animate-spin text-white/60" />
           </div>
         ) : (
-        <div className="grid md:grid-cols-3 gap-6 mb-12">
-          {plans.map((plan) => (
+        <div className={`grid gap-6 mb-12 ${filteredPlans.length === 2 ? 'md:grid-cols-2 max-w-3xl mx-auto' : 'md:grid-cols-3'}`}>
+          {filteredPlans.map((plan, index) => (
             <div
               key={plan.id}
               onClick={() => setSelectedPlan(plan.id)}
