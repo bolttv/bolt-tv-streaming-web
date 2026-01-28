@@ -90,7 +90,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-white selection:bg-white/20">
+    <div className="min-h-screen bg-background text-white selection:bg-white/20 overflow-x-hidden">
       <Navbar />
       
       <main className="relative z-0">

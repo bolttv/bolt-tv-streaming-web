@@ -50,7 +50,7 @@ body {
 /* Content background that starts below hero */
 .content-background {
   background-image: url('/background.png');
-  background-size: cover;
+  background-size: 100% auto;
   background-position: top center;
   background-repeat: no-repeat;
 }
