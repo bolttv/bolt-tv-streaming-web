@@ -191,7 +191,7 @@ export default function Navbar() {
       
       <div
         className={cn(
-          "lg:hidden overflow-hidden transition-all duration-300 ease-out px-4 md:px-12 -mt-5",
+          "lg:hidden overflow-hidden transition-all duration-300 ease-out px-4 md:px-12 -mt-2",
           searchOpen ? "max-h-20 pb-3" : "max-h-0 pb-0"
         )}
       >
