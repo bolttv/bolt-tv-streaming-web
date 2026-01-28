@@ -101,11 +101,11 @@ export default function Home() {
             <div key={row.id}>
               <ContentRow row={row} />
               {row.title === "Recommended For You" && continueWatching.length > 0 && (
-                <section className="px-4 md:px-12 py-2 md:py-3" data-testid="continue-watching-section">
+                <section className="pl-4 md:pl-12 py-2 md:py-3" data-testid="continue-watching-section">
                   <h2 className="text-lg md:text-xl font-semibold text-white mb-3 md:mb-4">
                     Continue Watching
                   </h2>
-                  <div className="flex gap-3 md:gap-4 overflow-x-auto scrollbar-hide pb-4">
+                  <div className="flex gap-3 md:gap-4 overflow-x-auto scrollbar-hide pr-12">
                     {continueWatching.map((item) => (
                       <ContinueWatchingCard key={item.id} item={item} />
                     ))}
