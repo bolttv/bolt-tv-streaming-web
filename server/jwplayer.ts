@@ -170,8 +170,8 @@ export function getJWPlayerThumbnail(mediaId: string, width: number = 640): stri
   return `https://cdn.jwplayer.com/v2/media/${mediaId}/poster.jpg?width=${width}`;
 }
 
-export function getJWPlayerVerticalPoster(mediaId: string, width: number = 400): string {
-  return `https://cdn.jwplayer.com/thumbs/${mediaId}-vertical-poster.jpg`;
+export function getJWPlayerVerticalPoster(mediaId: string): string {
+  return `https://cdn.jwplayer.com/v2/media/${mediaId}/images/Vertical-Poster.jpg`;
 }
 
 export function getJWPlayerHeroImage(mediaId: string): string {
