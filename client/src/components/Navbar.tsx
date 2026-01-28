@@ -8,7 +8,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [, setLocation] = useLocation();
-  const { isAuthenticated, isLoading, logout, loginWithRedirect, user } = useAuth0();
+  const { isAuthenticated, isLoading, logout } = useAuth0();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -22,10 +22,7 @@ export default function Navbar() {
     logout({ logoutParams: { returnTo: window.location.origin } });
   };
 
-  const handleSignIn = () => {
-    loginWithRedirect();
-  };
-
+  
   const navLinks = [
     { name: "Home", href: "/" },
     { name: "Series", href: "/" },
@@ -94,16 +91,17 @@ export default function Navbar() {
             <span className="hidden md:inline">Sign Out</span>
           </button>
         ) : (
-          <button 
-            onClick={handleSignIn}
-            className="flex items-center gap-2 hover:text-white transition font-bold text-sm" 
-            data-testid="button-nav-signin"
-          >
-            <div className="p-1 border-2 border-current rounded-full">
-              <User className="w-4 h-4 md:w-5 md:h-5 fill-current" />
-            </div>
-            <span className="hidden md:inline">Sign In</span>
-          </button>
+          <Link href="/signin">
+            <button 
+              className="flex items-center gap-2 hover:text-white transition font-bold text-sm" 
+              data-testid="button-nav-signin"
+            >
+              <div className="p-1 border-2 border-current rounded-full">
+                <User className="w-4 h-4 md:w-5 md:h-5 fill-current" />
+              </div>
+              <span className="hidden md:inline">Sign In</span>
+            </button>
+          </Link>
         )}
       </div>
     </nav>
