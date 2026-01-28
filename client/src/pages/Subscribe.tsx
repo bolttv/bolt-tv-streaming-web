@@ -89,7 +89,9 @@ export default function Subscribe() {
   const [loadingOffers, setLoadingOffers] = useState(true);
   const loggedIn = isLoggedIn();
 
-  const filteredPlans = allPlans.filter(plan => plan.period === `/${billingPeriod}`);
+  const filteredPlans = allPlans
+    .filter(plan => plan.period === `/${billingPeriod}`)
+    .sort((a, b) => parseFloat(a.price.replace('$', '')) - parseFloat(b.price.replace('$', '')));
 
   useEffect(() => {
     const fetchOffers = async () => {
