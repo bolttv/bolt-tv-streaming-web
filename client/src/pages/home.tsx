@@ -96,7 +96,7 @@ export default function Home() {
       <main className="relative z-0">
         <HeroCarousel items={heroItems} />
         
-        <div className="relative z-10 mt-4 md:mt-8 pb-20 space-y-1 md:space-y-2 bg-gradient-to-b from-transparent via-background/60 to-background">
+        <div className="relative z-10 -mt-8 md:-mt-12 pb-20 space-y-1 md:space-y-2 bg-gradient-to-b from-transparent via-background/60 to-background">
           {rows.map((row, index) => (
             <div key={row.id}>
               <ContentRow row={row} />
