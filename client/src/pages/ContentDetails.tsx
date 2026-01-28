@@ -2,46 +2,50 @@ import { useParams, Link } from "wouter";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Play, Plus, ThumbsUp, Film, ChevronDown } from "lucide-react";
-import { heroItems, rows, RowItem } from "@/lib/mockData";
 import PosterCard from "@/components/PosterCard";
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+
+interface Content {
+  id: string;
+  title: string;
+  heroImage?: string;
+  posterImage?: string;
+  logoImage?: string;
+  rating: string;
+  seasonCount?: number;
+  genres?: string[];
+  description?: string;
+  isNew?: boolean;
+  type?: "series" | "movie";
+}
 
 export default function ContentDetails() {
   const { id } = useParams();
-  const [content, setContent] = useState<any>(null);
+  
+  const { data: content, isLoading } = useQuery<Content>({
+    queryKey: [`/api/content/${id}`],
+    enabled: !!id,
+  });
 
-  useEffect(() => {
-    // Simulate fetching content
-    // Check hero items first
-    let found = heroItems.find(i => i.id === id);
-    
-    // Check row items if not found
-    if (!found) {
-      for (const row of rows) {
-        const item = row.items.find(i => i.id === id);
-        if (item) {
-          found = {
-            ...item,
-            // Add missing fields for RowItem to match HeroItem-like structure for the page
-            heroImage: item.posterImage, // Fallback
-            genres: ["Drama", "Sports"], // Mock
-            description: "Experience the intensity and drama in this gripping series that takes you behind the scenes." // Mock
-          } as any;
-          break;
-        }
-      }
-    }
+  const { data: rows = [] } = useQuery<any[]>({
+    queryKey: ["/api/content/rows"],
+  });
 
-    // Default fallback if nothing found (just for mockup purposes)
-    if (!found) {
-        found = heroItems[0];
-    }
-    
-    setContent(found);
-    window.scrollTo(0, 0);
-  }, [id]);
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-xl">Loading...</div>
+      </div>
+    );
+  }
 
-  if (!content) return <div className="min-h-screen bg-black" />;
+  if (!content) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-xl">Content not found</div>
+      </div>
+    );
+  }
 
   const episodes = [
     { id: 1, title: "Episode 1", duration: "55m", image: "/assets/poster-action_1.jpg", desc: "The team preps for a Black Friday battle vs. the Bears in the wake of a tough loss to the Cowboys.", contentId: "action-1" },
@@ -49,6 +53,10 @@ export default function ContentDetails() {
     { id: 3, title: "Episode 3", duration: "55m", image: "/assets/poster-action_3.jpg", desc: "While the Eagles and Cowboys look to rebound from tough losses, the Giants and Commanders face off on a snowy Sunday.", contentId: "action-3" },
     { id: 4, title: "Episode 4", duration: "54m", image: "/assets/poster-comedy_1.jpg", desc: "Each of the NFC East teams prepares for Christmas...even if only the Eagles will find a playoff ticket under the tree.", contentId: "comedy-1" },
   ];
+
+  const displayImage = content.heroImage || content.posterImage || "";
+  const displayGenres = content.genres || ["Drama", "Sports"];
+  const displayDescription = content.description || "Experience the intensity and drama in this gripping series that takes you behind the scenes.";
 
   return (
     <div className="min-h-screen bg-black text-white selection:bg-white/20">
@@ -59,7 +67,7 @@ export default function ContentDetails() {
         <div className="relative h-[80vh] w-full">
           <div className="absolute inset-0">
             <img 
-              src={content.heroImage} 
+              src={displayImage} 
               alt={content.title}
               className="w-full h-full object-cover"
             />
@@ -108,11 +116,11 @@ export default function ContentDetails() {
               </div>
 
               <p className="text-gray-300 text-sm md:text-base leading-relaxed max-w-xl drop-shadow-md">
-                {content.description}
+                {displayDescription}
               </p>
               
               <div className="flex gap-2 text-xs text-gray-400 font-medium">
-                 <span>{content.genres?.join(" • ")}</span>
+                 <span>{displayGenres.join(" • ")}</span>
               </div>
             </div>
           </div>
@@ -154,7 +162,7 @@ export default function ContentDetails() {
         <div className="px-4 md:px-12 py-12 space-y-6">
             <h2 className="text-xl font-bold">You May Also Like</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {rows[1].items.slice(0, 5).map((item) => (
+                {rows[1]?.items?.slice(0, 5).map((item: any) => (
                     <PosterCard key={item.id} item={item} width="w-full" />
                 ))}
             </div>
