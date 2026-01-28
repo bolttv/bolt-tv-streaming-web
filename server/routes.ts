@@ -23,6 +23,10 @@ export async function registerRoutes(
     try {
       const { email, password, locale, country, currency } = req.body;
       
+      if (!email || !password) {
+        return res.status(400).json({ errors: ["Email and password are required"] });
+      }
+      
       const response = await fetch(`${CLEENG_API_URL}/customers`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -37,10 +41,15 @@ export async function registerRoutes(
       });
       
       const data = await response.json();
+      
+      if (!response.ok) {
+        return res.status(response.status).json(data);
+      }
+      
       res.json(data);
     } catch (error) {
       console.error("Cleeng registration error:", error);
-      res.status(500).json({ error: "Registration failed" });
+      res.status(500).json({ errors: ["Registration failed. Please try again."] });
     }
   });
 
@@ -48,6 +57,10 @@ export async function registerRoutes(
   app.post("/api/cleeng/login", async (req, res) => {
     try {
       const { email, password } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ errors: ["Email and password are required"] });
+      }
       
       const response = await fetch(`${CLEENG_API_URL}/auths`, {
         method: "POST",
@@ -60,10 +73,15 @@ export async function registerRoutes(
       });
       
       const data = await response.json();
+      
+      if (!response.ok) {
+        return res.status(response.status).json(data);
+      }
+      
       res.json(data);
     } catch (error) {
       console.error("Cleeng login error:", error);
-      res.status(500).json({ error: "Login failed" });
+      res.status(500).json({ errors: ["Login failed. Please try again."] });
     }
   });
 

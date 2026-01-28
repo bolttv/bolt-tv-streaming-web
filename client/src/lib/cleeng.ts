@@ -12,6 +12,7 @@ export interface CleengAuthResponse {
   responseData: {
     jwt: string;
     refreshToken: string;
+    customerId?: string;
   };
   errors: string[];
 }
@@ -24,10 +25,22 @@ export interface CleengCustomerResponse {
   errors: string[];
 }
 
+export interface CleengOffer {
+  offerId: string;
+  offerTitle: string;
+  offerDescription?: string;
+  price: number;
+  currency: string;
+  period?: string;
+  freePeriods?: number;
+}
+
 const CLEENG_AUTH_KEY = "cleeng_auth";
+const AUTH_CHANGE_EVENT = "cleeng_auth_change";
 
 export function saveCleengAuth(jwt: string, refreshToken: string, customer: CleengCustomer) {
   localStorage.setItem(CLEENG_AUTH_KEY, JSON.stringify({ jwt, refreshToken, customer }));
+  window.dispatchEvent(new CustomEvent(AUTH_CHANGE_EVENT));
 }
 
 export function getCleengAuth(): { jwt: string; refreshToken: string; customer: CleengCustomer } | null {
@@ -42,10 +55,17 @@ export function getCleengAuth(): { jwt: string; refreshToken: string; customer: 
 
 export function clearCleengAuth() {
   localStorage.removeItem(CLEENG_AUTH_KEY);
+  window.dispatchEvent(new CustomEvent(AUTH_CHANGE_EVENT));
 }
 
 export function isLoggedIn(): boolean {
   return getCleengAuth() !== null;
+}
+
+export function onAuthChange(callback: () => void): () => void {
+  const handler = () => callback();
+  window.addEventListener(AUTH_CHANGE_EVENT, handler);
+  return () => window.removeEventListener(AUTH_CHANGE_EVENT, handler);
 }
 
 export async function registerCustomer(email: string, password: string): Promise<CleengCustomerResponse> {
@@ -73,5 +93,10 @@ export async function getCustomerSubscriptions(customerId: string, jwt: string) 
       "Authorization": `Bearer ${jwt}`,
     },
   });
+  return response.json();
+}
+
+export async function getOffers(): Promise<{ responseData: { items: CleengOffer[] }; errors: string[] }> {
+  const response = await fetch("/api/cleeng/offers");
   return response.json();
 }

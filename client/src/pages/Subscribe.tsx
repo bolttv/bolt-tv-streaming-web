@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { ArrowLeft, Check } from "lucide-react";
-import { isLoggedIn, getCleengAuth } from "@/lib/cleeng";
+import { ArrowLeft, Check, Loader2 } from "lucide-react";
+import { isLoggedIn, getCleengAuth, getOffers, CleengOffer } from "@/lib/cleeng";
 
 interface PricingPlan {
   id: string;
+  offerId?: string;
   name: string;
   price: string;
   period: string;
@@ -12,7 +13,7 @@ interface PricingPlan {
   popular?: boolean;
 }
 
-const pricingPlans: PricingPlan[] = [
+const defaultPlans: PricingPlan[] = [
   {
     id: "monthly",
     name: "Monthly",
@@ -54,11 +55,59 @@ const pricingPlans: PricingPlan[] = [
   },
 ];
 
+function formatCurrency(price: number, currency: string): string {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: currency || 'USD',
+  }).format(price);
+}
+
+function mapCleengOffersToPlan(offers: CleengOffer[]): PricingPlan[] {
+  if (!offers || offers.length === 0) return defaultPlans;
+  
+  return offers.map((offer, index) => ({
+    id: offer.offerId,
+    offerId: offer.offerId,
+    name: offer.offerTitle || `Plan ${index + 1}`,
+    price: formatCurrency(offer.price, offer.currency),
+    period: offer.period ? `/${offer.period}` : "/month",
+    features: [
+      "Unlimited streaming",
+      "HD quality",
+      "Cancel anytime",
+    ],
+    popular: index === 0,
+  }));
+}
+
 export default function Subscribe() {
   const [, setLocation] = useLocation();
+  const [plans, setPlans] = useState<PricingPlan[]>(defaultPlans);
   const [selectedPlan, setSelectedPlan] = useState<string>("annual");
   const [loading, setLoading] = useState(false);
+  const [loadingOffers, setLoadingOffers] = useState(true);
   const loggedIn = isLoggedIn();
+
+  useEffect(() => {
+    const fetchOffers = async () => {
+      try {
+        const response = await getOffers();
+        if (response.responseData?.items && response.responseData.items.length > 0) {
+          const mappedPlans = mapCleengOffersToPlan(response.responseData.items);
+          setPlans(mappedPlans);
+          if (mappedPlans.length > 0) {
+            setSelectedPlan(mappedPlans[0].id);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch offers:", error);
+      } finally {
+        setLoadingOffers(false);
+      }
+    };
+    
+    fetchOffers();
+  }, []);
 
   const handleSubscribe = async () => {
     if (!loggedIn) {
@@ -68,11 +117,17 @@ export default function Subscribe() {
 
     setLoading(true);
     
+    const selectedPlanData = plans.find(p => p.id === selectedPlan);
+    
     // In production, this would initiate the Cleeng/Adyen checkout flow
-    // For now, we'll show a message that the checkout integration is ready
+    // The offerId would be used to create an order via the Cleeng API
     setTimeout(() => {
       setLoading(false);
-      alert("Checkout integration with Cleeng/Adyen is configured. In production, this will redirect to the payment flow.");
+      if (selectedPlanData?.offerId) {
+        alert(`Proceeding to checkout for: ${selectedPlanData.name} (${selectedPlanData.price}${selectedPlanData.period})\n\nOffer ID: ${selectedPlanData.offerId}\n\nIn production, this initiates the Cleeng/Adyen payment flow.`);
+      } else {
+        alert("Checkout integration with Cleeng/Adyen is configured. In production, this will redirect to the payment flow.");
+      }
     }, 1000);
   };
 
@@ -100,8 +155,13 @@ export default function Subscribe() {
           </p>
         </div>
 
+        {loadingOffers ? (
+          <div className="flex justify-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-white/60" />
+          </div>
+        ) : (
         <div className="grid md:grid-cols-3 gap-6 mb-12">
-          {pricingPlans.map((plan) => (
+          {plans.map((plan) => (
             <div
               key={plan.id}
               onClick={() => setSelectedPlan(plan.id)}
@@ -151,6 +211,7 @@ export default function Subscribe() {
             </div>
           ))}
         </div>
+        )}
 
         <div className="max-w-md mx-auto">
           <button

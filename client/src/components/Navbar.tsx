@@ -2,12 +2,12 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { Search, Bell, User, Menu, ChevronDown, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { isLoggedIn, getCleengAuth, clearCleengAuth } from "@/lib/cleeng";
+import { isLoggedIn, getCleengAuth, clearCleengAuth, onAuthChange } from "@/lib/cleeng";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [loggedIn, setLoggedIn] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(isLoggedIn());
   const [, setLocation] = useLocation();
 
   useEffect(() => {
@@ -19,7 +19,10 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    setLoggedIn(isLoggedIn());
+    const unsubscribe = onAuthChange(() => {
+      setLoggedIn(isLoggedIn());
+    });
+    return unsubscribe;
   }, []);
 
   const handleSignOut = () => {

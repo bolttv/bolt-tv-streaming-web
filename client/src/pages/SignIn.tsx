@@ -29,7 +29,13 @@ export default function SignIn() {
         saveCleengAuth(
           response.responseData.jwt,
           response.responseData.refreshToken,
-          { id: "", email, locale: "en_US", country: "US", currency: "USD" }
+          { 
+            id: response.responseData.customerId || "", 
+            email, 
+            locale: "en_US", 
+            country: "US", 
+            currency: "USD" 
+          }
         );
         setLocation("/");
       } else {
