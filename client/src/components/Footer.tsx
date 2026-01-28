@@ -61,7 +61,7 @@ export default function Footer() {
       </div>
       
       <div className="mt-12 text-[10px] text-zinc-600 text-center md:text-left">
-        © 2026 Bolt Streaming, LLC. All rights reserved.
+        © 2026 Bolt TV, LLC. All rights reserved.
       </div>
     </footer>
   );
