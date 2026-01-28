@@ -82,11 +82,76 @@ const generateItems = (count: number, type: 'action' | 'comedy' | 'doc'): RowIte
   }));
 };
 
+const featuredItems: RowItem[] = [
+  {
+    id: "f1",
+    title: "Grit & Glory: Bo Nix",
+    posterImage: "/assets/poster-grit-bo.png",
+    rating: "TV-MA",
+    seasonCount: 1,
+    isNew: true,
+    isNewEpisode: true
+  },
+  {
+    id: "f2",
+    title: "Rookie",
+    posterImage: "/assets/poster-rookie.png",
+    rating: "TV-14",
+    seasonCount: 1,
+    isNew: true
+  },
+  {
+    id: "f3",
+    title: "Traviesa",
+    posterImage: "/assets/poster-traviesa.png",
+    rating: "TV-MA",
+    isNew: true
+  },
+  {
+    id: "f4",
+    title: "Surfing The Midnight Sun",
+    posterImage: "/assets/poster-surfing.png",
+    rating: "TV-PG",
+    isNew: false
+  },
+  {
+    id: "f5",
+    title: "Full Throttle",
+    posterImage: "/assets/poster-full-throttle.png",
+    rating: "TV-14",
+    seasonCount: 2,
+    isNew: false
+  },
+  {
+    id: "f6",
+    title: "DTM: Beyond The Grid",
+    posterImage: "/assets/poster-dtm.png",
+    rating: "TV-MA",
+    isNew: true
+  },
+  {
+    id: "f7",
+    title: "Grit & Glory: Arch Manning",
+    posterImage: "/assets/poster-grit-arch.png",
+    rating: "TV-MA",
+    seasonCount: 1,
+    isNew: true
+  },
+  {
+    id: "f8",
+    title: "Life On Ice",
+    posterImage: "/assets/poster-life-on-ice.png",
+    rating: "TV-14",
+    seasonCount: 3,
+    isNew: false
+  }
+];
+
 export const rows: Row[] = [
   {
     id: "r1",
     title: "Featured",
-    items: generateItems(10, "action")
+    items: featuredItems
   },
   {
     id: "r2",
