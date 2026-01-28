@@ -1,6 +1,6 @@
 import { type User, type InsertUser } from "@shared/schema";
 import { randomUUID } from "crypto";
-import { fetchAllJWPlayerMedia, getJWPlayerThumbnail, getJWPlayerHeroImage, JWPlayerPlaylistItem } from "./jwplayer";
+import { fetchJWPlayerPlaylist, getJWPlayerThumbnail, getJWPlayerHeroImage, JWPlayerPlaylistItem, PLAYLISTS } from "./jwplayer";
 
 export interface HeroItem {
   id: string;
@@ -48,8 +48,8 @@ export interface IStorage {
 }
 
 function convertJWPlayerToRowItem(media: JWPlayerPlaylistItem): RowItem {
-  const tags = media.tags?.split(",") || [];
-  const isNew = media.pubdate ? (Date.now() / 1000 - media.pubdate) < 7 * 24 * 60 * 60 : false;
+  const tags = media.tags?.split(",").map(t => t.trim()) || [];
+  const isNew = media.pubdate ? (Date.now() / 1000 - media.pubdate) < 30 * 24 * 60 * 60 : false;
   
   return {
     id: media.mediaid,
@@ -64,8 +64,8 @@ function convertJWPlayerToRowItem(media: JWPlayerPlaylistItem): RowItem {
 }
 
 function convertJWPlayerToHeroItem(media: JWPlayerPlaylistItem): HeroItem {
-  const tags = media.tags?.split(",") || [];
-  const isNew = media.pubdate ? (Date.now() / 1000 - media.pubdate) < 7 * 24 * 60 * 60 : false;
+  const tags = media.tags?.split(",").map(t => t.trim()) || [];
+  const isNew = media.pubdate ? (Date.now() / 1000 - media.pubdate) < 30 * 24 * 60 * 60 : false;
   
   return {
     id: media.mediaid,
@@ -85,7 +85,6 @@ export class MemStorage implements IStorage {
   private heroItems: HeroItem[];
   private contentRows: ContentRow[];
   private allContent: Map<string, HeroItem | RowItem>;
-  private jwPlayerMedia: JWPlayerPlaylistItem[] = [];
   private lastFetch: number = 0;
   private isInitialized: boolean = false;
 
@@ -102,53 +101,44 @@ export class MemStorage implements IStorage {
       return;
     }
 
-    console.log("Fetching content from JW Player...");
-    const media = await fetchAllJWPlayerMedia();
+    console.log("Fetching content from JW Player playlists...");
     
-    if (media.length > 0) {
-      console.log(`Found ${media.length} items from JW Player`);
-      this.jwPlayerMedia = media;
+    const [featured, popular, newMovies, documentaries] = await Promise.all([
+      fetchJWPlayerPlaylist(PLAYLISTS.featured),
+      fetchJWPlayerPlaylist(PLAYLISTS.popular),
+      fetchJWPlayerPlaylist(PLAYLISTS.newMovies),
+      fetchJWPlayerPlaylist(PLAYLISTS.documentaries),
+    ]);
+
+    const totalItems = featured.length + popular.length + newMovies.length + documentaries.length;
+    
+    if (totalItems > 0) {
+      console.log(`Found ${totalItems} total items from JW Player playlists`);
       this.lastFetch = now;
       this.isInitialized = true;
       
-      this.heroItems = media.slice(0, 3).map(m => convertJWPlayerToHeroItem(m));
-      
-      const allItems = media.map(m => convertJWPlayerToRowItem(m));
+      this.heroItems = featured.slice(0, 3).map(m => convertJWPlayerToHeroItem(m));
       
       this.contentRows = [
         {
           id: "r1",
           title: "Featured",
-          items: allItems.slice(0, 8)
+          items: featured.map(m => convertJWPlayerToRowItem(m))
         },
         {
           id: "r2",
-          title: "Recommended For You",
-          items: allItems.slice(0, 10)
+          title: "Popular",
+          items: popular.map(m => convertJWPlayerToRowItem(m))
         },
         {
           id: "r3",
-          title: "Continue Watching",
-          items: allItems.slice(0, 5).map(item => ({
-            ...item,
-            continueProgress: Math.random() * 0.8 + 0.1,
-            seasonEpisodeLabel: "S1 E1"
-          }))
+          title: "New Movies",
+          items: newMovies.map(m => convertJWPlayerToRowItem(m))
         },
         {
           id: "r4",
-          title: "Popular Series",
-          items: allItems.slice(3, 13)
-        },
-        {
-          id: "r5",
-          title: "New Releases",
-          items: allItems.filter(item => item.isNew).slice(0, 10)
-        },
-        {
-          id: "r6",
-          title: "All Content",
-          items: allItems
+          title: "Documentaries",
+          items: documentaries.map(m => convertJWPlayerToRowItem(m))
         }
       ];
       
@@ -215,11 +205,9 @@ export class MemStorage implements IStorage {
 
     this.contentRows = [
       { id: "r1", title: "Featured", items: featuredItems },
-      { id: "r2", title: "Recommended For You", items: featuredItems.slice(0, 5) },
-      { id: "r3", title: "Continue Watching", items: featuredItems.slice(0, 3).map(item => ({ ...item, continueProgress: 0.5, seasonEpisodeLabel: "S1 E1" })) },
-      { id: "r4", title: "Popular Series", items: featuredItems },
-      { id: "r5", title: "New Releases", items: featuredItems.filter(i => i.isNew) },
-      { id: "r6", title: "All Content", items: featuredItems }
+      { id: "r2", title: "Popular", items: featuredItems },
+      { id: "r3", title: "New Movies", items: featuredItems.filter(i => i.isNew) },
+      { id: "r4", title: "Documentaries", items: featuredItems.slice(2, 6) }
     ];
 
     this.allContent.clear();

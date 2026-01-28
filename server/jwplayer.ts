@@ -1,6 +1,13 @@
 const JWPLAYER_SITE_ID = process.env.JWPLAYER_SITE_ID;
 const JWPLAYER_API_SECRET = process.env.JWPLAYER_API_SECRET;
 
+export const PLAYLISTS = {
+  featured: "elWfwptT",
+  popular: "8A1ZTwWl",
+  newMovies: "SnbG7v6j",
+  documentaries: "RytYkppn",
+};
+
 export interface JWPlayerMediaSource {
   file: string;
   type: string;
