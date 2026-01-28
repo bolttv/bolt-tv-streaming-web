@@ -73,8 +73,8 @@ export default function Search() {
                       loading="lazy"
                     />
                     {item.isNew && (
-                      <div className="absolute top-2 left-2 bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded">
-                        NEW
+                      <div className="absolute top-2 left-2 bg-zinc-100 text-black text-[9px] md:text-[10px] font-bold px-1.5 py-0.5 rounded-sm uppercase tracking-wider shadow-sm">
+                        New
                       </div>
                     )}
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
