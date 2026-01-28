@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { useLocation, Link } from "wouter";
+import { Link } from "wouter";
+import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
-import { Loader2, Search as SearchIcon } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 interface SearchResult {
   id: string;
@@ -15,9 +16,12 @@ interface SearchResult {
 }
 
 export default function Search() {
-  const [location] = useLocation();
-  const searchParams = new URLSearchParams(location.split("?")[1] || "");
-  const query = searchParams.get("q") || "";
+  const [query, setQuery] = useState("");
+  
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setQuery(params.get("q") || "");
+  }, []);
 
   const { data: results, isLoading } = useQuery<SearchResult[]>({
     queryKey: ["/api/search", query],
@@ -35,11 +39,10 @@ export default function Search() {
       <Navbar />
       
       <div className="pt-24 md:pt-28 px-4 md:px-12 pb-12">
-        <div className="flex items-center gap-3 mb-8">
-          <SearchIcon className="w-6 h-6 text-white/60" />
-          <h1 className="text-2xl md:text-3xl font-bold text-white">
+        <div className="mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-white" data-testid="text-search-header">
             {query ? (
-              <>Search results for "<span className="text-white/80">{query}</span>"</>
+              <>Search Results for "<span className="text-white/80">{query}</span>"</>
             ) : (
               "Search"
             )}
