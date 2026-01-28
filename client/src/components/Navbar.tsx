@@ -59,36 +59,6 @@ export default function Navbar() {
         scrolled ? "bg-black/90 backdrop-blur-md" : "bg-gradient-to-b from-black/80 to-transparent"
       )}
     >
-      {/* Bubble search bar overlay */}
-      <div
-        className={cn(
-          "absolute left-4 right-4 md:left-12 md:right-auto top-1/2 -translate-y-1/2 flex items-center bg-zinc-800 rounded-full px-4 py-2 md:py-2.5 shadow-lg shadow-black/50 transition-all duration-300 ease-out origin-right",
-          searchOpen 
-            ? "opacity-100 scale-x-100 md:w-[500px] pointer-events-auto" 
-            : "opacity-0 scale-x-0 w-0 pointer-events-none"
-        )}
-      >
-        <form onSubmit={handleSearchSubmit} className="flex-1 flex items-center gap-3">
-          <Search className="w-5 h-5 text-white/60 flex-shrink-0" />
-          <input
-            ref={searchInputRef}
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by title, actor or genre..."
-            className="flex-1 bg-transparent text-white text-sm placeholder:text-white/40 outline-none"
-            data-testid="input-search"
-          />
-        </form>
-        <button
-          onClick={handleSearchClose}
-          className="p-1.5 hover:bg-white/10 rounded-full transition-colors ml-2"
-          data-testid="button-search-close"
-        >
-          <X className="w-4 h-4 text-white/60 hover:text-white" />
-        </button>
-      </div>
-
       {/* Regular nav content */}
       <div className="flex items-center gap-8 md:gap-12">
         <Link href="/">
@@ -111,13 +81,58 @@ export default function Navbar() {
       </div>
 
       <div className="flex items-center gap-4 md:gap-6 text-white/80">
-        <button 
-          className="hover:text-white transition p-1"
-          onClick={() => setSearchOpen(true)}
-          data-testid="button-search"
-        >
-          <Search className="w-5 h-5 md:w-6 md:h-6" />
-        </button>
+        {/* Search container - bubble expands to the left of the icon */}
+        <div className="flex items-center">
+          <div
+            className={cn(
+              "flex items-center bg-zinc-800 rounded-full overflow-hidden transition-all duration-300 ease-out",
+              searchOpen 
+                ? "w-48 md:w-80 px-4 py-2 mr-2" 
+                : "w-0 px-0 py-0"
+            )}
+          >
+            <form onSubmit={handleSearchSubmit} className="flex-1 flex items-center gap-3">
+              <Search className={cn(
+                "w-4 h-4 text-white/60 flex-shrink-0 transition-opacity duration-200",
+                searchOpen ? "opacity-100" : "opacity-0"
+              )} />
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by title, actor or genre..."
+                className={cn(
+                  "flex-1 bg-transparent text-white text-sm placeholder:text-white/40 outline-none min-w-0 transition-opacity duration-200",
+                  searchOpen ? "opacity-100" : "opacity-0"
+                )}
+                data-testid="input-search"
+              />
+            </form>
+            <button
+              type="button"
+              onClick={handleSearchClose}
+              className={cn(
+                "p-1 hover:bg-white/10 rounded-full transition-all duration-200 flex-shrink-0",
+                searchOpen ? "opacity-100" : "opacity-0"
+              )}
+              data-testid="button-search-close"
+            >
+              <X className="w-4 h-4 text-white/60 hover:text-white" />
+            </button>
+          </div>
+          
+          <button 
+            className={cn(
+              "hover:text-white transition p-1",
+              searchOpen && "text-white"
+            )}
+            onClick={() => setSearchOpen(!searchOpen)}
+            data-testid="button-search"
+          >
+            <Search className="w-5 h-5 md:w-6 md:h-6" />
+          </button>
+        </div>
         
         <Link href="/subscribe">
           <button className="hidden md:block bg-white text-black font-bold px-4 py-1.5 rounded hover:bg-gray-200 transition text-sm" data-testid="button-nav-subscribe">
