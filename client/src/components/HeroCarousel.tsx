@@ -4,6 +4,8 @@ import useEmblaCarousel from "embla-carousel-react";
 import { Play, Plus, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+import { Link } from "wouter";
+
 interface HeroCarouselProps {
   items: HeroItem[];
 }
@@ -75,10 +77,12 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
                 </p>
 
                 <div className="flex items-center gap-3 md:gap-4 pt-2">
-                  <button className="flex items-center justify-center gap-2 bg-white text-black hover:bg-white/90 transition-colors h-10 md:h-12 px-6 md:px-8 rounded font-semibold tracking-wide text-sm md:text-base">
-                    <Play className="w-4 h-4 md:w-5 md:h-5 fill-current" />
-                    {item.type === "series" ? "Watch S1 E1" : "Watch Now"}
-                  </button>
+                  <Link href={`/content/${item.id}`}>
+                    <button className="flex items-center justify-center gap-2 bg-white text-black hover:bg-white/90 transition-colors h-10 md:h-12 px-6 md:px-8 rounded font-semibold tracking-wide text-sm md:text-base cursor-pointer">
+                      <Play className="w-4 h-4 md:w-5 md:h-5 fill-current" />
+                      {item.type === "series" ? "Watch S1 E1" : "Watch Now"}
+                    </button>
+                  </Link>
                   <button className="flex items-center justify-center bg-white/10 hover:bg-white/20 border border-white/10 text-white transition-colors h-10 w-10 md:h-12 md:w-12 rounded backdrop-blur-sm">
                     <Plus className="w-5 h-5 md:w-6 md:h-6" />
                   </button>

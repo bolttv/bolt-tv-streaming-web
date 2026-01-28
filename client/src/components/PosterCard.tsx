@@ -8,75 +8,79 @@ interface PosterCardProps {
   isWide?: boolean; // For "Continue Watching" style
 }
 
+import { Link } from "wouter";
+
 export default function PosterCard({ item, width = "w-[160px] md:w-[220px]", isWide = false }: PosterCardProps) {
   return (
-    <div 
-      className={cn(
-        "group relative flex-shrink-0 cursor-pointer transition-all duration-300",
-        width
-      )}
-    >
+    <Link href={`/content/${item.id}`}>
       <div 
         className={cn(
-          "relative overflow-hidden rounded-md border-2 border-transparent transition-all duration-300 group-hover:border-white/90 group-hover:scale-105 group-hover:z-10 bg-zinc-900",
-          isWide ? "aspect-video" : "aspect-[2/3]"
+          "group relative flex-shrink-0 cursor-pointer transition-all duration-300",
+          width
         )}
       >
-        <img
-          src={item.posterImage}
-          alt={item.title}
-          className="h-full w-full object-cover transition-opacity duration-300 group-hover:opacity-80"
-          loading="lazy"
-        />
-        
-        {/* Overlays */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3 md:p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <button className="bg-white text-black rounded-full p-1.5 hover:scale-110 transition">
-              <Play className="w-3 h-3 md:w-4 md:h-4 fill-current" />
-            </button>
-            <button className="bg-zinc-800/80 text-white rounded-full p-1.5 hover:bg-zinc-700 transition">
-              <Plus className="w-3 h-3 md:w-4 md:h-4" />
-            </button>
-          </div>
+        <div 
+          className={cn(
+            "relative overflow-hidden rounded-md border-2 border-transparent transition-all duration-300 group-hover:border-white/90 group-hover:scale-105 group-hover:z-10 bg-zinc-900",
+            isWide ? "aspect-video" : "aspect-[2/3]"
+          )}
+        >
+          <img
+            src={item.posterImage}
+            alt={item.title}
+            className="h-full w-full object-cover transition-opacity duration-300 group-hover:opacity-80"
+            loading="lazy"
+          />
           
-          <div className="text-xs font-semibold text-white truncate">
-            {item.title}
+          {/* Overlays */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3 md:p-4">
+            <div className="flex items-center gap-2 mb-2">
+              <button className="bg-white text-black rounded-full p-1.5 hover:scale-110 transition">
+                <Play className="w-3 h-3 md:w-4 md:h-4 fill-current" />
+              </button>
+              <button className="bg-zinc-800/80 text-white rounded-full p-1.5 hover:bg-zinc-700 transition">
+                <Plus className="w-3 h-3 md:w-4 md:h-4" />
+              </button>
+            </div>
+            
+            <div className="text-xs font-semibold text-white truncate">
+              {item.title}
+            </div>
+            <div className="text-[10px] text-zinc-300 flex items-center gap-2 mt-1">
+              <span>{item.rating}</span>
+              {item.seasonCount && <span>• {item.seasonCount} Seasons</span>}
+            </div>
           </div>
-          <div className="text-[10px] text-zinc-300 flex items-center gap-2 mt-1">
-            <span>{item.rating}</span>
-            {item.seasonCount && <span>• {item.seasonCount} Seasons</span>}
-          </div>
+
+          {/* Labels */}
+          {item.isNewEpisode && (
+            <div className="absolute top-2 left-2 bg-blue-600 text-white text-[9px] md:text-[10px] font-bold px-1.5 py-0.5 rounded-sm uppercase tracking-wider shadow-sm">
+              New Episode
+            </div>
+          )}
+          {item.isNew && !item.isNewEpisode && (
+            <div className="absolute top-2 left-2 bg-zinc-100 text-black text-[9px] md:text-[10px] font-bold px-1.5 py-0.5 rounded-sm uppercase tracking-wider shadow-sm">
+              New
+            </div>
+          )}
+
+          {/* Continue Watching Progress */}
+          {item.continueProgress && (
+            <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
+              <div 
+                className="h-full bg-blue-500" 
+                style={{ width: `${item.continueProgress * 100}%` }}
+              />
+            </div>
+          )}
         </div>
 
-        {/* Labels */}
-        {item.isNewEpisode && (
-          <div className="absolute top-2 left-2 bg-blue-600 text-white text-[9px] md:text-[10px] font-bold px-1.5 py-0.5 rounded-sm uppercase tracking-wider shadow-sm">
-            New Episode
-          </div>
-        )}
-        {item.isNew && !item.isNewEpisode && (
-          <div className="absolute top-2 left-2 bg-zinc-100 text-black text-[9px] md:text-[10px] font-bold px-1.5 py-0.5 rounded-sm uppercase tracking-wider shadow-sm">
-            New
-          </div>
-        )}
-
-        {/* Continue Watching Progress */}
-        {item.continueProgress && (
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
-            <div 
-              className="h-full bg-blue-500" 
-              style={{ width: `${item.continueProgress * 100}%` }}
-            />
+        {isWide && item.seasonEpisodeLabel && (
+          <div className="mt-2 text-xs md:text-sm text-zinc-400 group-hover:text-white transition-colors">
+            {item.seasonEpisodeLabel}
           </div>
         )}
       </div>
-
-      {isWide && item.seasonEpisodeLabel && (
-        <div className="mt-2 text-xs md:text-sm text-zinc-400 group-hover:text-white transition-colors">
-          {item.seasonEpisodeLabel}
-        </div>
-      )}
-    </div>
+    </Link>
   );
 }
