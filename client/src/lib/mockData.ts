@@ -38,13 +38,13 @@ const getPoster = (type: 'action' | 'comedy' | 'doc') => {
 export const heroItems: HeroItem[] = [
   {
     id: "h1",
-    title: "DRAGON RIDER",
+    title: "GRIT & GLORY",
     type: "series",
-    heroImage: "/assets/hero-fantasy.png",
+    heroImage: "/assets/hero-grit-glory.png",
     rating: "TV-MA",
     seasonCount: 1,
-    genres: ["Fantasy", "Drama"],
-    description: "In a world where dragons rule the skies, one knight must choose between duty and destiny. The battle for the throne has only just begun.",
+    genres: ["Sports", "Drama"],
+    description: "On the field, every second counts. Behind the scenes, the pressure never stops. Witness the untold stories of determination and sacrifice.",
     isNew: true
   },
   {
