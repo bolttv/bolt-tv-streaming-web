@@ -33,6 +33,7 @@ export interface CleengOffer {
   currency: string;
   period?: string;
   freePeriods?: number;
+  active?: boolean;
 }
 
 const CLEENG_AUTH_KEY = "cleeng_auth";
@@ -96,7 +97,20 @@ export async function getCustomerSubscriptions(customerId: string, jwt: string) 
   return response.json();
 }
 
-export async function getOffers(): Promise<{ responseData: { items: CleengOffer[] }; errors: string[] }> {
+export async function getOffers(): Promise<CleengOffer[]> {
   const response = await fetch("/api/cleeng/offers");
-  return response.json();
+  const data = await response.json();
+  // Cleeng API 3.1 returns an array directly
+  if (Array.isArray(data)) {
+    return data.map((offer: any) => ({
+      offerId: offer.longId || offer.id,
+      offerTitle: offer.title,
+      offerDescription: offer.description,
+      price: offer.price?.amount || 0,
+      currency: offer.price?.currency || "USD",
+      period: offer.billingCycle?.periodUnit,
+      active: offer.active,
+    }));
+  }
+  return [];
 }

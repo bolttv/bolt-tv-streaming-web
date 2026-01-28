@@ -91,9 +91,11 @@ export default function Subscribe() {
   useEffect(() => {
     const fetchOffers = async () => {
       try {
-        const response = await getOffers();
-        if (response.responseData?.items && response.responseData.items.length > 0) {
-          const mappedPlans = mapCleengOffersToPlan(response.responseData.items);
+        const offers = await getOffers();
+        // Filter to only active offers
+        const activeOffers = offers.filter((o: any) => o.active !== false);
+        if (activeOffers.length > 0) {
+          const mappedPlans = mapCleengOffersToPlan(activeOffers);
           setPlans(mappedPlans);
           if (mappedPlans.length > 0) {
             setSelectedPlan(mappedPlans[0].id);
