@@ -21,41 +21,72 @@ export default function Watch() {
   const [, setLocation] = useLocation();
   const playerRef = useRef<HTMLDivElement>(null);
   const [playerReady, setPlayerReady] = useState(false);
+  const [playerError, setPlayerError] = useState<string | null>(null);
+  const playerInstanceRef = useRef<any>(null);
 
-  const { data: content } = useQuery<Content>({
+  const { data: content, isLoading } = useQuery<Content>({
     queryKey: [`/api/content/${id}`],
     enabled: !!id,
   });
 
+  const mediaId = content?.mediaId || id;
+
   useEffect(() => {
-    if (!content?.mediaId || !playerRef.current) return;
+    if (!mediaId || !playerRef.current) return;
+
+    let cleanup: (() => void) | undefined;
 
     const initPlayer = () => {
       if (window.jwplayer && playerRef.current) {
-        const player = window.jwplayer(playerRef.current);
-        player.setup({
-          playlist: `https://cdn.jwplayer.com/v2/media/${content.mediaId}`,
-          width: "100%",
-          height: "100%",
-          aspectratio: "16:9",
-          autostart: true,
-          mute: false,
-          controls: true,
-          stretching: "uniform",
-        });
+        try {
+          if (playerInstanceRef.current) {
+            playerInstanceRef.current.remove();
+          }
 
-        player.on("ready", () => {
-          setPlayerReady(true);
-        });
+          const player = window.jwplayer(playerRef.current);
+          playerInstanceRef.current = player;
+          
+          player.setup({
+            playlist: `https://cdn.jwplayer.com/v2/media/${mediaId}`,
+            width: "100%",
+            height: "100%",
+            aspectratio: "16:9",
+            autostart: true,
+            mute: false,
+            controls: true,
+            stretching: "uniform",
+          });
 
-        return () => {
-          player.remove();
-        };
+          player.on("ready", () => {
+            setPlayerReady(true);
+            setPlayerError(null);
+          });
+
+          player.on("error", (e: any) => {
+            console.error("JW Player error:", e);
+            setPlayerError("Unable to play video. Please try again.");
+          });
+
+          player.on("setupError", (e: any) => {
+            console.error("JW Player setup error:", e);
+            setPlayerError("Failed to initialize player.");
+          });
+
+          cleanup = () => {
+            if (playerInstanceRef.current) {
+              playerInstanceRef.current.remove();
+              playerInstanceRef.current = null;
+            }
+          };
+        } catch (err) {
+          console.error("Player init error:", err);
+          setPlayerError("Failed to initialize player.");
+        }
       }
     };
 
     if (window.jwplayer) {
-      return initPlayer();
+      initPlayer();
     } else {
       const checkPlayer = setInterval(() => {
         if (window.jwplayer) {
@@ -63,9 +94,24 @@ export default function Watch() {
           initPlayer();
         }
       }, 100);
-      return () => clearInterval(checkPlayer);
+      
+      const timeout = setTimeout(() => {
+        clearInterval(checkPlayer);
+        if (!window.jwplayer) {
+          setPlayerError("JW Player library failed to load.");
+        }
+      }, 5000);
+
+      cleanup = () => {
+        clearInterval(checkPlayer);
+        clearTimeout(timeout);
+      };
     }
-  }, [content?.mediaId]);
+
+    return () => {
+      if (cleanup) cleanup();
+    };
+  }, [mediaId]);
 
   const handleBack = () => {
     if (content?.id) {
@@ -101,10 +147,21 @@ export default function Watch() {
       </div>
 
       <div className="flex items-center justify-center min-h-screen bg-black pt-16">
-        <div className="w-full max-w-screen-2xl aspect-video">
-          {!playerReady && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black">
+        <div className="w-full max-w-screen-2xl aspect-video relative">
+          {(isLoading || !playerReady) && !playerError && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black z-10">
               <div className="text-xl text-gray-400">Loading player...</div>
+            </div>
+          )}
+          {playerError && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black z-10">
+              <div className="text-xl text-red-400 mb-4">{playerError}</div>
+              <button
+                onClick={() => window.location.reload()}
+                className="px-4 py-2 bg-white text-black rounded font-medium hover:bg-gray-200 transition"
+              >
+                Retry
+              </button>
             </div>
           )}
           <div 
