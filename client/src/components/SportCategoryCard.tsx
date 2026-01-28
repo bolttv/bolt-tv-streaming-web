@@ -38,7 +38,7 @@ export default function SportCategoryCard({ category }: SportCategoryCardProps) 
   return (
     <Link href={`/sport/${category.playlistId}`}>
       <div 
-        className="group relative flex-shrink-0 cursor-pointer transition-all duration-300 w-[160px] md:w-[200px]"
+        className="group relative flex-shrink-0 cursor-pointer transition-all duration-300 w-[160px] md:w-[220px]"
         data-testid={`sport-card-${category.slug}`}
       >
         <div 
