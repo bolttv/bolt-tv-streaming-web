@@ -28,6 +28,7 @@ export interface RowItem {
   posterImage: string;
   verticalPosterImage?: string;
   rating: string;
+  genres?: string[];
   seasonCount?: number;
   isNew: boolean;
   isNewEpisode?: boolean;
@@ -97,7 +98,17 @@ export interface IStorage {
 }
 
 function extractContentType(media: JWPlayerPlaylistItem): ContentType {
-  // First check custom_params for explicit content_type
+  // First check the direct contentType field from JW Player API
+  if (media.contentType) {
+    const normalized = media.contentType.toLowerCase();
+    if (normalized === "trailer") return "Trailer";
+    if (normalized === "episode") return "Episode";
+    if (normalized === "series") return "Series";
+    if (normalized === "movie") return "Movie";
+    if (normalized === "documentary") return "Documentary";
+  }
+  
+  // Then check custom_params for explicit content_type
   const contentType = media.custom_params?.content_type || 
                       media.custom_params?.contentType ||
                       media.custom_params?.ContentType ||
@@ -142,17 +153,20 @@ function extractContentType(media: JWPlayerPlaylistItem): ContentType {
 }
 
 function convertJWPlayerToRowItem(media: JWPlayerPlaylistItem): RowItem {
-  const tags = media.tags?.split(",").map(t => t.trim()) || [];
   const isNew = media.pubdate ? (Date.now() / 1000 - media.pubdate) < 30 * 24 * 60 * 60 : false;
   const trailerId = extractTrailerId(media);
   
-  // Get rating from custom_params (check common field names)
-  const rating = media.custom_params?.rating || 
+  // Get rating from direct API field first, then custom_params as fallback
+  const rating = media.rating || 
+                 media.custom_params?.rating || 
                  media.custom_params?.Rating || 
                  media.custom_params?.content_rating ||
                  "TV-MA";
   
-  // Get content type from custom_params
+  // Get genre from direct API field first, then tags as fallback
+  const genreTags = media.genre ? [media.genre] : (media.tags?.split(",").map(t => t.trim()) || []);
+  
+  // Get content type
   const contentType = extractContentType(media);
   
   return {
@@ -161,6 +175,7 @@ function convertJWPlayerToRowItem(media: JWPlayerPlaylistItem): RowItem {
     posterImage: media.image || getJWPlayerThumbnail(media.mediaid),
     verticalPosterImage: getJWPlayerVerticalPoster(media.mediaid),
     rating,
+    genres: genreTags.length > 0 ? genreTags.slice(0, 2) : undefined,
     isNew,
     isNewEpisode: false,
     mediaId: media.mediaid,
@@ -175,22 +190,28 @@ function convertJWPlayerToHeroItem(media: JWPlayerPlaylistItem): HeroItem {
   const isNew = media.pubdate ? (Date.now() / 1000 - media.pubdate) < 30 * 24 * 60 * 60 : false;
   const trailerId = extractTrailerId(media);
   
-  // Get rating from custom_params (check common field names)
-  const rating = media.custom_params?.rating || 
+  // Get rating from direct API field first, then custom_params as fallback
+  const rating = media.rating || 
+                 media.custom_params?.rating || 
                  media.custom_params?.Rating || 
                  media.custom_params?.content_rating ||
                  "TV-MA";
   
-  // Get content type from custom_params
+  // Get genre from direct API field first, then tags as fallback
+  const genres = media.genre 
+    ? [media.genre] 
+    : (tags.length > 0 ? tags.slice(0, 2) : ["Entertainment"]);
+  
+  // Get content type
   const contentType = extractContentType(media);
   
   return {
     id: media.mediaid,
     title: media.title.toUpperCase(),
-    type: tags.includes("movie") ? "movie" : "series",
+    type: contentType.toLowerCase() === "movie" ? "movie" : "series",
     heroImage: getJWPlayerHeroImage(media.mediaid),
     rating,
-    genres: tags.length > 0 ? tags.slice(0, 2) : ["Entertainment"],
+    genres,
     description: media.description || "Watch this exclusive content now available on Bolt TV.",
     isNew,
     mediaId: media.mediaid,

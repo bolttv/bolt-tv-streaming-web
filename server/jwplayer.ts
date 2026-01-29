@@ -48,6 +48,9 @@ export interface JWPlayerPlaylistItem {
   variations?: Record<string, { images?: JWPlayerImage[] }>;
   custom_params?: Record<string, string>;
   trailerId?: string;
+  genre?: string;
+  rating?: string;
+  contentType?: string;
 }
 
 export interface JWPlayerPlaylistResponse {
