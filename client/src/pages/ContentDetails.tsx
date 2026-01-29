@@ -5,6 +5,8 @@ import { Play, Plus, ThumbsUp, Film, ChevronDown } from "lucide-react";
 import PosterCard from "@/components/PosterCard";
 import { useQuery } from "@tanstack/react-query";
 
+type ContentType = "Trailer" | "Episode" | "Series" | "Movie" | "Documentary";
+
 interface Content {
   id: string;
   title: string;
@@ -18,6 +20,7 @@ interface Content {
   isNew?: boolean;
   type?: "series" | "movie";
   trailerId?: string;
+  contentType?: ContentType;
 }
 
 export default function ContentDetails() {
@@ -88,13 +91,24 @@ export default function ContentDetails() {
                  <h1 className="text-3xl sm:text-4xl md:text-6xl font-display font-black uppercase leading-none drop-shadow-xl">{content.title}</h1>
               )}
 
-              <div className="flex items-center gap-3 text-sm font-medium text-gray-300">
-                <span className="text-blue-400 font-bold">Season 1 Now Available</span>
-              </div>
+              {/* Show season info only for Series/Episode content types */}
+              {(content.contentType === "Series" || content.contentType === "Episode") && (
+                <div className="flex items-center gap-3 text-sm font-medium text-gray-300">
+                  <span className="text-blue-400 font-bold">Season 1 Now Available</span>
+                </div>
+              )}
               
               <div className="flex items-center gap-3 text-sm font-medium text-gray-300">
                 <span className="bg-white/10 px-1.5 py-0.5 rounded text-white border border-white/20">{content.rating}</span>
-                <span>1 Season</span>
+                {(content.contentType === "Series" || content.contentType === "Episode") && (
+                  <span>1 Season</span>
+                )}
+                {(content.contentType === "Movie" || content.contentType === "Documentary") && (
+                  <span>{content.contentType}</span>
+                )}
+                {!content.contentType && (
+                  <span>Series</span>
+                )}
                 <span className="border border-white/20 px-1 rounded text-[10px]">AD</span>
               </div>
 
@@ -137,37 +151,39 @@ export default function ContentDetails() {
           </div>
         </div>
 
-        {/* Episodes Section */}
-        <div className="px-4 md:px-12 py-8 space-y-6">
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
-                <h2 className="text-xl font-bold">Episodes</h2>
-                <button className="flex items-center gap-2 text-sm font-bold hover:bg-white/10 px-3 py-1.5 rounded transition">
-                    Season 1 <ChevronDown className="w-4 h-4" />
-                </button>
-            </div>
+        {/* Episodes Section - Only show for Series or Episode content types (explicitly, not when undefined) */}
+        {(content.contentType === "Series" || content.contentType === "Episode") && (
+          <div className="px-4 md:px-12 py-8 space-y-6">
+              <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                  <h2 className="text-xl font-bold">Episodes</h2>
+                  <button className="flex items-center gap-2 text-sm font-bold hover:bg-white/10 px-3 py-1.5 rounded transition">
+                      Season 1 <ChevronDown className="w-4 h-4" />
+                  </button>
+              </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-                {episodes.map(ep => (
-                    <Link key={ep.id} href={`/content/${ep.contentId}`}>
-                      <div className="group cursor-pointer space-y-3">
-                          <div className="relative aspect-video bg-zinc-800 rounded-md overflow-hidden border-2 border-transparent transition-all duration-300 group-hover:border-white">
-                              <img src={ep.image} alt={ep.title} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition" />
-                              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition bg-black/40">
-                                  <div className="bg-white/20 p-3 rounded-full backdrop-blur-sm">
-                                      <Play className="w-6 h-6 fill-white text-white" />
-                                  </div>
-                              </div>
-                              <div className="absolute bottom-2 left-2 bg-black/60 px-1.5 py-0.5 rounded text-[10px] font-bold">{ep.duration}</div>
-                          </div>
-                          <div>
-                              <div className="font-bold text-sm mb-1 group-hover:text-white transition-colors">{ep.id}: {ep.title}</div>
-                              <p className="text-xs text-gray-400 line-clamp-3 leading-relaxed">{ep.desc}</p>
-                          </div>
-                      </div>
-                    </Link>
-                ))}
-            </div>
-        </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                  {episodes.map(ep => (
+                      <Link key={ep.id} href={`/content/${ep.contentId}`}>
+                        <div className="group cursor-pointer space-y-3">
+                            <div className="relative aspect-video bg-zinc-800 rounded-md overflow-hidden border-2 border-transparent transition-all duration-300 group-hover:border-white">
+                                <img src={ep.image} alt={ep.title} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition" />
+                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition bg-black/40">
+                                    <div className="bg-white/20 p-3 rounded-full backdrop-blur-sm">
+                                        <Play className="w-6 h-6 fill-white text-white" />
+                                    </div>
+                                </div>
+                                <div className="absolute bottom-2 left-2 bg-black/60 px-1.5 py-0.5 rounded text-[10px] font-bold">{ep.duration}</div>
+                            </div>
+                            <div>
+                                <div className="font-bold text-sm mb-1 group-hover:text-white transition-colors">{ep.id}: {ep.title}</div>
+                                <p className="text-xs text-gray-400 line-clamp-3 leading-relaxed">{ep.desc}</p>
+                            </div>
+                        </div>
+                      </Link>
+                  ))}
+              </div>
+          </div>
+        )}
 
         {/* You May Also Like */}
         <div className="px-4 md:px-12 py-12 space-y-6">

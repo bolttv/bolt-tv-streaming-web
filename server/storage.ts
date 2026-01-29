@@ -4,6 +4,8 @@ import { fetchJWPlayerPlaylist, fetchJWPlayerMedia, getJWPlayerThumbnail, getJWP
 import { db } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
 
+export type ContentType = "Trailer" | "Episode" | "Series" | "Movie" | "Documentary";
+
 export interface HeroItem {
   id: string;
   title: string;
@@ -17,6 +19,7 @@ export interface HeroItem {
   isNew: boolean;
   mediaId?: string;
   trailerId?: string;
+  contentType?: ContentType;
 }
 
 export interface RowItem {
@@ -33,6 +36,7 @@ export interface RowItem {
   mediaId?: string;
   duration?: number;
   trailerId?: string;
+  contentType?: ContentType;
 }
 
 export interface ContentRow {
@@ -80,6 +84,51 @@ export interface IStorage {
   getCategoryForMedia(mediaId: string): string | undefined;
 }
 
+function extractContentType(media: JWPlayerPlaylistItem): ContentType {
+  // First check custom_params for explicit content_type
+  const contentType = media.custom_params?.content_type || 
+                      media.custom_params?.contentType ||
+                      media.custom_params?.ContentType ||
+                      media.custom_params?.type;
+  
+  if (contentType) {
+    // Normalize the content type to match our expected values
+    const normalized = contentType.toLowerCase();
+    if (normalized === "trailer") return "Trailer";
+    if (normalized === "episode") return "Episode";
+    if (normalized === "series") return "Series";
+    if (normalized === "movie") return "Movie";
+    if (normalized === "documentary") return "Documentary";
+  }
+  
+  // Fallback: derive content type from tags or title
+  const tags = media.tags?.toLowerCase() || "";
+  const title = media.title?.toLowerCase() || "";
+  
+  // Check for trailer
+  if (tags.includes("trailer") || title.includes("trailer")) {
+    return "Trailer";
+  }
+  
+  // Check for documentary
+  if (tags.includes("documentary") || tags.includes("doc")) {
+    return "Documentary";
+  }
+  
+  // Check for movie
+  if (tags.includes("movie") || tags.includes("film")) {
+    return "Movie";
+  }
+  
+  // Check for episode
+  if (tags.includes("episode") || title.match(/episode\s*\d+/i) || title.match(/ep\s*\d+/i)) {
+    return "Episode";
+  }
+  
+  // Default to Series for content that doesn't match other types
+  return "Series";
+}
+
 function convertJWPlayerToRowItem(media: JWPlayerPlaylistItem): RowItem {
   const tags = media.tags?.split(",").map(t => t.trim()) || [];
   const isNew = media.pubdate ? (Date.now() / 1000 - media.pubdate) < 30 * 24 * 60 * 60 : false;
@@ -90,6 +139,9 @@ function convertJWPlayerToRowItem(media: JWPlayerPlaylistItem): RowItem {
                  media.custom_params?.Rating || 
                  media.custom_params?.content_rating ||
                  "TV-MA";
+  
+  // Get content type from custom_params
+  const contentType = extractContentType(media);
   
   return {
     id: media.mediaid,
@@ -102,6 +154,7 @@ function convertJWPlayerToRowItem(media: JWPlayerPlaylistItem): RowItem {
     mediaId: media.mediaid,
     duration: media.duration,
     trailerId: trailerId || undefined,
+    contentType,
   };
 }
 
@@ -116,6 +169,9 @@ function convertJWPlayerToHeroItem(media: JWPlayerPlaylistItem): HeroItem {
                  media.custom_params?.content_rating ||
                  "TV-MA";
   
+  // Get content type from custom_params
+  const contentType = extractContentType(media);
+  
   return {
     id: media.mediaid,
     title: media.title.toUpperCase(),
@@ -127,6 +183,7 @@ function convertJWPlayerToHeroItem(media: JWPlayerPlaylistItem): HeroItem {
     isNew,
     mediaId: media.mediaid,
     trailerId: trailerId || undefined,
+    contentType,
   };
 }
 
