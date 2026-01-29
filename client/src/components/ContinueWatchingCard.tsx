@@ -27,6 +27,9 @@ export default function ContinueWatchingCard({ item }: ContinueWatchingCardProps
     ? `${Math.ceil(remainingSeconds / 60)} min left`
     : `${Math.round(remainingSeconds)} sec left`;
 
+  const horizontalPosterLogoUrl = `https://cdn.jwplayer.com/v2/media/${item.mediaId}/images/horizontal-poster-logo.webp?width=640`;
+  const fallbackPosterUrl = `https://cdn.jwplayer.com/v2/media/${item.mediaId}/poster.jpg?width=480`;
+
   return (
     <Link href={`/watch/${item.mediaId}`}>
       <div 
@@ -40,13 +43,15 @@ export default function ContinueWatchingCard({ item }: ContinueWatchingCardProps
           )}
         >
           <img
-            src={item.posterImage}
+            src={horizontalPosterLogoUrl}
             alt={item.title}
             className="w-full h-full object-cover"
             loading="lazy"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
-              target.src = `https://cdn.jwplayer.com/v2/media/${item.mediaId}/poster.jpg?width=480`;
+              if (target.src !== fallbackPosterUrl) {
+                target.src = fallbackPosterUrl;
+              }
             }}
           />
           
