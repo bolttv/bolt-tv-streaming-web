@@ -174,38 +174,46 @@ export class MemStorage implements IStorage {
 
     const totalItems = featured.length + recommended.length + popular.length + newMovies.length + documentaries.length;
     
+    // Filter out trailers from content (trailers should only be accessible via trailer icon)
+    const isNotTrailer = (m: JWPlayerPlaylistItem) => {
+      const title = m.title?.toLowerCase() || "";
+      const tags = m.tags?.toLowerCase() || "";
+      return !title.includes("trailer") && !tags.includes("trailer");
+    };
+    
     if (totalItems > 0) {
       console.log(`Found ${totalItems} total items from JW Player playlists`);
       this.lastFetch = now;
       this.isInitialized = true;
       
-      this.heroItems = featured.slice(0, 3).map(m => convertJWPlayerToHeroItem(m));
+      const featuredFiltered = featured.filter(isNotTrailer);
+      this.heroItems = featuredFiltered.slice(0, 3).map(m => convertJWPlayerToHeroItem(m));
       
       this.contentRows = [
         {
           id: "r1",
           title: "Featured",
-          items: featured.map(m => convertJWPlayerToRowItem(m))
+          items: featuredFiltered.map(m => convertJWPlayerToRowItem(m))
         },
         {
           id: "r2",
           title: "Recommended For You",
-          items: recommended.map(m => convertJWPlayerToRowItem(m))
+          items: recommended.filter(isNotTrailer).map(m => convertJWPlayerToRowItem(m))
         },
         {
           id: "r3",
           title: "Popular",
-          items: popular.map(m => convertJWPlayerToRowItem(m))
+          items: popular.filter(isNotTrailer).map(m => convertJWPlayerToRowItem(m))
         },
         {
           id: "r4",
           title: "New Movies",
-          items: newMovies.map(m => convertJWPlayerToRowItem(m))
+          items: newMovies.filter(isNotTrailer).map(m => convertJWPlayerToRowItem(m))
         },
         {
           id: "r5",
           title: "Documentaries",
-          items: documentaries.map(m => convertJWPlayerToRowItem(m))
+          items: documentaries.filter(isNotTrailer).map(m => convertJWPlayerToRowItem(m))
         }
       ];
       
@@ -349,15 +357,23 @@ export class MemStorage implements IStorage {
   async getSportContent(playlistId: string): Promise<RowItem[]> {
     const media = await fetchJWPlayerPlaylist(playlistId);
     
+    // Filter out trailers
+    const isNotTrailer = (m: JWPlayerPlaylistItem) => {
+      const title = m.title?.toLowerCase() || "";
+      const tags = m.tags?.toLowerCase() || "";
+      return !title.includes("trailer") && !tags.includes("trailer");
+    };
+    const filtered = media.filter(isNotTrailer);
+    
     // Build category map for these items
     const sport = SPORT_PLAYLISTS.find(s => s.id === playlistId);
     if (sport) {
-      for (const m of media) {
+      for (const m of filtered) {
         this.mediaCategoryMap.set(m.mediaid, sport.slug);
       }
     }
     
-    return media.map(m => convertJWPlayerToRowItem(m));
+    return filtered.map(m => convertJWPlayerToRowItem(m));
   }
 
   async buildCategoryMap(): Promise<void> {
