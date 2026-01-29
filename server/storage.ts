@@ -85,12 +85,18 @@ function convertJWPlayerToRowItem(media: JWPlayerPlaylistItem): RowItem {
   const isNew = media.pubdate ? (Date.now() / 1000 - media.pubdate) < 30 * 24 * 60 * 60 : false;
   const trailerId = extractTrailerId(media);
   
+  // Get rating from custom_params (check common field names)
+  const rating = media.custom_params?.rating || 
+                 media.custom_params?.Rating || 
+                 media.custom_params?.content_rating ||
+                 "TV-MA";
+  
   return {
     id: media.mediaid,
     title: media.title,
     posterImage: media.image || getJWPlayerThumbnail(media.mediaid),
     verticalPosterImage: getJWPlayerVerticalPoster(media.mediaid),
-    rating: "TV-MA",
+    rating,
     isNew,
     isNewEpisode: false,
     mediaId: media.mediaid,
@@ -104,12 +110,18 @@ function convertJWPlayerToHeroItem(media: JWPlayerPlaylistItem): HeroItem {
   const isNew = media.pubdate ? (Date.now() / 1000 - media.pubdate) < 30 * 24 * 60 * 60 : false;
   const trailerId = extractTrailerId(media);
   
+  // Get rating from custom_params (check common field names)
+  const rating = media.custom_params?.rating || 
+                 media.custom_params?.Rating || 
+                 media.custom_params?.content_rating ||
+                 "TV-MA";
+  
   return {
     id: media.mediaid,
     title: media.title.toUpperCase(),
     type: tags.includes("movie") ? "movie" : "series",
     heroImage: getJWPlayerHeroImage(media.mediaid),
-    rating: "TV-MA",
+    rating,
     genres: tags.length > 0 ? tags.slice(0, 2) : ["Entertainment"],
     description: media.description || "Watch this exclusive content now available on Bolt TV.",
     isNew,
