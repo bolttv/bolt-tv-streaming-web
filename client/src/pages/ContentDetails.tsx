@@ -111,18 +111,13 @@ export default function ContentDetails() {
                         <ThumbsUp className="w-5 h-5 sm:w-6 sm:h-6" />
                         <span className="text-[9px] sm:text-[10px] uppercase tracking-wider font-bold">Rate</span>
                     </button>
-                    {content.trailerId ? (
+                    {content.trailerId && (
                       <Link href={`/watch/${content.trailerId}`}>
                         <button className="flex flex-col items-center gap-1 group text-gray-300 hover:text-white transition" data-testid="button-trailer">
                             <Film className="w-5 h-5 sm:w-6 sm:h-6" />
                             <span className="text-[9px] sm:text-[10px] uppercase tracking-wider font-bold">Trailer</span>
                         </button>
                       </Link>
-                    ) : (
-                      <button className="flex flex-col items-center gap-1 group text-gray-300/50 cursor-not-allowed" disabled data-testid="button-trailer-disabled">
-                          <Film className="w-5 h-5 sm:w-6 sm:h-6" />
-                          <span className="text-[9px] sm:text-[10px] uppercase tracking-wider font-bold">Trailer</span>
-                      </button>
                     )}
                 </div>
               </div>
