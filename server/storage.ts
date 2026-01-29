@@ -577,9 +577,8 @@ export class MemStorage implements IStorage {
       }
     }
     
-    // If we found episodes via series_id, return them sorted
+    // If we found episodes via series_id, return them in original JW Player order
     if (episodes.length > 0) {
-      episodes.sort((a, b) => (a.episodeNumber || 0) - (b.episodeNumber || 0));
       return episodes.slice(0, 12);
     }
     
