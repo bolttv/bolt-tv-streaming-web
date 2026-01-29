@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
-import { Search, User, ChevronDown, Loader2, X, Menu } from "lucide-react";
+import { Search, User, Loader2, X, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth0 } from "@auth0/auth0-react";
 
@@ -148,10 +148,6 @@ export default function Navbar() {
             </button>
           </Link>
           
-          <button className="hidden md:flex items-center gap-1 hover:text-white transition cursor-pointer font-bold text-sm">
-            <span>EN</span>
-            <ChevronDown className="w-3 h-3 md:w-4 md:h-4 stroke-[3]" />
-          </button>
           
           {isLoading ? (
             <Loader2 className="w-5 h-5 animate-spin flex-shrink-0" />
