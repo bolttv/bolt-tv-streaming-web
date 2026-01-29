@@ -531,85 +531,16 @@ export class MemStorage implements IStorage {
   }
 
   async getPersonalizedRecommendations(sessionId: string): Promise<RowItem[]> {
-    // Get user's watch history to find preferred categories
-    const history = await db
-      .select()
-      .from(watchHistory)
-      .where(eq(watchHistory.sessionId, sessionId))
-      .orderBy(desc(watchHistory.lastWatchedAt))
-      .limit(50);
-
-    // Count category occurrences weighted by watch time
-    const categoryWeights: Record<string, number> = {};
-    for (const item of history) {
-      if (item.category) {
-        const weight = Math.min(item.progress, 1) * item.duration;
-        categoryWeights[item.category] = (categoryWeights[item.category] || 0) + weight;
-      }
+    // Use JW Player's built-in recommendation engine
+    const JW_RECOMMENDATIONS_PLAYLIST = "hkXBUtcd";
+    
+    try {
+      const recommendations = await fetchJWPlayerPlaylist(JW_RECOMMENDATIONS_PLAYLIST);
+      return recommendations.map(m => convertJWPlayerToRowItem(m));
+    } catch (error) {
+      console.error("Error fetching JW Player recommendations:", error);
+      return [];
     }
-
-    // Sort categories by weight
-    const sortedCategories = Object.entries(categoryWeights)
-      .sort((a, b) => b[1] - a[1])
-      .map(([cat]) => cat);
-
-    // Get watched media IDs to exclude from recommendations
-    const watchedMediaIds = new Set(history.map(h => h.mediaId));
-
-    const recommendations: RowItem[] = [];
-    const seenIds = new Set<string>();
-
-    // If user has viewing history with categories, prioritize those
-    if (sortedCategories.length > 0) {
-      for (const category of sortedCategories.slice(0, 3)) {
-        // Find the sport playlist matching this category
-        const sportPlaylist = SPORT_PLAYLISTS.find(
-          s => s.slug === category || s.name.toLowerCase() === category.toLowerCase()
-        );
-        
-        if (sportPlaylist) {
-          const content = await fetchJWPlayerPlaylist(sportPlaylist.id);
-          for (const media of content) {
-            if (!watchedMediaIds.has(media.mediaid) && !seenIds.has(media.mediaid)) {
-              seenIds.add(media.mediaid);
-              recommendations.push(convertJWPlayerToRowItem(media));
-              if (recommendations.length >= 20) break;
-            }
-          }
-        }
-      }
-    }
-
-    // Fill remaining spots with content from the recommended playlist
-    if (recommendations.length < 20) {
-      await this.refreshJWPlayerContent();
-      const recommendedRow = this.contentRows.find(r => r.title === "Recommended For You");
-      if (recommendedRow) {
-        for (const item of recommendedRow.items) {
-          if (!watchedMediaIds.has(item.id) && !seenIds.has(item.id)) {
-            seenIds.add(item.id);
-            recommendations.push(item);
-            if (recommendations.length >= 20) break;
-          }
-        }
-      }
-    }
-
-    // If still not enough, add from popular
-    if (recommendations.length < 10) {
-      const popularRow = this.contentRows.find(r => r.title === "Popular");
-      if (popularRow) {
-        for (const item of popularRow.items) {
-          if (!seenIds.has(item.id)) {
-            seenIds.add(item.id);
-            recommendations.push(item);
-            if (recommendations.length >= 20) break;
-          }
-        }
-      }
-    }
-
-    return recommendations;
   }
 }
 
