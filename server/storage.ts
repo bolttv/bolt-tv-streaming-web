@@ -1,6 +1,6 @@
 import { type User, type InsertUser, type WatchHistory, type InsertWatchHistory, watchHistory } from "@shared/schema";
 import { randomUUID } from "crypto";
-import { fetchJWPlayerPlaylist, getJWPlayerThumbnail, getJWPlayerHeroImage, getJWPlayerVerticalPoster, extractTrailerId, JWPlayerPlaylistItem, PLAYLISTS, SPORT_PLAYLISTS } from "./jwplayer";
+import { fetchJWPlayerPlaylist, fetchJWPlayerMedia, getJWPlayerThumbnail, getJWPlayerHeroImage, getJWPlayerVerticalPoster, extractTrailerId, JWPlayerPlaylistItem, PLAYLISTS, SPORT_PLAYLISTS } from "./jwplayer";
 import { db } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
 
@@ -227,10 +227,18 @@ export class MemStorage implements IStorage {
       
       // Add ALL media to allContent (including trailers) so they can still be fetched for playback
       const allMedia = [...featured, ...recommended, ...popular, ...newMovies, ...documentaries];
+      const trailerIdsToFetch: string[] = [];
+      
       for (const media of allMedia) {
         // Add to allContent so trailers can still be played via direct access
         if (!this.allContent.has(media.mediaid)) {
           this.allContent.set(media.mediaid, convertJWPlayerToRowItem(media));
+        }
+        
+        // Collect trailer IDs to fetch separately
+        const trailerId = extractTrailerId(media);
+        if (trailerId && !this.allContent.has(trailerId)) {
+          trailerIdsToFetch.push(trailerId);
         }
         
         // Add non-trailers to searchable content
@@ -245,6 +253,19 @@ export class MemStorage implements IStorage {
             tags: decodeHtmlEntities(tags).toLowerCase(),
             description: decodeHtmlEntities(media.description || "").toLowerCase(),
           });
+        }
+      }
+      
+      // Fetch trailer content separately (they're not in playlists, only referenced by trailerId)
+      if (trailerIdsToFetch.length > 0) {
+        const uniqueTrailerIds = [...new Set(trailerIdsToFetch)];
+        const trailerPromises = uniqueTrailerIds.map(id => fetchJWPlayerMedia(id));
+        const trailers = await Promise.all(trailerPromises);
+        
+        for (const trailer of trailers) {
+          if (trailer && !this.allContent.has(trailer.mediaid)) {
+            this.allContent.set(trailer.mediaid, convertJWPlayerToRowItem(trailer));
+          }
         }
       }
       
