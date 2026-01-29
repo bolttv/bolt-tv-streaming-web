@@ -64,6 +64,17 @@ export interface ContinueWatchingItem {
   lastWatchedAt: Date;
 }
 
+export interface EpisodeItem {
+  id: string;
+  title: string;
+  description: string;
+  duration: number;
+  image: string;
+  episodeNumber?: number;
+  seasonNumber?: number;
+  mediaId: string;
+}
+
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
@@ -75,6 +86,7 @@ export interface IStorage {
   getSportCategories(): Promise<SportCategory[]>;
   getSportContent(playlistId: string): Promise<RowItem[]>;
   refreshJWPlayerContent(): Promise<void>;
+  getSeriesEpisodes(seriesId: string): Promise<EpisodeItem[]>;
   
   updateWatchProgress(sessionId: string, mediaId: string, title: string, posterImage: string, duration: number, watchedSeconds: number, category?: string): Promise<WatchHistory>;
   getContinueWatching(sessionId: string): Promise<ContinueWatchingItem[]>;
@@ -202,6 +214,25 @@ function decodeHtmlEntities(text: string): string {
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
     .replace(/&apos;/g, "'");
+}
+
+function extractEpisodeNumber(title: string): number {
+  // Try to extract episode number from title patterns like "Episode 1", "Ep 5", "E03", etc.
+  const patterns = [
+    /episode\s*(\d+)/i,
+    /ep\.?\s*(\d+)/i,
+    /e(\d+)/i,
+    /\s(\d+):\s/,  // "1: Title"
+  ];
+  
+  for (const pattern of patterns) {
+    const match = title.match(pattern);
+    if (match) {
+      return parseInt(match[1]);
+    }
+  }
+  
+  return 0;
 }
 
 export class MemStorage implements IStorage {
@@ -475,6 +506,112 @@ export class MemStorage implements IStorage {
     }
     
     return filtered.map(m => convertJWPlayerToRowItem(m));
+  }
+
+  async getSeriesEpisodes(seriesId: string): Promise<EpisodeItem[]> {
+    await this.refreshJWPlayerContent();
+    
+    // Get the content to check if it's a series
+    const content = this.allContent.get(seriesId);
+    if (!content) {
+      return [];
+    }
+    
+    // Get the content's title for matching related episodes
+    const seriesTitle = content.title.toLowerCase();
+    
+    // Find the category/playlist that contains this series
+    const category = this.mediaCategoryMap.get(seriesId);
+    
+    const episodes: EpisodeItem[] = [];
+    
+    // First, try to find episodes by series_id custom_param across all playlists
+    const allPlaylists = [
+      PLAYLISTS.featured,
+      PLAYLISTS.recommended,
+      PLAYLISTS.popular,
+      PLAYLISTS.newMovies,
+      PLAYLISTS.documentaries,
+      ...SPORT_PLAYLISTS.map(s => s.id),
+    ];
+    
+    for (const playlistId of allPlaylists) {
+      try {
+        const items = await fetchJWPlayerPlaylist(playlistId);
+        
+        for (const item of items) {
+          if (item.mediaid === seriesId) continue; // Skip the series itself
+          
+          // Check if this item belongs to the series by checking series_id custom_param
+          const itemSeriesId = item.custom_params?.series_id || 
+                               item.custom_params?.seriesId ||
+                               item.custom_params?.SeriesId;
+          
+          if (itemSeriesId === seriesId) {
+            // Check for episode number in custom_params or title
+            const episodeNum = parseInt(item.custom_params?.episode_number || 
+                                        item.custom_params?.episodeNumber || 
+                                        item.custom_params?.episode || "0") || 
+                               extractEpisodeNumber(item.title);
+            
+            const seasonNum = parseInt(item.custom_params?.season_number || 
+                                       item.custom_params?.seasonNumber || 
+                                       item.custom_params?.season || "1");
+            
+            if (!episodes.find(e => e.id === item.mediaid)) {
+              episodes.push({
+                id: item.mediaid,
+                title: item.title,
+                description: item.description || "",
+                duration: item.duration,
+                image: item.image || getJWPlayerThumbnail(item.mediaid),
+                episodeNumber: episodeNum || undefined,
+                seasonNumber: seasonNum || 1,
+                mediaId: item.mediaid,
+              });
+            }
+          }
+        }
+      } catch (err) {
+        // Continue with other playlists
+      }
+    }
+    
+    // If we found episodes via series_id, return them sorted
+    if (episodes.length > 0) {
+      episodes.sort((a, b) => (a.episodeNumber || 0) - (b.episodeNumber || 0));
+      return episodes.slice(0, 12);
+    }
+    
+    // Fallback: If this is a sport category series, return other items from the same category as "episodes"
+    // This creates a playlist-style episode list from the same sport
+    if (category) {
+      const sport = SPORT_PLAYLISTS.find(s => s.slug === category);
+      if (sport) {
+        const playlistItems = await fetchJWPlayerPlaylist(sport.id);
+        // Filter out the current series and trailers
+        const filteredItems = playlistItems.filter(item => {
+          if (item.mediaid === seriesId) return false;
+          const title = item.title?.toLowerCase() || "";
+          const tags = item.tags?.toLowerCase() || "";
+          return !title.includes("trailer") && !tags.includes("trailer");
+        });
+        
+        return filteredItems.slice(0, 8).map((item, index) => ({
+          id: item.mediaid,
+          title: item.title,
+          description: item.description || "",
+          duration: item.duration,
+          image: item.image || getJWPlayerThumbnail(item.mediaid),
+          episodeNumber: index + 1,
+          seasonNumber: 1,
+          mediaId: item.mediaid,
+        }));
+      }
+    }
+    
+    // No episodes found - return empty array
+    return [];
   }
 
   async buildCategoryMap(): Promise<void> {

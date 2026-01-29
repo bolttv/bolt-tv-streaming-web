@@ -328,5 +328,17 @@ export async function registerRoutes(
     }
   });
 
+  // Get episodes for a series
+  app.get("/api/series/:seriesId/episodes", async (req, res) => {
+    try {
+      const { seriesId } = req.params;
+      const episodes = await storage.getSeriesEpisodes(seriesId);
+      res.json(episodes);
+    } catch (error) {
+      console.error("Error fetching series episodes:", error);
+      res.status(500).json({ error: "Failed to fetch episodes" });
+    }
+  });
+
   return httpServer;
 }

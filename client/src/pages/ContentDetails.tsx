@@ -23,6 +23,27 @@ interface Content {
   contentType?: ContentType;
 }
 
+interface Episode {
+  id: string;
+  title: string;
+  description: string;
+  duration: number;
+  image: string;
+  episodeNumber?: number;
+  seasonNumber?: number;
+  mediaId: string;
+}
+
+function formatDuration(seconds: number): string {
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) {
+    return `${minutes}m`;
+  }
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+  return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`;
+}
+
 export default function ContentDetails() {
   const { id } = useParams();
   
@@ -37,6 +58,12 @@ export default function ContentDetails() {
 
   const { data: rows = [] } = useQuery<any[]>({
     queryKey: ["/api/content/rows"],
+  });
+
+  // Fetch episodes for series content type only (not for individual episodes)
+  const { data: episodes = [] } = useQuery<Episode[]>({
+    queryKey: [`/api/series/${id}/episodes`],
+    enabled: !!id && content?.contentType === "Series",
   });
 
   if (isLoading) {
@@ -54,13 +81,6 @@ export default function ContentDetails() {
       </div>
     );
   }
-
-  const episodes = [
-    { id: 1, title: "Episode 1", duration: "55m", image: "/assets/poster-action_1.jpg", desc: "The team preps for a Black Friday battle vs. the Bears in the wake of a tough loss to the Cowboys.", contentId: "action-1" },
-    { id: 2, title: "Episode 2", duration: "57m", image: "/assets/poster-action_2.jpg", desc: "Dak Prescott and the Cowboys look to stay hot while the Giants, Eagles, and Commanders all try to turn their luck around.", contentId: "action-2" },
-    { id: 3, title: "Episode 3", duration: "55m", image: "/assets/poster-action_3.jpg", desc: "While the Eagles and Cowboys look to rebound from tough losses, the Giants and Commanders face off on a snowy Sunday.", contentId: "action-3" },
-    { id: 4, title: "Episode 4", duration: "54m", image: "/assets/poster-comedy_1.jpg", desc: "Each of the NFC East teams prepares for Christmas...even if only the Eagles will find a playoff ticket under the tree.", contentId: "comedy-1" },
-  ];
 
   const displayImage = content.heroImage || content.posterImage || "";
   const displayGenres = content.genres || ["Drama", "Sports"];
@@ -151,8 +171,8 @@ export default function ContentDetails() {
           </div>
         </div>
 
-        {/* Episodes Section - Only show for Series or Episode content types (explicitly, not when undefined) */}
-        {(content.contentType === "Series" || content.contentType === "Episode") && (
+        {/* Episodes Section - Only show for Series or Episode content types with episodes available */}
+        {(content.contentType === "Series" || content.contentType === "Episode") && episodes.length > 0 && (
           <div className="px-4 md:px-12 py-8 space-y-6">
               <div className="flex items-center justify-between border-b border-white/10 pb-4">
                   <h2 className="text-xl font-bold">Episodes</h2>
@@ -162,9 +182,9 @@ export default function ContentDetails() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-                  {episodes.map(ep => (
-                      <Link key={ep.id} href={`/content/${ep.contentId}`}>
-                        <div className="group cursor-pointer space-y-3">
+                  {episodes.map((ep, index) => (
+                      <Link key={ep.id} href={`/watch/${ep.mediaId}${category ? `?category=${category}` : ''}`}>
+                        <div className="group cursor-pointer space-y-3" data-testid={`episode-card-${ep.id}`}>
                             <div className="relative aspect-video bg-zinc-800 rounded-md overflow-hidden border-2 border-transparent transition-all duration-300 group-hover:border-white">
                                 <img src={ep.image} alt={ep.title} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition" />
                                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition bg-black/40">
@@ -172,11 +192,11 @@ export default function ContentDetails() {
                                         <Play className="w-6 h-6 fill-white text-white" />
                                     </div>
                                 </div>
-                                <div className="absolute bottom-2 left-2 bg-black/60 px-1.5 py-0.5 rounded text-[10px] font-bold">{ep.duration}</div>
+                                <div className="absolute bottom-2 left-2 bg-black/60 px-1.5 py-0.5 rounded text-[10px] font-bold">{formatDuration(ep.duration)}</div>
                             </div>
                             <div>
-                                <div className="font-bold text-sm mb-1 group-hover:text-white transition-colors">{ep.id}: {ep.title}</div>
-                                <p className="text-xs text-gray-400 line-clamp-3 leading-relaxed">{ep.desc}</p>
+                                <div className="font-bold text-sm mb-1 group-hover:text-white transition-colors">{ep.episodeNumber || index + 1}: {ep.title}</div>
+                                <p className="text-xs text-gray-400 line-clamp-3 leading-relaxed">{ep.description}</p>
                             </div>
                         </div>
                       </Link>
