@@ -225,13 +225,24 @@ export class MemStorage implements IStorage {
         row.items.forEach(item => this.allContent.set(item.id, item));
       });
       
+      // Add ALL media to allContent (including trailers) so they can still be fetched for playback
       const allMedia = [...featured, ...recommended, ...popular, ...newMovies, ...documentaries];
       for (const media of allMedia) {
-        if (!this.searchableContent.has(media.mediaid)) {
+        // Add to allContent so trailers can still be played via direct access
+        if (!this.allContent.has(media.mediaid)) {
+          this.allContent.set(media.mediaid, convertJWPlayerToRowItem(media));
+        }
+        
+        // Add non-trailers to searchable content
+        const title = media.title?.toLowerCase() || "";
+        const tags = media.tags?.toLowerCase() || "";
+        const isTrailer = title.includes("trailer") || tags.includes("trailer");
+        
+        if (!isTrailer && !this.searchableContent.has(media.mediaid)) {
           this.searchableContent.set(media.mediaid, {
             item: convertJWPlayerToRowItem(media),
             title: decodeHtmlEntities(media.title).toLowerCase(),
-            tags: decodeHtmlEntities(media.tags || "").toLowerCase(),
+            tags: decodeHtmlEntities(tags).toLowerCase(),
             description: decodeHtmlEntities(media.description || "").toLowerCase(),
           });
         }
