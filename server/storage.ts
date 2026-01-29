@@ -29,6 +29,7 @@ export interface RowItem {
   verticalPosterImage?: string;
   rating: string;
   genres?: string[];
+  description?: string;
   seasonCount?: number;
   isNew: boolean;
   isNewEpisode?: boolean;
@@ -176,6 +177,7 @@ function convertJWPlayerToRowItem(media: JWPlayerPlaylistItem): RowItem {
     verticalPosterImage: getJWPlayerVerticalPoster(media.mediaid),
     rating,
     genres: genreTags.length > 0 ? genreTags.slice(0, 2) : undefined,
+    description: media.description || undefined,
     isNew,
     isNewEpisode: false,
     mediaId: media.mediaid,
