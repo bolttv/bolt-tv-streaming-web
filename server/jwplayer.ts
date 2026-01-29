@@ -105,6 +105,89 @@ export async function fetchJWPlayerMedia(mediaId: string): Promise<JWPlayerPlayl
   }
 }
 
+export interface SeriesEpisode {
+  episode_number: number;
+  media_item: {
+    mediaid: string;
+    title: string;
+    description?: string;
+    duration: number;
+    image: string;
+    images?: JWPlayerImage[];
+    tags?: string;
+    pubdate?: number;
+    contentType?: string;
+  };
+}
+
+export interface SeriesEpisodesResponse {
+  page: number;
+  page_limit: number;
+  total: number;
+  episodes: SeriesEpisode[];
+}
+
+export interface SeriesInfo {
+  series_id: string;
+  seasons: Array<{
+    season_id: string;
+    season_number: number;
+    season_title: string;
+    season_description: string;
+    episode_count: number;
+    total_duration: number;
+  }>;
+  total_duration: number;
+  episode_count: number;
+  season_count: number;
+}
+
+export async function fetchSeriesInfo(seriesId: string): Promise<SeriesInfo | null> {
+  try {
+    const response = await fetch(
+      `https://cdn.jwplayer.com/apps/series/${seriesId}`,
+      {
+        headers: {
+          Accept: "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Failed to fetch JW Player series info:", error);
+    return null;
+  }
+}
+
+export async function fetchSeriesEpisodes(seriesId: string, seasonNumber: number = 1): Promise<SeriesEpisode[]> {
+  try {
+    const response = await fetch(
+      `https://cdn.jwplayer.com/apps/series/${seriesId}/seasons/${seasonNumber}/episodes`,
+      {
+        headers: {
+          Accept: "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      console.error(`JW Player Series Episodes API error: ${response.status} ${response.statusText}`);
+      return [];
+    }
+
+    const data: SeriesEpisodesResponse = await response.json();
+    return data.episodes || [];
+  } catch (error) {
+    console.error("Failed to fetch JW Player series episodes:", error);
+    return [];
+  }
+}
+
 export async function fetchAllJWPlayerMedia(): Promise<JWPlayerPlaylistItem[]> {
   if (!JWPLAYER_SITE_ID) {
     console.warn("JW Player Site ID not configured");

@@ -1,6 +1,6 @@
 import { type User, type InsertUser, type WatchHistory, type InsertWatchHistory, watchHistory } from "@shared/schema";
 import { randomUUID } from "crypto";
-import { fetchJWPlayerPlaylist, fetchJWPlayerMedia, getJWPlayerThumbnail, getJWPlayerHeroImage, getJWPlayerVerticalPoster, extractTrailerId, JWPlayerPlaylistItem, PLAYLISTS, SPORT_PLAYLISTS } from "./jwplayer";
+import { fetchJWPlayerPlaylist, fetchJWPlayerMedia, fetchSeriesEpisodes, fetchSeriesInfo, getJWPlayerThumbnail, getJWPlayerHeroImage, getJWPlayerVerticalPoster, extractTrailerId, JWPlayerPlaylistItem, PLAYLISTS, SPORT_PLAYLISTS } from "./jwplayer";
 import { db } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
 
@@ -517,23 +517,55 @@ export class MemStorage implements IStorage {
       return [];
     }
     
-    // First, try to get the series media to check for playlistId custom param
+    // First, try to fetch episodes directly from JW Player's Series API
+    // This uses the series structure in JW Player and returns episodes in the order set in the dashboard
+    try {
+      // Get series info to find available seasons
+      const seriesInfo = await fetchSeriesInfo(seriesId);
+      
+      if (seriesInfo && seriesInfo.seasons && seriesInfo.seasons.length > 0) {
+        const allEpisodes: EpisodeItem[] = [];
+        
+        // Fetch episodes from all seasons in order
+        for (const season of seriesInfo.seasons) {
+          const seriesEpisodes = await fetchSeriesEpisodes(seriesId, season.season_number);
+          
+          for (const ep of seriesEpisodes) {
+            allEpisodes.push({
+              id: ep.media_item.mediaid,
+              title: ep.media_item.title,
+              description: ep.media_item.description || "",
+              duration: ep.media_item.duration,
+              image: ep.media_item.image || getJWPlayerThumbnail(ep.media_item.mediaid),
+              episodeNumber: ep.episode_number,
+              seasonNumber: season.season_number,
+              mediaId: ep.media_item.mediaid,
+            });
+          }
+        }
+        
+        if (allEpisodes.length > 0) {
+          console.log(`Found ${allEpisodes.length} episodes for series ${seriesId} via Series API`);
+          return allEpisodes;
+        }
+      }
+    } catch (err) {
+      console.log("Could not fetch series episodes from Series API:", err);
+    }
+    
+    // Fallback: Try playlist-based approach if series API didn't return episodes
     try {
       const seriesMedia = await fetchJWPlayerMedia(seriesId);
       if (seriesMedia) {
-        // Check for playlistId custom parameter (season1, playlistId, episodePlaylistId, etc.)
+        // Check for playlistId custom parameter
         const episodePlaylistId = seriesMedia.custom_params?.playlistId ||
                                   seriesMedia.custom_params?.PlaylistId ||
                                   seriesMedia.custom_params?.season1 ||
-                                  seriesMedia.custom_params?.Season1 ||
-                                  seriesMedia.custom_params?.episodePlaylistId ||
-                                  seriesMedia.custom_params?.episodes;
+                                  seriesMedia.custom_params?.Season1;
         
         if (episodePlaylistId) {
-          // Fetch episodes directly from the series' episode playlist
           const playlistItems = await fetchJWPlayerPlaylist(episodePlaylistId);
           
-          // Return episodes in JW Player playlist order
           return playlistItems.map((item, index) => ({
             id: item.mediaid,
             title: item.title,
@@ -550,12 +582,8 @@ export class MemStorage implements IStorage {
       console.log("Could not fetch series media for episode playlist:", err);
     }
     
-    // Find the category/playlist that contains this series
-    const category = this.mediaCategoryMap.get(seriesId);
-    
+    // Fallback: Search for episodes by series_id custom parameter across playlists
     const episodes: EpisodeItem[] = [];
-    
-    // Try to find episodes by series_id custom_param across all playlists
     const allPlaylists = [
       PLAYLISTS.featured,
       PLAYLISTS.recommended,
@@ -570,9 +598,8 @@ export class MemStorage implements IStorage {
         const items = await fetchJWPlayerPlaylist(playlistId);
         
         for (const item of items) {
-          if (item.mediaid === seriesId) continue; // Skip the series itself
+          if (item.mediaid === seriesId) continue;
           
-          // Check if this item belongs to the series by checking series_id custom_param
           const itemSeriesId = item.custom_params?.series_id || 
                                item.custom_params?.seriesId ||
                                item.custom_params?.SeriesId;
@@ -597,17 +624,16 @@ export class MemStorage implements IStorage {
       }
     }
     
-    // If we found episodes via series_id, return them
     if (episodes.length > 0) {
       return episodes.slice(0, 12);
     }
     
-    // Fallback: If this is a sport category series, return other items from the same category as "episodes"
+    // Final fallback: If this is a sport category, return other items from same category
+    const category = this.mediaCategoryMap.get(seriesId);
     if (category) {
       const sport = SPORT_PLAYLISTS.find(s => s.slug === category);
       if (sport) {
         const playlistItems = await fetchJWPlayerPlaylist(sport.id);
-        // Filter out the current series and trailers
         const filteredItems = playlistItems.filter(item => {
           if (item.mediaid === seriesId) return false;
           const title = item.title?.toLowerCase() || "";
@@ -628,7 +654,7 @@ export class MemStorage implements IStorage {
       }
     }
     
-    // No episodes found - return empty array
+    // No episodes found
     return [];
   }
 
