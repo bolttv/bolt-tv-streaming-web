@@ -40,7 +40,8 @@ export default function Watch() {
     retry: false,
   });
 
-  const mediaId = content?.mediaId || id;
+  // Only use mediaId if we have content, otherwise we'll show content not found
+  const mediaId = content?.mediaId || (content ? id : undefined);
   
   // Handle content not found
   const contentNotFound = !isLoading && !content && id;
