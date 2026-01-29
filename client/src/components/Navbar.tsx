@@ -85,7 +85,7 @@ export default function Navbar() {
           <div className="hidden lg:flex items-center">
             <div
               className={cn(
-                "flex items-center bg-zinc-800 rounded-full overflow-hidden transition-all duration-[285ms] ease-out",
+                "flex items-center bg-black/50 rounded-full overflow-hidden transition-all duration-[285ms] ease-out",
                 searchOpen 
                   ? "w-[30vw] xl:w-[35vw] 2xl:w-[40vw] max-w-[700px] px-5 py-[13px] mr-3" 
                   : "w-0 px-0 py-0"
@@ -195,7 +195,7 @@ export default function Navbar() {
           searchOpen ? "max-h-20 pb-3" : "max-h-0 pb-0"
         )}
       >
-        <form onSubmit={handleSearchSubmit} className="flex items-center gap-3 bg-zinc-800 rounded-full px-4 py-3">
+        <form onSubmit={handleSearchSubmit} className="flex items-center gap-3 bg-black/50 rounded-full px-4 py-3">
           <Search className="w-4 h-4 text-white/60 flex-shrink-0" />
           <input
             ref={searchOpen ? searchInputRef : undefined}
