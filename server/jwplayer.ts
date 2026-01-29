@@ -10,12 +10,12 @@ export const PLAYLISTS = {
 };
 
 export const SPORT_PLAYLISTS = [
-  { id: "JLRKZOca", name: "College", slug: "college" },
-  { id: "pOJdDfBF", name: "Soccer", slug: "soccer" },
-  { id: "AfBziaqw", name: "Baseball", slug: "baseball" },
-  { id: "wNdJ3l8Y", name: "Football", slug: "football" },
-  { id: "rQsddmNz", name: "Basketball", slug: "basketball" },
-  { id: "0ycZXMyL", name: "Action Sports", slug: "action-sports" },
+  { id: "PFauvVKV", name: "College", slug: "college" },
+  { id: "QzHRrJRZ", name: "Soccer", slug: "soccer" },
+  { id: "BC45vsNB", name: "Baseball", slug: "baseball" },
+  { id: "FZgrLpfJ", name: "Football", slug: "football" },
+  { id: "YY5zhjLQ", name: "Basketball", slug: "basketball" },
+  { id: "iCwCBaL7", name: "Action Sports", slug: "action-sports" },
 ];
 
 export interface JWPlayerMediaSource {

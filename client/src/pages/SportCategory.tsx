@@ -16,21 +16,21 @@ interface SportContent {
 }
 
 const SPORT_NAMES: Record<string, string> = {
-  "JLRKZOca": "College",
-  "pOJdDfBF": "Soccer",
-  "AfBziaqw": "Baseball",
-  "wNdJ3l8Y": "Football",
-  "rQsddmNz": "Basketball",
-  "0ycZXMyL": "Action Sports",
+  "PFauvVKV": "College",
+  "QzHRrJRZ": "Soccer",
+  "BC45vsNB": "Baseball",
+  "FZgrLpfJ": "Football",
+  "YY5zhjLQ": "Basketball",
+  "iCwCBaL7": "Action Sports",
 };
 
 const SPORT_SLUGS: Record<string, string> = {
-  "JLRKZOca": "college",
-  "pOJdDfBF": "soccer",
-  "AfBziaqw": "baseball",
-  "wNdJ3l8Y": "football",
-  "rQsddmNz": "basketball",
-  "0ycZXMyL": "action-sports",
+  "PFauvVKV": "college",
+  "QzHRrJRZ": "soccer",
+  "BC45vsNB": "baseball",
+  "FZgrLpfJ": "football",
+  "YY5zhjLQ": "basketball",
+  "iCwCBaL7": "action-sports",
 };
 
 export default function SportCategory() {
