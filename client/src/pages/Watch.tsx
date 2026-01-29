@@ -34,12 +34,16 @@ export default function Watch() {
   const lastProgressUpdateRef = useRef<number>(0);
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const { data: content, isLoading } = useQuery<Content>({
+  const { data: content, isLoading, error: contentError } = useQuery<Content>({
     queryKey: [`/api/content/${id}`],
     enabled: !!id,
+    retry: false,
   });
 
   const mediaId = content?.mediaId || id;
+  
+  // Handle content not found
+  const contentNotFound = !isLoading && !content && id;
 
   const saveProgress = useCallback(async (watchedSeconds: number, duration: number) => {
     if (!content || !mediaId || duration === 0) return;
@@ -120,7 +124,7 @@ export default function Watch() {
   }, []);
 
   useEffect(() => {
-    if (!scriptLoaded || !mediaId || !playerContainerRef.current) return;
+    if (!scriptLoaded || !mediaId || !playerContainerRef.current || contentNotFound) return;
 
     const initPlayer = () => {
       try {
@@ -235,7 +239,7 @@ export default function Watch() {
       }
       queryClient.invalidateQueries({ queryKey: ["/api/continue-watching", getSessionId()] });
     };
-  }, [scriptLoaded, mediaId, saveProgress, queryClient]);
+  }, [scriptLoaded, mediaId, saveProgress, queryClient, contentNotFound]);
 
   const handleBack = () => {
     if (content?.id) {
@@ -272,12 +276,23 @@ export default function Watch() {
 
       <div className="flex items-center justify-center min-h-screen bg-black pt-16">
         <div className="w-full max-w-screen-2xl aspect-video relative">
-          {(isLoading || !playerReady) && !playerError && (
+          {contentNotFound && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center bg-black z-10">
+              <div className="text-xl text-red-400 mb-4">Content not found</div>
+              <p className="text-gray-400 mb-4">This video is no longer available.</p>
+              <Link href="/">
+                <button className="px-4 py-2 bg-white text-black rounded font-medium hover:bg-gray-200 transition">
+                  Go Home
+                </button>
+              </Link>
+            </div>
+          )}
+          {!contentNotFound && (isLoading || !playerReady) && !playerError && (
             <div className="absolute inset-0 flex items-center justify-center bg-black z-10 pointer-events-none">
               <div className="text-xl text-gray-400">Loading player...</div>
             </div>
           )}
-          {playerError && (
+          {!contentNotFound && playerError && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-black z-10">
               <div className="text-xl text-red-400 mb-4">{playerError}</div>
               <button
