@@ -1,6 +1,6 @@
 import { type User, type InsertUser, type WatchHistory, type InsertWatchHistory, watchHistory } from "@shared/schema";
 import { randomUUID } from "crypto";
-import { fetchJWPlayerPlaylist, getJWPlayerThumbnail, getJWPlayerHeroImage, getJWPlayerVerticalPoster, JWPlayerPlaylistItem, PLAYLISTS, SPORT_PLAYLISTS } from "./jwplayer";
+import { fetchJWPlayerPlaylist, getJWPlayerThumbnail, getJWPlayerHeroImage, getJWPlayerVerticalPoster, extractTrailerId, JWPlayerPlaylistItem, PLAYLISTS, SPORT_PLAYLISTS } from "./jwplayer";
 import { db } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
 
@@ -16,6 +16,7 @@ export interface HeroItem {
   description: string;
   isNew: boolean;
   mediaId?: string;
+  trailerId?: string;
 }
 
 export interface RowItem {
@@ -31,6 +32,7 @@ export interface RowItem {
   seasonEpisodeLabel?: string;
   mediaId?: string;
   duration?: number;
+  trailerId?: string;
 }
 
 export interface ContentRow {
@@ -79,6 +81,7 @@ export interface IStorage {
 function convertJWPlayerToRowItem(media: JWPlayerPlaylistItem): RowItem {
   const tags = media.tags?.split(",").map(t => t.trim()) || [];
   const isNew = media.pubdate ? (Date.now() / 1000 - media.pubdate) < 30 * 24 * 60 * 60 : false;
+  const trailerId = extractTrailerId(media);
   
   return {
     id: media.mediaid,
@@ -90,12 +93,14 @@ function convertJWPlayerToRowItem(media: JWPlayerPlaylistItem): RowItem {
     isNewEpisode: false,
     mediaId: media.mediaid,
     duration: media.duration,
+    trailerId: trailerId || undefined,
   };
 }
 
 function convertJWPlayerToHeroItem(media: JWPlayerPlaylistItem): HeroItem {
   const tags = media.tags?.split(",").map(t => t.trim()) || [];
   const isNew = media.pubdate ? (Date.now() / 1000 - media.pubdate) < 30 * 24 * 60 * 60 : false;
+  const trailerId = extractTrailerId(media);
   
   return {
     id: media.mediaid,
@@ -107,6 +112,7 @@ function convertJWPlayerToHeroItem(media: JWPlayerPlaylistItem): HeroItem {
     description: media.description || "Watch this exclusive content now available on Bolt TV.",
     isNew,
     mediaId: media.mediaid,
+    trailerId: trailerId || undefined,
   };
 }
 

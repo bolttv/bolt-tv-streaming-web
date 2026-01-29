@@ -46,6 +46,8 @@ export interface JWPlayerPlaylistItem {
   feedid?: string;
   link?: string;
   variations?: Record<string, { images?: JWPlayerImage[] }>;
+  custom_params?: Record<string, string>;
+  trailerId?: string;
 }
 
 export interface JWPlayerPlaylistResponse {
@@ -185,6 +187,37 @@ export function getJWPlayerVerticalPoster(mediaId: string): string {
 
 export function getJWPlayerHeroImage(mediaId: string): string {
   return `https://cdn.jwplayer.com/v2/media/${mediaId}/poster.jpg?width=1920`;
+}
+
+export function extractTrailerId(media: JWPlayerPlaylistItem): string | null {
+  // Check custom_params for trailer
+  if (media.custom_params?.trailerId) {
+    return media.custom_params.trailerId;
+  }
+  if (media.custom_params?.trailer) {
+    return media.custom_params.trailer;
+  }
+  
+  // Check link field for JWPlayer media ID pattern
+  if (media.link) {
+    // Match JWPlayer media IDs (8 character alphanumeric)
+    const mediaIdMatch = media.link.match(/media\/([a-zA-Z0-9]{8})/);
+    if (mediaIdMatch) {
+      return mediaIdMatch[1];
+    }
+    // Also check for direct media ID in link
+    const directIdMatch = media.link.match(/^[a-zA-Z0-9]{8}$/);
+    if (directIdMatch) {
+      return media.link;
+    }
+  }
+  
+  // Check trailerId field directly
+  if (media.trailerId) {
+    return media.trailerId;
+  }
+  
+  return null;
 }
 
 export function findVerticalPoster(media: JWPlayerPlaylistItem): string | null {
