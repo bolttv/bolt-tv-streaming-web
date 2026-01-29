@@ -13,6 +13,11 @@ interface HeroCarouselProps {
 export default function HeroCarousel({ items }: HeroCarouselProps) {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, duration: 40 });
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [failedLogos, setFailedLogos] = useState<Set<string>>(new Set());
+
+  const handleLogoError = (itemId: string) => {
+    setFailedLogos(prev => new Set(prev).add(itemId));
+  };
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
@@ -55,8 +60,13 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
 
               {/* Content */}
               <div className="absolute bottom-24 sm:bottom-32 md:bottom-36 left-4 md:left-12 max-w-xl z-20 space-y-3 sm:space-y-4 md:space-y-6 animate-in slide-in-from-left-4 fade-in duration-700 delay-300 fill-mode-both">
-                {item.logoImage ? (
-                  <img src={item.logoImage} alt={item.title} className="h-14 sm:h-20 md:h-32 object-contain mb-2 sm:mb-4" />
+                {item.logoImage && !failedLogos.has(item.id) ? (
+                  <img 
+                    src={item.logoImage} 
+                    alt={item.title} 
+                    className="h-14 sm:h-20 md:h-32 object-contain mb-2 sm:mb-4" 
+                    onError={() => handleLogoError(item.id)}
+                  />
                 ) : (
                   <h1 className="text-3xl sm:text-5xl md:text-7xl font-display font-black text-white leading-[0.9] tracking-tight uppercase drop-shadow-2xl">
                     {item.title}

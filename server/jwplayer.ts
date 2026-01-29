@@ -275,6 +275,19 @@ export function getJWPlayerHeroImage(mediaId: string): string {
   return `https://cdn.jwplayer.com/v2/media/${mediaId}/poster.jpg?width=1920`;
 }
 
+export function getJWPlayerHeroBannerLogo(mediaId: string): string {
+  return `https://cdn.jwplayer.com/v2/media/${mediaId}/images/hero-banner-logo.png`;
+}
+
+export async function checkHeroBannerLogoExists(mediaId: string): Promise<boolean> {
+  try {
+    const response = await fetch(getJWPlayerHeroBannerLogo(mediaId), { method: 'HEAD' });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
 export function extractTrailerId(media: JWPlayerPlaylistItem): string | null {
   // Check custom_params for trailer
   if (media.custom_params?.trailerId) {

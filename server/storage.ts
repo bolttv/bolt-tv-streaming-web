@@ -1,6 +1,6 @@
 import { type User, type InsertUser, type WatchHistory, type InsertWatchHistory, watchHistory } from "@shared/schema";
 import { randomUUID } from "crypto";
-import { fetchJWPlayerPlaylist, fetchJWPlayerMedia, fetchSeriesEpisodes, fetchSeriesInfo, getJWPlayerThumbnail, getJWPlayerHeroImage, getJWPlayerVerticalPoster, extractTrailerId, JWPlayerPlaylistItem, PLAYLISTS, SPORT_PLAYLISTS } from "./jwplayer";
+import { fetchJWPlayerPlaylist, fetchJWPlayerMedia, fetchSeriesEpisodes, fetchSeriesInfo, getJWPlayerThumbnail, getJWPlayerHeroImage, getJWPlayerVerticalPoster, getJWPlayerHeroBannerLogo, extractTrailerId, JWPlayerPlaylistItem, PLAYLISTS, SPORT_PLAYLISTS } from "./jwplayer";
 import { db } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
 
@@ -207,11 +207,15 @@ function convertJWPlayerToHeroItem(media: JWPlayerPlaylistItem): HeroItem {
   // Get content type
   const contentType = extractContentType(media);
   
+  // Get hero banner logo URL (frontend will check if it exists)
+  const logoImage = getJWPlayerHeroBannerLogo(media.mediaid);
+  
   return {
     id: media.mediaid,
     title: media.title.toUpperCase(),
     type: contentType.toLowerCase() === "movie" ? "movie" : "series",
     heroImage: getJWPlayerHeroImage(media.mediaid),
+    logoImage,
     rating,
     genres,
     description: media.description || "Watch this exclusive content now available on Bolt TV.",
