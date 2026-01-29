@@ -17,6 +17,7 @@ interface Content {
   posterImage?: string;
   duration?: number;
   description?: string;
+  category?: string;
 }
 
 const JW_PLAYER_LIBRARY_URL = "https://cdn.jwplayer.com/libraries/EBg26wOK.js";
@@ -43,6 +44,10 @@ export default function Watch() {
   const saveProgress = useCallback(async (watchedSeconds: number, duration: number) => {
     if (!content || !mediaId || duration === 0) return;
     
+    // Get category from URL search params (when coming from sport page) or from content
+    const urlParams = new URLSearchParams(window.location.search);
+    const category = urlParams.get("category") || content.category;
+    
     try {
       const sessionId = getSessionId();
       await fetch("/api/watch-progress", {
@@ -55,6 +60,7 @@ export default function Watch() {
           posterImage: content.posterImage || "",
           duration: Math.round(duration),
           watchedSeconds: Math.round(watchedSeconds),
+          category,
         }),
       });
     } catch (err) {

@@ -19,6 +19,7 @@ export const watchHistory = pgTable("watch_history", {
   watchedSeconds: integer("watched_seconds").notNull().default(0),
   progress: real("progress").notNull().default(0),
   lastWatchedAt: timestamp("last_watched_at").defaultNow().notNull(),
+  category: text("category"),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({

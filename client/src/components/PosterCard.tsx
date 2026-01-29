@@ -6,13 +6,16 @@ interface PosterCardProps {
   item: RowItem;
   width?: string;
   isWide?: boolean; // For "Continue Watching" style
+  category?: string; // Category slug for recommendations tracking
 }
 
 import { Link } from "wouter";
 
-export default function PosterCard({ item, width = "w-[160px] md:w-[220px]", isWide = false }: PosterCardProps) {
+export default function PosterCard({ item, width = "w-[160px] md:w-[220px]", isWide = false, category }: PosterCardProps) {
+  const href = category ? `/content/${item.id}?category=${category}` : `/content/${item.id}`;
+  
   return (
-    <Link href={`/content/${item.id}`}>
+    <Link href={href}>
       <div 
         className={cn(
           "group relative flex-shrink-0 cursor-pointer transition-all duration-300",

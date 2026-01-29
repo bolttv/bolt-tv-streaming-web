@@ -23,6 +23,10 @@ interface Content {
 export default function ContentDetails() {
   const { id } = useParams();
   
+  // Get category from URL params (when coming from sport page)
+  const urlParams = new URLSearchParams(window.location.search);
+  const category = urlParams.get("category");
+  
   const { data: content, isLoading } = useQuery<Content>({
     queryKey: [`/api/content/${id}`],
     enabled: !!id,
@@ -95,7 +99,7 @@ export default function ContentDetails() {
               </div>
 
               <div className="flex flex-wrap items-center gap-3 sm:gap-4 pt-2">
-                <Link href={`/watch/${id}`}>
+                <Link href={`/watch/${id}${category ? `?category=${category}` : ''}`}>
                   <button className="flex items-center gap-2 bg-white text-black hover:bg-white/90 transition-colors h-10 sm:h-12 px-5 sm:px-8 rounded font-bold tracking-wide text-sm sm:text-base" data-testid="button-watch">
                     <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />
                     Watch Now
@@ -112,7 +116,7 @@ export default function ContentDetails() {
                         <span className="text-[9px] sm:text-[10px] uppercase tracking-wider font-bold">Rate</span>
                     </button>
                     {content.trailerId && (
-                      <Link href={`/watch/${content.trailerId}`}>
+                      <Link href={`/watch/${content.trailerId}${category ? `?category=${category}` : ''}`}>
                         <button className="flex flex-col items-center gap-1 group text-gray-300 hover:text-white transition" data-testid="button-trailer">
                             <Film className="w-5 h-5 sm:w-6 sm:h-6" />
                             <span className="text-[9px] sm:text-[10px] uppercase tracking-wider font-bold">Trailer</span>

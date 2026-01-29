@@ -24,6 +24,15 @@ const SPORT_NAMES: Record<string, string> = {
   "0ycZXMyL": "Action Sports",
 };
 
+const SPORT_SLUGS: Record<string, string> = {
+  "JLRKZOca": "college",
+  "pOJdDfBF": "soccer",
+  "AfBziaqw": "baseball",
+  "wNdJ3l8Y": "football",
+  "rQsddmNz": "basketball",
+  "0ycZXMyL": "action-sports",
+};
+
 export default function SportCategory() {
   const { playlistId } = useParams();
   
@@ -33,6 +42,7 @@ export default function SportCategory() {
   });
 
   const sportName = playlistId ? SPORT_NAMES[playlistId] || "Sport" : "Sport";
+  const sportSlug = playlistId ? SPORT_SLUGS[playlistId] : undefined;
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -64,7 +74,7 @@ export default function SportCategory() {
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4" data-testid="sport-content-grid">
             {content.map((item) => (
-              <PosterCard key={item.id} item={item} width="w-full" />
+              <PosterCard key={item.id} item={item} width="w-full" category={sportSlug} />
             ))}
           </div>
         )}

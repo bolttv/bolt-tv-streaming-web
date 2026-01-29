@@ -214,7 +214,10 @@ export async function registerRoutes(
         return res.status(404).json({ error: "Content not found" });
       }
       
-      res.json(content);
+      // Enrich with category from cached map
+      const category = storage.getCategoryForMedia(id);
+      
+      res.json({ ...content, category });
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch content" });
     }
@@ -244,7 +247,7 @@ export async function registerRoutes(
   // Update watch progress
   app.post("/api/watch-progress", async (req, res) => {
     try {
-      const { sessionId, mediaId, title, posterImage, duration, watchedSeconds } = req.body;
+      const { sessionId, mediaId, title, posterImage, duration, watchedSeconds, category } = req.body;
       
       if (!sessionId || !mediaId || !title || duration === undefined || watchedSeconds === undefined) {
         return res.status(400).json({ error: "Missing required fields" });
@@ -263,13 +266,26 @@ export async function registerRoutes(
         title,
         posterImage || "",
         validDuration,
-        validWatchedSeconds
+        validWatchedSeconds,
+        category
       );
       
       res.json(result);
     } catch (error) {
       console.error("Error updating watch progress:", error);
       res.status(500).json({ error: "Failed to update watch progress" });
+    }
+  });
+
+  // Get personalized recommendations
+  app.get("/api/recommendations/:sessionId", async (req, res) => {
+    try {
+      const { sessionId } = req.params;
+      const recommendations = await storage.getPersonalizedRecommendations(sessionId);
+      res.json(recommendations);
+    } catch (error) {
+      console.error("Error fetching recommendations:", error);
+      res.status(500).json({ error: "Failed to fetch recommendations" });
     }
   });
 

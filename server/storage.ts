@@ -72,10 +72,12 @@ export interface IStorage {
   getSportContent(playlistId: string): Promise<RowItem[]>;
   refreshJWPlayerContent(): Promise<void>;
   
-  updateWatchProgress(sessionId: string, mediaId: string, title: string, posterImage: string, duration: number, watchedSeconds: number): Promise<WatchHistory>;
+  updateWatchProgress(sessionId: string, mediaId: string, title: string, posterImage: string, duration: number, watchedSeconds: number, category?: string): Promise<WatchHistory>;
   getContinueWatching(sessionId: string): Promise<ContinueWatchingItem[]>;
   removeFromContinueWatching(sessionId: string, mediaId: string): Promise<void>;
   searchContent(query: string): Promise<RowItem[]>;
+  getPersonalizedRecommendations(sessionId: string): Promise<RowItem[]>;
+  getCategoryForMedia(mediaId: string): string | undefined;
 }
 
 function convertJWPlayerToRowItem(media: JWPlayerPlaylistItem): RowItem {
@@ -139,6 +141,9 @@ export class MemStorage implements IStorage {
   private contentRows: ContentRow[];
   private allContent: Map<string, HeroItem | RowItem>;
   private searchableContent: Map<string, SearchableContent>;
+  private mediaCategoryMap: Map<string, string>; // mediaId -> category slug
+  private categoryMapBuilt: boolean = false;
+  private categoryMapPromise: Promise<void> | null = null;
   private lastFetch: number = 0;
   private isInitialized: boolean = false;
 
@@ -146,6 +151,7 @@ export class MemStorage implements IStorage {
     this.users = new Map();
     this.allContent = new Map();
     this.searchableContent = new Map();
+    this.mediaCategoryMap = new Map();
     this.heroItems = [];
     this.contentRows = [];
   }
@@ -221,6 +227,11 @@ export class MemStorage implements IStorage {
             description: decodeHtmlEntities(media.description || "").toLowerCase(),
           });
         }
+      }
+      
+      // Build category map from sport playlists (tracked for awaiting in watch progress)
+      if (!this.categoryMapBuilt && !this.categoryMapPromise) {
+        this.categoryMapPromise = this.buildCategoryMap();
       }
     } else {
       console.log("No JW Player content found, using fallback data");
@@ -337,7 +348,56 @@ export class MemStorage implements IStorage {
 
   async getSportContent(playlistId: string): Promise<RowItem[]> {
     const media = await fetchJWPlayerPlaylist(playlistId);
+    
+    // Build category map for these items
+    const sport = SPORT_PLAYLISTS.find(s => s.id === playlistId);
+    if (sport) {
+      for (const m of media) {
+        this.mediaCategoryMap.set(m.mediaid, sport.slug);
+      }
+    }
+    
     return media.map(m => convertJWPlayerToRowItem(m));
+  }
+
+  async buildCategoryMap(): Promise<void> {
+    // Build category map from all sport playlists (called once at startup or refresh)
+    console.log("Building category map from sport playlists...");
+    for (const sport of SPORT_PLAYLISTS) {
+      try {
+        const content = await fetchJWPlayerPlaylist(sport.id);
+        for (const m of content) {
+          this.mediaCategoryMap.set(m.mediaid, sport.slug);
+        }
+      } catch {
+        // Continue with other playlists
+      }
+    }
+    this.categoryMapBuilt = true;
+    console.log(`Category map built with ${this.mediaCategoryMap.size} entries`);
+  }
+
+  private async ensureCategoryMapReady(): Promise<void> {
+    if (this.categoryMapBuilt) return;
+    
+    // Start building if not already in progress
+    if (!this.categoryMapPromise) {
+      this.categoryMapPromise = this.buildCategoryMap();
+    }
+    
+    // Wait for build to complete (with timeout to avoid blocking indefinitely)
+    try {
+      await Promise.race([
+        this.categoryMapPromise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error("Category map timeout")), 10000))
+      ]);
+    } catch (err) {
+      console.warn("Category map build timeout or error, proceeding without category");
+    }
+  }
+
+  getCategoryForMedia(mediaId: string): string | undefined {
+    return this.mediaCategoryMap.get(mediaId);
   }
 
   async updateWatchProgress(
@@ -346,9 +406,16 @@ export class MemStorage implements IStorage {
     title: string,
     posterImage: string,
     duration: number,
-    watchedSeconds: number
+    watchedSeconds: number,
+    category?: string
   ): Promise<WatchHistory> {
     const progress = duration > 0 ? Math.min(watchedSeconds / duration, 1) : 0;
+    
+    // Ensure category map is ready before lookup (await initial build if needed)
+    await this.ensureCategoryMapReady();
+    
+    // Use provided category or look up from cached map (fast lookup)
+    const resolvedCategory = category || this.mediaCategoryMap.get(mediaId);
     
     const existing = await db
       .select()
@@ -366,6 +433,7 @@ export class MemStorage implements IStorage {
           title,
           posterImage,
           duration,
+          ...(resolvedCategory && { category: resolvedCategory }),
         })
         .where(eq(watchHistory.id, existing[0].id))
         .returning();
@@ -381,6 +449,7 @@ export class MemStorage implements IStorage {
           duration,
           watchedSeconds,
           progress,
+          category: resolvedCategory,
         })
         .returning();
       return created;
@@ -459,6 +528,88 @@ export class MemStorage implements IStorage {
     }
 
     return results;
+  }
+
+  async getPersonalizedRecommendations(sessionId: string): Promise<RowItem[]> {
+    // Get user's watch history to find preferred categories
+    const history = await db
+      .select()
+      .from(watchHistory)
+      .where(eq(watchHistory.sessionId, sessionId))
+      .orderBy(desc(watchHistory.lastWatchedAt))
+      .limit(50);
+
+    // Count category occurrences weighted by watch time
+    const categoryWeights: Record<string, number> = {};
+    for (const item of history) {
+      if (item.category) {
+        const weight = Math.min(item.progress, 1) * item.duration;
+        categoryWeights[item.category] = (categoryWeights[item.category] || 0) + weight;
+      }
+    }
+
+    // Sort categories by weight
+    const sortedCategories = Object.entries(categoryWeights)
+      .sort((a, b) => b[1] - a[1])
+      .map(([cat]) => cat);
+
+    // Get watched media IDs to exclude from recommendations
+    const watchedMediaIds = new Set(history.map(h => h.mediaId));
+
+    const recommendations: RowItem[] = [];
+    const seenIds = new Set<string>();
+
+    // If user has viewing history with categories, prioritize those
+    if (sortedCategories.length > 0) {
+      for (const category of sortedCategories.slice(0, 3)) {
+        // Find the sport playlist matching this category
+        const sportPlaylist = SPORT_PLAYLISTS.find(
+          s => s.slug === category || s.name.toLowerCase() === category.toLowerCase()
+        );
+        
+        if (sportPlaylist) {
+          const content = await fetchJWPlayerPlaylist(sportPlaylist.id);
+          for (const media of content) {
+            if (!watchedMediaIds.has(media.mediaid) && !seenIds.has(media.mediaid)) {
+              seenIds.add(media.mediaid);
+              recommendations.push(convertJWPlayerToRowItem(media));
+              if (recommendations.length >= 20) break;
+            }
+          }
+        }
+      }
+    }
+
+    // Fill remaining spots with content from the recommended playlist
+    if (recommendations.length < 20) {
+      await this.refreshJWPlayerContent();
+      const recommendedRow = this.contentRows.find(r => r.title === "Recommended For You");
+      if (recommendedRow) {
+        for (const item of recommendedRow.items) {
+          if (!watchedMediaIds.has(item.id) && !seenIds.has(item.id)) {
+            seenIds.add(item.id);
+            recommendations.push(item);
+            if (recommendations.length >= 20) break;
+          }
+        }
+      }
+    }
+
+    // If still not enough, add from popular
+    if (recommendations.length < 10) {
+      const popularRow = this.contentRows.find(r => r.title === "Popular");
+      if (popularRow) {
+        for (const item of popularRow.items) {
+          if (!seenIds.has(item.id)) {
+            seenIds.add(item.id);
+            recommendations.push(item);
+            if (recommendations.length >= 20) break;
+          }
+        }
+      }
+    }
+
+    return recommendations;
   }
 }
 
