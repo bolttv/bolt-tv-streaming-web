@@ -484,7 +484,13 @@ export class MemStorage implements IStorage {
       .orderBy(desc(watchHistory.lastWatchedAt))
       .limit(20);
 
-    return items.map(item => ({
+    // Filter out trailers from continue watching
+    const filtered = items.filter(item => {
+      const title = item.title?.toLowerCase() || "";
+      return !title.includes("trailer");
+    });
+
+    return filtered.map(item => ({
       id: item.id,
       mediaId: item.mediaId,
       title: item.title,
