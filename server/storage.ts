@@ -517,15 +517,45 @@ export class MemStorage implements IStorage {
       return [];
     }
     
-    // Get the content's title for matching related episodes
-    const seriesTitle = content.title.toLowerCase();
+    // First, try to get the series media to check for playlistId custom param
+    try {
+      const seriesMedia = await fetchJWPlayerMedia(seriesId);
+      if (seriesMedia) {
+        // Check for playlistId custom parameter (season1, playlistId, episodePlaylistId, etc.)
+        const episodePlaylistId = seriesMedia.custom_params?.playlistId ||
+                                  seriesMedia.custom_params?.PlaylistId ||
+                                  seriesMedia.custom_params?.season1 ||
+                                  seriesMedia.custom_params?.Season1 ||
+                                  seriesMedia.custom_params?.episodePlaylistId ||
+                                  seriesMedia.custom_params?.episodes;
+        
+        if (episodePlaylistId) {
+          // Fetch episodes directly from the series' episode playlist
+          const playlistItems = await fetchJWPlayerPlaylist(episodePlaylistId);
+          
+          // Return episodes in JW Player playlist order
+          return playlistItems.map((item, index) => ({
+            id: item.mediaid,
+            title: item.title,
+            description: item.description || "",
+            duration: item.duration,
+            image: item.image || getJWPlayerThumbnail(item.mediaid),
+            episodeNumber: index + 1,
+            seasonNumber: 1,
+            mediaId: item.mediaid,
+          }));
+        }
+      }
+    } catch (err) {
+      console.log("Could not fetch series media for episode playlist:", err);
+    }
     
     // Find the category/playlist that contains this series
     const category = this.mediaCategoryMap.get(seriesId);
     
     const episodes: EpisodeItem[] = [];
     
-    // First, try to find episodes by series_id custom_param across all playlists
+    // Try to find episodes by series_id custom_param across all playlists
     const allPlaylists = [
       PLAYLISTS.featured,
       PLAYLISTS.recommended,
@@ -548,16 +578,6 @@ export class MemStorage implements IStorage {
                                item.custom_params?.SeriesId;
           
           if (itemSeriesId === seriesId) {
-            // Check for episode number in custom_params or title
-            const episodeNum = parseInt(item.custom_params?.episode_number || 
-                                        item.custom_params?.episodeNumber || 
-                                        item.custom_params?.episode || "0") || 
-                               extractEpisodeNumber(item.title);
-            
-            const seasonNum = parseInt(item.custom_params?.season_number || 
-                                       item.custom_params?.seasonNumber || 
-                                       item.custom_params?.season || "1");
-            
             if (!episodes.find(e => e.id === item.mediaid)) {
               episodes.push({
                 id: item.mediaid,
@@ -565,8 +585,8 @@ export class MemStorage implements IStorage {
                 description: item.description || "",
                 duration: item.duration,
                 image: item.image || getJWPlayerThumbnail(item.mediaid),
-                episodeNumber: episodeNum || undefined,
-                seasonNumber: seasonNum || 1,
+                episodeNumber: episodes.length + 1,
+                seasonNumber: 1,
                 mediaId: item.mediaid,
               });
             }
@@ -577,13 +597,12 @@ export class MemStorage implements IStorage {
       }
     }
     
-    // If we found episodes via series_id, return them in original JW Player order
+    // If we found episodes via series_id, return them
     if (episodes.length > 0) {
       return episodes.slice(0, 12);
     }
     
     // Fallback: If this is a sport category series, return other items from the same category as "episodes"
-    // This creates a playlist-style episode list from the same sport
     if (category) {
       const sport = SPORT_PLAYLISTS.find(s => s.slug === category);
       if (sport) {
