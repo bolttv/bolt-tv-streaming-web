@@ -4,7 +4,7 @@ const JWPLAYER_API_SECRET = process.env.JWPLAYER_API_SECRET;
 export const PLAYLISTS = {
   heroBanner: "KMhhEA3u",
   featured: "WqLLBMnx",
-  recommended: "JexYq9sC",
+  recommended: "hkXBUtcd",
   popular: "8A1ZTwWl",
   newMovies: "SnbG7v6j",
   documentaries: "RytYkppn",
