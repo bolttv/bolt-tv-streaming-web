@@ -279,6 +279,10 @@ export function getJWPlayerHeroBannerLogo(mediaId: string): string {
   return `https://cdn.jwplayer.com/v2/media/${mediaId}/images/hero-banner-logo.png`;
 }
 
+export function getJWPlayerMotionThumbnail(mediaId: string, width: number = 1280): string {
+  return `https://cdn.jwplayer.com/v2/media/${mediaId}/poster.mp4?width=${width}`;
+}
+
 export async function checkHeroBannerLogoExists(mediaId: string): Promise<boolean> {
   try {
     const response = await fetch(getJWPlayerHeroBannerLogo(mediaId), { method: 'HEAD' });

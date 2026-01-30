@@ -3,7 +3,8 @@ export interface HeroItem {
   title: string;
   type: "series" | "movie";
   heroImage: string;
-  logoImage?: string; // Optional logo overlay instead of text
+  motionThumbnail?: string;
+  logoImage?: string;
   rating: string;
   seasonCount?: number;
   genres: string[];

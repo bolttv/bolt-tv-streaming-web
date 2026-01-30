@@ -12,6 +12,7 @@ interface Content {
   id: string;
   title: string;
   heroImage?: string;
+  motionThumbnail?: string;
   posterImage?: string;
   logoImage?: string;
   rating: string;
@@ -48,10 +49,12 @@ function formatDuration(seconds: number): string {
 export default function ContentDetails() {
   const { id } = useParams();
   const [logoFailed, setLogoFailed] = useState(false);
+  const [motionThumbnailFailed, setMotionThumbnailFailed] = useState(false);
   
-  // Reset logo state when content changes
+  // Reset states when content changes
   useEffect(() => {
     setLogoFailed(false);
+    setMotionThumbnailFailed(false);
   }, [id]);
   
   // Get category from URL params (when coming from sport page)
@@ -101,11 +104,24 @@ export default function ContentDetails() {
         {/* Hero Section */}
         <div className="relative h-[70vh] sm:h-[75vh] md:h-[80vh] w-full">
           <div className="absolute inset-0">
-            <img 
-              src={displayImage} 
-              alt={content.title}
-              className="w-full h-full object-cover"
-            />
+            {content.motionThumbnail && !motionThumbnailFailed ? (
+              <video
+                src={content.motionThumbnail}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-full h-full object-cover"
+                onError={() => setMotionThumbnailFailed(true)}
+                poster={displayImage}
+              />
+            ) : (
+              <img 
+                src={displayImage} 
+                alt={content.title}
+                className="w-full h-full object-cover"
+              />
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
             <div className="absolute inset-0 bg-gradient-to-r from-black via-black/60 to-transparent w-full md:w-2/3" />
           </div>

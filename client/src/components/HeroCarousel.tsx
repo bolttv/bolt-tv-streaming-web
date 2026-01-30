@@ -14,9 +14,14 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, duration: 40 });
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [failedLogos, setFailedLogos] = useState<Set<string>>(new Set());
+  const [failedMotionThumbnails, setFailedMotionThumbnails] = useState<Set<string>>(new Set());
 
   const handleLogoError = (itemId: string) => {
     setFailedLogos(prev => new Set(prev).add(itemId));
+  };
+
+  const handleMotionThumbnailError = (itemId: string) => {
+    setFailedMotionThumbnails(prev => new Set(prev).add(itemId));
   };
 
   const onSelect = useCallback(() => {
@@ -47,11 +52,24 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
           {items.map((item) => (
             <div key={item.id} className="relative flex-[0_0_100%] min-w-0 h-full">
               <div className="absolute inset-0">
-                <img
-                  src={item.heroImage}
-                  alt={item.title}
-                  className="w-full h-full object-cover object-center"
-                />
+                {item.motionThumbnail && !failedMotionThumbnails.has(item.id) ? (
+                  <video
+                    src={item.motionThumbnail}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="w-full h-full object-cover object-center"
+                    onError={() => handleMotionThumbnailError(item.id)}
+                    poster={item.heroImage}
+                  />
+                ) : (
+                  <img
+                    src={item.heroImage}
+                    alt={item.title}
+                    className="w-full h-full object-cover object-center"
+                  />
+                )}
                 {/* Complex Gradient Overlays for Cinematic Feel */}
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-black/40" />
                 <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/40 to-transparent w-2/3 md:w-1/2" />
