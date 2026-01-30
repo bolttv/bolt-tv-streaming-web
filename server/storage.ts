@@ -27,6 +27,8 @@ export interface RowItem {
   title: string;
   posterImage: string;
   verticalPosterImage?: string;
+  heroImage?: string;
+  logoImage?: string;
   rating: string;
   genres?: string[];
   description?: string;
@@ -175,6 +177,8 @@ function convertJWPlayerToRowItem(media: JWPlayerPlaylistItem): RowItem {
     title: media.title,
     posterImage: media.image || getJWPlayerThumbnail(media.mediaid),
     verticalPosterImage: getJWPlayerVerticalPoster(media.mediaid),
+    heroImage: getJWPlayerHeroImage(media.mediaid),
+    logoImage: getJWPlayerHeroBannerLogo(media.mediaid),
     rating,
     genres: genreTags.length > 0 ? genreTags.slice(0, 2) : undefined,
     description: media.description || undefined,

@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import { Play, Plus, ThumbsUp, Film, ChevronDown } from "lucide-react";
 import PosterCard from "@/components/PosterCard";
 import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 
 type ContentType = "Trailer" | "Episode" | "Series" | "Movie" | "Documentary";
 
@@ -46,6 +47,12 @@ function formatDuration(seconds: number): string {
 
 export default function ContentDetails() {
   const { id } = useParams();
+  const [logoFailed, setLogoFailed] = useState(false);
+  
+  // Reset logo state when content changes
+  useEffect(() => {
+    setLogoFailed(false);
+  }, [id]);
   
   // Get category from URL params (when coming from sport page)
   const urlParams = new URLSearchParams(window.location.search);
@@ -105,8 +112,13 @@ export default function ContentDetails() {
 
           <div className="absolute bottom-0 left-0 right-0 px-4 md:px-12 pb-12 z-10">
             <div className="max-w-2xl space-y-6">
-              {content.logoImage ? (
-                 <img src={content.logoImage} alt={content.title} className="h-16 sm:h-24 md:h-32 object-contain" />
+              {content.logoImage && !logoFailed ? (
+                 <img 
+                   src={content.logoImage} 
+                   alt={content.title} 
+                   className="h-20 sm:h-28 md:h-48 object-contain" 
+                   onError={() => setLogoFailed(true)}
+                 />
               ) : (
                  <h1 className="text-3xl sm:text-4xl md:text-6xl font-display font-black uppercase leading-none drop-shadow-xl">{content.title}</h1>
               )}
