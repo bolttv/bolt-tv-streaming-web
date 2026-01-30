@@ -117,7 +117,7 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
                   <img 
                     src={item.logoImage} 
                     alt={item.title} 
-                    className="h-20 sm:h-28 md:h-48 object-contain" 
+                    className="h-24 sm:h-32 md:h-52 object-contain" 
                     onError={() => handleLogoError(item.id)}
                   />
                 ) : (
