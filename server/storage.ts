@@ -1,6 +1,6 @@
 import { type User, type InsertUser, type WatchHistory, type InsertWatchHistory, watchHistory } from "@shared/schema";
 import { randomUUID } from "crypto";
-import { fetchJWPlayerPlaylist, fetchJWPlayerMedia, fetchSeriesEpisodes, fetchSeriesInfo, getJWPlayerThumbnail, getJWPlayerHeroImage, getJWPlayerVerticalPoster, getJWPlayerHeroBannerLogo, getJWPlayerMotionThumbnail, extractTrailerId, JWPlayerPlaylistItem, PLAYLISTS, SPORT_PLAYLISTS } from "./jwplayer";
+import { fetchJWPlayerPlaylist, fetchJWPlayerMedia, fetchSeriesEpisodes, fetchSeriesInfo, getJWPlayerThumbnail, getJWPlayerHeroImage, getJWPlayerVerticalPoster, getJWPlayerHeroBannerLogo, getJWPlayerMotionThumbnail, extractMotionThumbnailFromImages, extractTrailerId, JWPlayerPlaylistItem, PLAYLISTS, SPORT_PLAYLISTS } from "./jwplayer";
 import { db } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
 
@@ -180,7 +180,7 @@ function convertJWPlayerToRowItem(media: JWPlayerPlaylistItem): RowItem {
     posterImage: media.image || getJWPlayerThumbnail(media.mediaid),
     verticalPosterImage: getJWPlayerVerticalPoster(media.mediaid),
     heroImage: getJWPlayerHeroImage(media.mediaid),
-    motionThumbnail: getJWPlayerMotionThumbnail(media.mediaid),
+    motionThumbnail: extractMotionThumbnailFromImages(media.images) || undefined,
     logoImage: getJWPlayerHeroBannerLogo(media.mediaid),
     rating,
     genres: genreTags.length > 0 ? genreTags.slice(0, 2) : undefined,
@@ -222,7 +222,7 @@ function convertJWPlayerToHeroItem(media: JWPlayerPlaylistItem): HeroItem {
     title: media.title.toUpperCase(),
     type: contentType.toLowerCase() === "movie" ? "movie" : "series",
     heroImage: getJWPlayerHeroImage(media.mediaid),
-    motionThumbnail: getJWPlayerMotionThumbnail(media.mediaid),
+    motionThumbnail: extractMotionThumbnailFromImages(media.images) || undefined,
     logoImage,
     rating,
     genres,

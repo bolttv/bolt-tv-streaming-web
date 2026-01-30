@@ -279,8 +279,16 @@ export function getJWPlayerHeroBannerLogo(mediaId: string): string {
   return `https://cdn.jwplayer.com/v2/media/${mediaId}/images/hero-banner-logo.png`;
 }
 
-export function getJWPlayerMotionThumbnail(mediaId: string, width: number = 1280): string {
+export function getJWPlayerMotionThumbnail(mediaId: string, width: number = 640): string {
   return `https://cdn.jwplayer.com/v2/media/${mediaId}/poster.mp4?width=${width}`;
+}
+
+export function extractMotionThumbnailFromImages(images?: JWPlayerImage[]): string | null {
+  if (!images) return null;
+  const motionThumbnails = images.filter(img => img.type === 'video/mp4');
+  if (motionThumbnails.length === 0) return null;
+  const largest = motionThumbnails.reduce((a, b) => a.width > b.width ? a : b);
+  return largest.src;
 }
 
 export async function checkHeroBannerLogoExists(mediaId: string): Promise<boolean> {
