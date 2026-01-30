@@ -291,6 +291,19 @@ export function extractMotionThumbnailFromImages(images?: JWPlayerImage[]): stri
   return largest.src;
 }
 
+export async function checkMotionThumbnailExists(mediaId: string): Promise<string | null> {
+  const url = getJWPlayerMotionThumbnail(mediaId, 640);
+  try {
+    const response = await fetch(url, { method: 'GET', redirect: 'manual' });
+    if (response.status === 302 || response.ok) {
+      return url;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export async function checkHeroBannerLogoExists(mediaId: string): Promise<boolean> {
   try {
     const response = await fetch(getJWPlayerHeroBannerLogo(mediaId), { method: 'HEAD' });

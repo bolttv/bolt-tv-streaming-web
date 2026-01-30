@@ -1,6 +1,6 @@
 import { type User, type InsertUser, type WatchHistory, type InsertWatchHistory, watchHistory } from "@shared/schema";
 import { randomUUID } from "crypto";
-import { fetchJWPlayerPlaylist, fetchJWPlayerMedia, fetchSeriesEpisodes, fetchSeriesInfo, getJWPlayerThumbnail, getJWPlayerHeroImage, getJWPlayerVerticalPoster, getJWPlayerHeroBannerLogo, getJWPlayerMotionThumbnail, extractMotionThumbnailFromImages, extractTrailerId, JWPlayerPlaylistItem, PLAYLISTS, SPORT_PLAYLISTS } from "./jwplayer";
+import { fetchJWPlayerPlaylist, fetchJWPlayerMedia, fetchSeriesEpisodes, fetchSeriesInfo, getJWPlayerThumbnail, getJWPlayerHeroImage, getJWPlayerVerticalPoster, getJWPlayerHeroBannerLogo, getJWPlayerMotionThumbnail, extractMotionThumbnailFromImages, checkMotionThumbnailExists, extractTrailerId, JWPlayerPlaylistItem, PLAYLISTS, SPORT_PLAYLISTS } from "./jwplayer";
 import { db } from "./db";
 import { eq, and, desc, sql } from "drizzle-orm";
 
@@ -234,6 +234,21 @@ function convertJWPlayerToHeroItem(media: JWPlayerPlaylistItem): HeroItem {
   };
 }
 
+async function enrichWithMotionThumbnail<T extends { motionThumbnail?: string; mediaId?: string; id?: string }>(item: T): Promise<T> {
+  if (item.motionThumbnail) return item;
+  const mediaId = item.mediaId || item.id;
+  if (!mediaId) return item;
+  const motionThumbnail = await checkMotionThumbnailExists(mediaId);
+  if (motionThumbnail) {
+    return { ...item, motionThumbnail };
+  }
+  return item;
+}
+
+async function enrichItemsWithMotionThumbnails<T extends { motionThumbnail?: string; mediaId?: string; id?: string }>(items: T[]): Promise<T[]> {
+  return Promise.all(items.map(enrichWithMotionThumbnail));
+}
+
 interface SearchableContent {
   item: RowItem;
   title: string;
@@ -322,9 +337,10 @@ export class MemStorage implements IStorage {
       this.isInitialized = true;
       
       const featuredFiltered = featured.filter(isNotTrailer);
-      this.heroItems = featuredFiltered.slice(0, 3).map(m => convertJWPlayerToHeroItem(m));
+      const heroItemsRaw = featuredFiltered.slice(0, 3).map(m => convertJWPlayerToHeroItem(m));
+      this.heroItems = await enrichItemsWithMotionThumbnails(heroItemsRaw);
       
-      this.contentRows = [
+      const contentRowsRaw = [
         {
           id: "r1",
           title: "Featured",
@@ -351,6 +367,11 @@ export class MemStorage implements IStorage {
           items: documentaries.filter(isNotTrailer).map(m => convertJWPlayerToRowItem(m))
         }
       ];
+      
+      this.contentRows = await Promise.all(contentRowsRaw.map(async row => ({
+        ...row,
+        items: await enrichItemsWithMotionThumbnails(row.items)
+      })));
       
       this.allContent.clear();
       this.searchableContent.clear();
