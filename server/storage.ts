@@ -2,7 +2,7 @@ import { type User, type InsertUser, type WatchHistory, type InsertWatchHistory,
 import { randomUUID } from "crypto";
 import { fetchJWPlayerPlaylist, fetchJWPlayerMedia, fetchSeriesEpisodes, fetchSeriesInfo, getJWPlayerThumbnail, getJWPlayerHeroImage, getJWPlayerVerticalPoster, getJWPlayerHeroBannerLogo, getJWPlayerMotionThumbnail, extractMotionThumbnailFromImages, checkMotionThumbnailExists, extractTrailerId, JWPlayerPlaylistItem, PLAYLISTS, SPORT_PLAYLISTS } from "./jwplayer";
 import { db } from "./db";
-import { eq, and, desc, sql } from "drizzle-orm";
+import { eq, and, desc, sql, inArray } from "drizzle-orm";
 
 export type ContentType = "Trailer" | "Episode" | "Series" | "Movie" | "Documentary";
 
@@ -100,6 +100,7 @@ export interface IStorage {
   searchContent(query: string): Promise<RowItem[]>;
   getPersonalizedRecommendations(sessionId: string): Promise<RowItem[]>;
   getCategoryForMedia(mediaId: string): string | undefined;
+  getNextEpisodeToWatch(sessionId: string, seriesId: string): Promise<{ seasonNumber: number; episodeNumber: number; mediaId: string } | null>;
 }
 
 function extractContentType(media: JWPlayerPlaylistItem): ContentType {
@@ -903,6 +904,99 @@ export class MemStorage implements IStorage {
       console.error("Error fetching JW Player recommendations:", error);
       return [];
     }
+  }
+
+  async getNextEpisodeToWatch(sessionId: string, seriesId: string): Promise<{ seasonNumber: number; episodeNumber: number; mediaId: string } | null> {
+    // Get all episodes for this series
+    const episodes = await this.getSeriesEpisodes(seriesId);
+    if (episodes.length === 0) {
+      return null;
+    }
+
+    // Sort episodes by season and episode number
+    const sortedEpisodes = [...episodes].sort((a, b) => {
+      const seasonDiff = (a.seasonNumber || 1) - (b.seasonNumber || 1);
+      if (seasonDiff !== 0) return seasonDiff;
+      return (a.episodeNumber || 1) - (b.episodeNumber || 1);
+    });
+
+    // Get user's watch history for this series' episodes
+    const episodeMediaIds = sortedEpisodes.map(ep => ep.mediaId);
+    const watchedItems = episodeMediaIds.length > 0 
+      ? await db
+          .select()
+          .from(watchHistory)
+          .where(and(
+            eq(watchHistory.sessionId, sessionId),
+            inArray(watchHistory.mediaId, episodeMediaIds)
+          ))
+      : [];
+
+    // Create a map of mediaId to watch progress
+    const watchProgressMap = new Map<string, number>();
+    for (const item of watchedItems) {
+      watchProgressMap.set(item.mediaId, item.progress);
+    }
+
+    // Find the next episode to watch
+    // 1. If user is currently watching an episode (progress > 0.01 and < 0.95), return that episode
+    // 2. If user finished an episode (progress >= 0.95), return the next episode
+    // 3. If user hasn't watched any, return the first episode
+
+    let lastCompletedEpisodeIndex = -1;
+    let currentlyWatchingEpisode: { seasonNumber: number; episodeNumber: number; mediaId: string } | null = null;
+
+    for (let i = 0; i < sortedEpisodes.length; i++) {
+      const episode = sortedEpisodes[i];
+      const progress = watchProgressMap.get(episode.mediaId) || 0;
+
+      if (progress > 0.01 && progress < 0.95) {
+        // User is currently watching this episode
+        currentlyWatchingEpisode = {
+          seasonNumber: episode.seasonNumber || 1,
+          episodeNumber: episode.episodeNumber || (i + 1),
+          mediaId: episode.mediaId
+        };
+      }
+
+      if (progress >= 0.95) {
+        // User completed this episode
+        lastCompletedEpisodeIndex = i;
+      }
+    }
+
+    // If currently watching an episode, return that
+    if (currentlyWatchingEpisode) {
+      return currentlyWatchingEpisode;
+    }
+
+    // If completed some episodes, return the next one
+    if (lastCompletedEpisodeIndex >= 0 && lastCompletedEpisodeIndex < sortedEpisodes.length - 1) {
+      const nextEpisode = sortedEpisodes[lastCompletedEpisodeIndex + 1];
+      return {
+        seasonNumber: nextEpisode.seasonNumber || 1,
+        episodeNumber: nextEpisode.episodeNumber || (lastCompletedEpisodeIndex + 2),
+        mediaId: nextEpisode.mediaId
+      };
+    }
+
+    // If completed the last episode, return the last episode (user can rewatch)
+    if (lastCompletedEpisodeIndex === sortedEpisodes.length - 1) {
+      const lastEpisode = sortedEpisodes[lastCompletedEpisodeIndex];
+      return {
+        seasonNumber: lastEpisode.seasonNumber || 1,
+        episodeNumber: lastEpisode.episodeNumber || sortedEpisodes.length,
+        mediaId: lastEpisode.mediaId
+      };
+    }
+
+    // Default: return first episode
+    const firstEpisode = sortedEpisodes[0];
+    return {
+      seasonNumber: firstEpisode.seasonNumber || 1,
+      episodeNumber: firstEpisode.episodeNumber || 1,
+      mediaId: firstEpisode.mediaId
+    };
   }
 }
 

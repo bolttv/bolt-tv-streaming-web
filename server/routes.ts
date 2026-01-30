@@ -223,6 +223,38 @@ export async function registerRoutes(
     }
   });
 
+  // Get next episode to watch for a series
+  app.get("/api/series/:seriesId/next-episode", async (req, res) => {
+    try {
+      const { seriesId } = req.params;
+      const sessionId = req.headers["x-session-id"] as string;
+      
+      if (!sessionId) {
+        // If no session, return first episode
+        const episodes = await storage.getSeriesEpisodes(seriesId);
+        if (episodes.length > 0) {
+          const firstEpisode = episodes.sort((a, b) => {
+            const seasonDiff = (a.seasonNumber || 1) - (b.seasonNumber || 1);
+            if (seasonDiff !== 0) return seasonDiff;
+            return (a.episodeNumber || 1) - (b.episodeNumber || 1);
+          })[0];
+          return res.json({
+            seasonNumber: firstEpisode.seasonNumber || 1,
+            episodeNumber: firstEpisode.episodeNumber || 1,
+            mediaId: firstEpisode.mediaId
+          });
+        }
+        return res.json(null);
+      }
+      
+      const nextEpisode = await storage.getNextEpisodeToWatch(sessionId, seriesId);
+      res.json(nextEpisode);
+    } catch (error) {
+      console.error("Error fetching next episode:", error);
+      res.status(500).json({ error: "Failed to fetch next episode" });
+    }
+  });
+
   // Get sport categories for "Browse by Sport" section
   app.get("/api/sports", async (req, res) => {
     try {

@@ -36,6 +36,21 @@ interface Episode {
   mediaId: string;
 }
 
+interface NextEpisode {
+  seasonNumber: number;
+  episodeNumber: number;
+  mediaId: string;
+}
+
+function getSessionId(): string {
+  let sessionId = localStorage.getItem("session_id");
+  if (!sessionId) {
+    sessionId = crypto.randomUUID();
+    localStorage.setItem("session_id", sessionId);
+  }
+  return sessionId;
+}
+
 function formatDuration(seconds: number): string {
   const minutes = Math.floor(seconds / 60);
   if (minutes < 60) {
@@ -75,6 +90,35 @@ export default function ContentDetails() {
     queryKey: [`/api/series/${id}/episodes`],
     enabled: !!id && content?.contentType === "Series",
   });
+
+  // Fetch next episode to watch for series
+  const { data: nextEpisode } = useQuery<NextEpisode | null>({
+    queryKey: [`/api/series/${id}/next-episode`, getSessionId()],
+    queryFn: async () => {
+      const response = await fetch(`/api/series/${id}/next-episode`, {
+        headers: { "x-session-id": getSessionId() }
+      });
+      if (!response.ok) return null;
+      return response.json();
+    },
+    enabled: !!id && content?.contentType === "Series",
+  });
+
+  // Determine watch button text and link
+  // Series = multiple episodes, so show dynamic episode button
+  // Episode/Movie/Documentary = single content, show "Watch Now"
+  const isSeries = content?.contentType === "Series";
+  const isSingleContent = content?.contentType === "Movie" || content?.contentType === "Documentary" || content?.contentType === "Episode";
+  
+  const watchButtonText = isSingleContent 
+    ? "Watch Now" 
+    : isSeries && nextEpisode 
+      ? `Watch S${nextEpisode.seasonNumber} E${nextEpisode.episodeNumber}`
+      : isSeries 
+        ? "Watch S1 E1"
+        : "Watch Now";
+  
+  const watchMediaId = isSeries && nextEpisode ? nextEpisode.mediaId : id;
 
   if (isLoading) {
     return (
@@ -161,10 +205,10 @@ export default function ContentDetails() {
               </div>
 
               <div className="flex flex-wrap items-center gap-3 sm:gap-4 pt-2">
-                <Link href={`/watch/${id}${category ? `?category=${category}` : ''}`}>
+                <Link href={`/watch/${watchMediaId}${category ? `?category=${category}` : ''}`}>
                   <button className="flex items-center gap-2 bg-white text-black hover:bg-white/90 transition-colors h-10 sm:h-12 px-5 sm:px-8 rounded font-bold tracking-wide text-sm sm:text-base" data-testid="button-watch">
                     <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />
-                    Watch Now
+                    {watchButtonText}
                   </button>
                 </Link>
                 

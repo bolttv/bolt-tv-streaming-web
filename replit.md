@@ -87,3 +87,18 @@ Preferred communication style: Simple, everyday language.
 - Logo images use pattern: `{mediaId}/images/hero-banner-logo.png`
 - Frontend falls back to text title if logo doesn't exist or fails to load
 - Logo sizing: `h-20 sm:h-28 md:h-48` for hero banners
+
+### Dynamic Watch Button
+**Rule**: The watch button text changes based on content type and user's watch progress:
+
+1. **Movies/Documentaries** (single content): Button says "Watch Now"
+2. **Series** (multiple episodes): Button says "Watch S{X} E{Y}" where X and Y are dynamic based on:
+   - If user hasn't watched any episode: Shows "Watch S1 E1"
+   - If user is currently watching an episode (progress 1-95%): Shows that episode
+   - If user finished an episode: Shows the next episode in sequence
+   - If user finished the last episode: Shows the last episode (for rewatching)
+
+**Implementation**:
+- API endpoint: `GET /api/series/:seriesId/next-episode` (requires `x-session-id` header)
+- Returns: `{ seasonNumber, episodeNumber, mediaId }` or `null`
+- Frontend uses this to determine button text and link destination
