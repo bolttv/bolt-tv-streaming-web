@@ -67,3 +67,23 @@ Preferred communication style: Simple, everyday language.
 ### Development Tools
 - **Replit Plugins**: Dev banner, cartographer, runtime error overlay (dev mode only)
 - **Custom Vite Plugin**: `vite-plugin-meta-images.ts` for OpenGraph image handling
+
+## Content Display Rules
+
+### Motion Thumbnails for Banner Content
+**Rule**: All media displayed in banners (hero carousel, content rows, sport pages, content details) must follow the same motion thumbnail logic:
+1. First check if motion thumbnail exists in JW Player's images array (type: `video/mp4`)
+2. If not found, fall back to checking the direct URL: `poster.mp4?width=640`
+3. Use the largest available width (max 640px - JW Player limitation)
+4. Frontend displays video element with autoplay/loop/muted when motion thumbnail is available
+5. Falls back to static image if motion thumbnail fails to load
+
+**Implementation**: 
+- `extractMotionThumbnailFromImages()` - checks images array
+- `checkMotionThumbnailExists()` - async fallback URL check
+- `enrichItemsWithMotionThumbnails()` - applies to all content arrays
+
+### Hero Banner Logos
+- Logo images use pattern: `{mediaId}/images/hero-banner-logo.png`
+- Frontend falls back to text title if logo doesn't exist or fails to load
+- Logo sizing: `h-20 sm:h-28 md:h-48` for hero banners

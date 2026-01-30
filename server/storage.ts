@@ -561,7 +561,9 @@ export class MemStorage implements IStorage {
       }
     }
     
-    return filtered.map(m => convertJWPlayerToRowItem(m));
+    // Apply motion thumbnail enrichment to all banner content
+    const items = filtered.map(m => convertJWPlayerToRowItem(m));
+    return enrichItemsWithMotionThumbnails(items);
   }
 
   async getSeriesEpisodes(seriesId: string): Promise<EpisodeItem[]> {
