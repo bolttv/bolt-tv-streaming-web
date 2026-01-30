@@ -2,7 +2,8 @@ const JWPLAYER_SITE_ID = process.env.JWPLAYER_SITE_ID;
 const JWPLAYER_API_SECRET = process.env.JWPLAYER_API_SECRET;
 
 export const PLAYLISTS = {
-  featured: "KMhhEA3u",
+  heroBanner: "KMhhEA3u",
+  featured: "WqLLBMnx",
   recommended: "JexYq9sC",
   popular: "8A1ZTwWl",
   newMovies: "SnbG7v6j",

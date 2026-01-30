@@ -315,7 +315,8 @@ export class MemStorage implements IStorage {
 
     console.log("Fetching content from JW Player playlists...");
     
-    const [featured, recommended, popular, newMovies, documentaries] = await Promise.all([
+    const [heroBanner, featured, recommended, popular, newMovies, documentaries] = await Promise.all([
+      fetchJWPlayerPlaylist(PLAYLISTS.heroBanner),
       fetchJWPlayerPlaylist(PLAYLISTS.featured),
       fetchJWPlayerPlaylist(PLAYLISTS.recommended),
       fetchJWPlayerPlaylist(PLAYLISTS.popular),
@@ -323,7 +324,7 @@ export class MemStorage implements IStorage {
       fetchJWPlayerPlaylist(PLAYLISTS.documentaries),
     ]);
 
-    const totalItems = featured.length + recommended.length + popular.length + newMovies.length + documentaries.length;
+    const totalItems = heroBanner.length + featured.length + recommended.length + popular.length + newMovies.length + documentaries.length;
     
     // Filter out trailers from content (trailers should only be accessible via trailer icon)
     const isNotTrailer = (m: JWPlayerPlaylistItem) => {
@@ -337,8 +338,9 @@ export class MemStorage implements IStorage {
       this.lastFetch = now;
       this.isInitialized = true;
       
+      const heroBannerFiltered = heroBanner.filter(isNotTrailer);
       const featuredFiltered = featured.filter(isNotTrailer);
-      const heroItemsRaw = featuredFiltered.slice(0, 3).map(m => convertJWPlayerToHeroItem(m));
+      const heroItemsRaw = heroBannerFiltered.map(m => convertJWPlayerToHeroItem(m));
       this.heroItems = await enrichItemsWithMotionThumbnails(heroItemsRaw);
       
       const contentRowsRaw = [
@@ -644,6 +646,7 @@ export class MemStorage implements IStorage {
     // Fallback: Search for episodes by series_id custom parameter across playlists
     const episodes: EpisodeItem[] = [];
     const allPlaylists = [
+      PLAYLISTS.heroBanner,
       PLAYLISTS.featured,
       PLAYLISTS.recommended,
       PLAYLISTS.popular,
