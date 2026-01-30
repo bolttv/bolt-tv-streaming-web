@@ -10,6 +10,7 @@ export interface HeroItem {
   genres: string[];
   description: string;
   isNew: boolean;
+  contentType?: "Trailer" | "Episode" | "Series" | "Movie" | "Documentary";
 }
 
 export interface RowItem {

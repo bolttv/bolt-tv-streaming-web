@@ -3,8 +3,23 @@ import { useState, useEffect, useCallback } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { Play, Plus, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
-
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
+
+interface NextEpisode {
+  seasonNumber: number;
+  episodeNumber: number;
+  mediaId: string;
+}
+
+function getSessionId(): string {
+  let sessionId = localStorage.getItem('streammax_session_id');
+  if (!sessionId) {
+    sessionId = crypto.randomUUID();
+    localStorage.setItem('streammax_session_id', sessionId);
+  }
+  return sessionId;
+}
 
 interface HeroCarouselProps {
   items: HeroItem[];
@@ -15,6 +30,26 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [failedLogos, setFailedLogos] = useState<Set<string>>(new Set());
   const [failedMotionThumbnails, setFailedMotionThumbnails] = useState<Set<string>>(new Set());
+  const [nextEpisodes, setNextEpisodes] = useState<Record<string, NextEpisode | null>>({});
+
+  // Fetch next episode data for all series items
+  useEffect(() => {
+    const seriesItems = items.filter(item => item.contentType === "Series");
+    
+    seriesItems.forEach(async (item) => {
+      try {
+        const response = await fetch(`/api/series/${item.id}/next-episode`, {
+          headers: { 'x-session-id': getSessionId() }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setNextEpisodes(prev => ({ ...prev, [item.id]: data }));
+        }
+      } catch (error) {
+        console.error(`Failed to fetch next episode for ${item.id}:`, error);
+      }
+    });
+  }, [items]);
 
   const handleLogoError = (itemId: string) => {
     setFailedLogos(prev => new Set(prev).add(itemId));
@@ -105,12 +140,30 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
                 </p>
 
                 <div className="flex items-center gap-2 sm:gap-3 md:gap-4 pt-1 sm:pt-2">
-                  <Link href={`/content/${item.id}`}>
-                    <button className="flex items-center justify-center gap-1.5 sm:gap-2 bg-white text-black hover:bg-white/90 transition-colors h-9 sm:h-10 md:h-12 px-4 sm:px-6 md:px-8 rounded font-semibold tracking-wide text-xs sm:text-sm md:text-base cursor-pointer">
-                      <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 fill-current" />
-                      {item.type === "series" ? "Watch S1 E1" : "Watch Now"}
-                    </button>
-                  </Link>
+                  {(() => {
+                    const isSeries = item.contentType === "Series";
+                    const isSingleContent = item.contentType === "Movie" || item.contentType === "Documentary" || item.contentType === "Episode";
+                    const nextEpisode = nextEpisodes[item.id];
+                    
+                    const watchButtonText = isSingleContent 
+                      ? "Watch Now" 
+                      : isSeries && nextEpisode 
+                        ? `Watch S${nextEpisode.seasonNumber} E${nextEpisode.episodeNumber}`
+                        : isSeries 
+                          ? "Watch S1 E1"
+                          : "Watch Now";
+                    
+                    const watchMediaId = isSeries && nextEpisode ? nextEpisode.mediaId : item.id;
+                    
+                    return (
+                      <Link href={`/watch/${watchMediaId}`}>
+                        <button className="flex items-center justify-center gap-1.5 sm:gap-2 bg-white text-black hover:bg-white/90 transition-colors h-9 sm:h-10 md:h-12 px-4 sm:px-6 md:px-8 rounded font-semibold tracking-wide text-xs sm:text-sm md:text-base cursor-pointer">
+                          <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 fill-current" />
+                          {watchButtonText}
+                        </button>
+                      </Link>
+                    );
+                  })()}
                   <button className="flex items-center justify-center bg-white/10 hover:bg-white/20 border border-white/10 text-white transition-colors h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 rounded backdrop-blur-sm">
                     <Plus className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
                   </button>
