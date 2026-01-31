@@ -60,7 +60,7 @@ interface ContinueWatchingItem {
 export default function Home() {
   const sessionId = getSessionId();
   
-  const { data: heroItems = [], isLoading: heroLoading } = useQuery<HeroItem[]>({
+  const { data: heroItems = [], isLoading: heroLoading, isFetching: heroFetching } = useQuery<HeroItem[]>({
     queryKey: ["/api/content/hero", sessionId],
     queryFn: async () => {
       const res = await fetch("/api/content/hero", {
@@ -69,10 +69,16 @@ export default function Home() {
       if (!res.ok) throw new Error("Failed to fetch hero items");
       return res.json();
     },
+    staleTime: 30000, // Consider data fresh for 30 seconds
+    retry: 2,
+    refetchOnMount: "always", // Always refetch on mount to ensure fresh data
   });
 
   const { data: rows = [], isLoading: rowsLoading } = useQuery<Row[]>({
     queryKey: ["/api/content/rows"],
+    staleTime: 30000,
+    retry: 2,
+    refetchOnMount: "always",
   });
 
   const { data: sportCategories = [] } = useQuery<SportCategory[]>({
@@ -99,7 +105,8 @@ export default function Home() {
     enabled: continueWatching.length > 0,
   });
 
-  if (heroLoading || rowsLoading) {
+  // Show skeleton while loading OR if hero data hasn't loaded yet
+  if (heroLoading || rowsLoading || heroItems.length === 0) {
     return <HomePageSkeleton />;
   }
 
