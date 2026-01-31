@@ -11,6 +11,11 @@ export interface HeroItem {
   description: string;
   isNew: boolean;
   contentType?: "Trailer" | "Episode" | "Series" | "Movie" | "Documentary";
+  nextEpisode?: {
+    seasonNumber: number;
+    episodeNumber: number;
+    mediaId: string;
+  } | null;
 }
 
 export interface RowItem {

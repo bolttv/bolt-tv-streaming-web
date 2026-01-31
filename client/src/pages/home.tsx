@@ -60,7 +60,14 @@ export default function Home() {
   const sessionId = getSessionId();
   
   const { data: heroItems = [], isLoading: heroLoading } = useQuery<HeroItem[]>({
-    queryKey: ["/api/content/hero"],
+    queryKey: ["/api/content/hero", sessionId],
+    queryFn: async () => {
+      const res = await fetch("/api/content/hero", {
+        headers: { "x-session-id": sessionId },
+      });
+      if (!res.ok) throw new Error("Failed to fetch hero items");
+      return res.json();
+    },
   });
 
   const { data: rows = [], isLoading: rowsLoading } = useQuery<Row[]>({

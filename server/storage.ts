@@ -101,6 +101,7 @@ export interface IStorage {
   getPersonalizedRecommendations(sessionId: string): Promise<RowItem[]>;
   getCategoryForMedia(mediaId: string): string | undefined;
   getNextEpisodeToWatch(sessionId: string, seriesId: string): Promise<{ seasonNumber: number; episodeNumber: number; mediaId: string } | null>;
+  getFirstEpisode(seriesId: string): Promise<{ seasonNumber: number; episodeNumber: number; mediaId: string } | null>;
 }
 
 function extractContentType(media: JWPlayerPlaylistItem): ContentType {
@@ -235,11 +236,27 @@ function convertJWPlayerToHeroItem(media: JWPlayerPlaylistItem): HeroItem {
   };
 }
 
+// Cache for motion thumbnail existence checks (persists across requests)
+const motionThumbnailCache = new Map<string, string | null>();
+
 async function enrichWithMotionThumbnail<T extends { motionThumbnail?: string; mediaId?: string; id?: string }>(item: T): Promise<T> {
   if (item.motionThumbnail) return item;
   const mediaId = item.mediaId || item.id;
   if (!mediaId) return item;
+  
+  // Check cache first
+  if (motionThumbnailCache.has(mediaId)) {
+    const cachedResult = motionThumbnailCache.get(mediaId);
+    if (cachedResult) {
+      return { ...item, motionThumbnail: cachedResult };
+    }
+    return item;
+  }
+  
+  // Fetch and cache result
   const motionThumbnail = await checkMotionThumbnailExists(mediaId);
+  motionThumbnailCache.set(mediaId, motionThumbnail);
+  
   if (motionThumbnail) {
     return { ...item, motionThumbnail };
   }
@@ -994,6 +1011,24 @@ export class MemStorage implements IStorage {
     }
 
     // Default: return first episode
+    const firstEpisode = sortedEpisodes[0];
+    return {
+      seasonNumber: firstEpisode.seasonNumber || 1,
+      episodeNumber: firstEpisode.episodeNumber || 1,
+      mediaId: firstEpisode.mediaId
+    };
+  }
+
+  async getFirstEpisode(seriesId: string): Promise<{ seasonNumber: number; episodeNumber: number; mediaId: string } | null> {
+    const episodes = await this.getSeriesEpisodes(seriesId);
+    if (episodes.length === 0) return null;
+    
+    const sortedEpisodes = episodes.sort((a, b) => {
+      const seasonDiff = (a.seasonNumber || 1) - (b.seasonNumber || 1);
+      if (seasonDiff !== 0) return seasonDiff;
+      return (a.episodeNumber || 1) - (b.episodeNumber || 1);
+    });
+    
     const firstEpisode = sortedEpisodes[0];
     return {
       seasonNumber: firstEpisode.seasonNumber || 1,

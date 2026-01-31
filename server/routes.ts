@@ -184,11 +184,32 @@ export async function registerRoutes(
     }
   });
 
-  // Get all hero items for the carousel
+  // Get all hero items for the carousel (with prefetched next episode data)
   app.get("/api/content/hero", async (req, res) => {
     try {
+      const sessionId = req.headers["x-session-id"] as string;
       const heroItems = await storage.getHeroItems();
-      res.json(heroItems);
+      
+      // Prefetch next episode data for series items
+      const heroItemsWithNextEpisode = await Promise.all(
+        heroItems.map(async (item) => {
+          if (item.contentType === "Series") {
+            try {
+              const nextEpisode = sessionId 
+                ? await storage.getNextEpisodeToWatch(sessionId, item.id)
+                : await storage.getFirstEpisode(item.id);
+              return { ...item, nextEpisode };
+            } catch {
+              return item;
+            }
+          }
+          return item;
+        })
+      );
+      
+      // Cache for 60 seconds (content refreshes every 60s on server)
+      res.set("Cache-Control", "public, max-age=60");
+      res.json(heroItemsWithNextEpisode);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch hero items" });
     }
@@ -198,6 +219,8 @@ export async function registerRoutes(
   app.get("/api/content/rows", async (req, res) => {
     try {
       const rows = await storage.getContentRows();
+      // Cache for 60 seconds
+      res.set("Cache-Control", "public, max-age=60");
       res.json(rows);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch content rows" });
@@ -259,6 +282,8 @@ export async function registerRoutes(
   app.get("/api/sports", async (req, res) => {
     try {
       const categories = await storage.getSportCategories();
+      // Cache for 5 minutes (sport categories rarely change)
+      res.set("Cache-Control", "public, max-age=300");
       res.json(categories);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch sport categories" });

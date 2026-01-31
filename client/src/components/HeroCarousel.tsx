@@ -3,23 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { Play, Plus, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
-
-interface NextEpisode {
-  seasonNumber: number;
-  episodeNumber: number;
-  mediaId: string;
-}
-
-function getSessionId(): string {
-  let sessionId = localStorage.getItem('streammax_session_id');
-  if (!sessionId) {
-    sessionId = crypto.randomUUID();
-    localStorage.setItem('streammax_session_id', sessionId);
-  }
-  return sessionId;
-}
 
 interface HeroCarouselProps {
   items: HeroItem[];
@@ -30,26 +14,6 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [failedLogos, setFailedLogos] = useState<Set<string>>(new Set());
   const [failedMotionThumbnails, setFailedMotionThumbnails] = useState<Set<string>>(new Set());
-  const [nextEpisodes, setNextEpisodes] = useState<Record<string, NextEpisode | null>>({});
-
-  // Fetch next episode data for all series items
-  useEffect(() => {
-    const seriesItems = items.filter(item => item.contentType === "Series");
-    
-    seriesItems.forEach(async (item) => {
-      try {
-        const response = await fetch(`/api/series/${item.id}/next-episode`, {
-          headers: { 'x-session-id': getSessionId() }
-        });
-        if (response.ok) {
-          const data = await response.json();
-          setNextEpisodes(prev => ({ ...prev, [item.id]: data }));
-        }
-      } catch (error) {
-        console.error(`Failed to fetch next episode for ${item.id}:`, error);
-      }
-    });
-  }, [items]);
 
   const handleLogoError = (itemId: string) => {
     setFailedLogos(prev => new Set(prev).add(itemId));
@@ -143,17 +107,16 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
                   {(() => {
                     const isSeries = item.contentType === "Series";
                     const isSingleContent = item.contentType === "Movie" || item.contentType === "Documentary" || item.contentType === "Episode";
-                    const nextEpisode = nextEpisodes[item.id];
                     
                     const watchButtonText = isSingleContent 
                       ? "Watch Now" 
-                      : isSeries && nextEpisode 
-                        ? `Watch S${nextEpisode.seasonNumber} E${nextEpisode.episodeNumber}`
+                      : isSeries && item.nextEpisode 
+                        ? `Watch S${item.nextEpisode.seasonNumber} E${item.nextEpisode.episodeNumber}`
                         : isSeries 
                           ? "Watch S1 E1"
                           : "Watch Now";
                     
-                    const watchMediaId = isSeries && nextEpisode ? nextEpisode.mediaId : item.id;
+                    const watchMediaId = isSeries && item.nextEpisode ? item.nextEpisode.mediaId : item.id;
                     
                     return (
                       <Link href={`/watch/${watchMediaId}`}>
