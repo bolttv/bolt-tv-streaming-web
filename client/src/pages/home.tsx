@@ -4,6 +4,7 @@ import ContentRow from "@/components/ContentRow";
 import SportCategoryCard from "@/components/SportCategoryCard";
 import ContinueWatchingCard from "@/components/ContinueWatchingCard";
 import Footer from "@/components/Footer";
+import { HomePageSkeleton } from "@/components/SkeletonLoaders";
 import { useQuery } from "@tanstack/react-query";
 import { getSessionId } from "@/lib/session";
 
@@ -99,11 +100,7 @@ export default function Home() {
   });
 
   if (heroLoading || rowsLoading) {
-    return (
-      <div className="min-h-screen bg-background text-white flex items-center justify-center">
-        <div className="text-xl">Loading...</div>
-      </div>
-    );
+    return <HomePageSkeleton />;
   }
 
   return (

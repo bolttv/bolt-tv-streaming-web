@@ -1,6 +1,86 @@
 const JWPLAYER_SITE_ID = process.env.JWPLAYER_SITE_ID;
 const JWPLAYER_API_SECRET = process.env.JWPLAYER_API_SECRET;
 
+// Server-side cache for JW Player API responses
+interface CacheEntry<T> {
+  data: T;
+  timestamp: number;
+  ttl: number;
+}
+
+class JWPlayerCache {
+  private playlistCache = new Map<string, CacheEntry<JWPlayerPlaylistItem[]>>();
+  private mediaCache = new Map<string, CacheEntry<JWPlayerPlaylistItem | null>>();
+  private seriesEpisodesCache = new Map<string, CacheEntry<any>>();
+  private seriesInfoCache = new Map<string, CacheEntry<any>>();
+  
+  private readonly DEFAULT_TTL = 5 * 60 * 1000; // 5 minutes
+  private readonly SERIES_TTL = 10 * 60 * 1000; // 10 minutes for series data
+  
+  private isValid<T>(entry: CacheEntry<T> | undefined): entry is CacheEntry<T> {
+    if (!entry) return false;
+    return Date.now() - entry.timestamp < entry.ttl;
+  }
+  
+  getPlaylist(playlistId: string): JWPlayerPlaylistItem[] | null {
+    const entry = this.playlistCache.get(playlistId);
+    if (this.isValid(entry)) {
+      return entry.data;
+    }
+    return null;
+  }
+  
+  setPlaylist(playlistId: string, data: JWPlayerPlaylistItem[], ttl = this.DEFAULT_TTL): void {
+    this.playlistCache.set(playlistId, { data, timestamp: Date.now(), ttl });
+  }
+  
+  getMedia(mediaId: string): JWPlayerPlaylistItem | null | undefined {
+    const entry = this.mediaCache.get(mediaId);
+    if (this.isValid(entry)) {
+      return entry.data;
+    }
+    return undefined; // undefined means not cached, null means cached as null
+  }
+  
+  setMedia(mediaId: string, data: JWPlayerPlaylistItem | null, ttl = this.DEFAULT_TTL): void {
+    this.mediaCache.set(mediaId, { data, timestamp: Date.now(), ttl });
+  }
+  
+  getSeriesEpisodes(seriesId: string): any | null {
+    const entry = this.seriesEpisodesCache.get(seriesId);
+    if (this.isValid(entry)) {
+      return entry.data;
+    }
+    return null;
+  }
+  
+  setSeriesEpisodes(seriesId: string, data: any): void {
+    this.seriesEpisodesCache.set(seriesId, { data, timestamp: Date.now(), ttl: this.SERIES_TTL });
+  }
+  
+  getSeriesInfo(seriesId: string): any | null {
+    const entry = this.seriesInfoCache.get(seriesId);
+    if (this.isValid(entry)) {
+      return entry.data;
+    }
+    return null;
+  }
+  
+  setSeriesInfo(seriesId: string, data: any): void {
+    this.seriesInfoCache.set(seriesId, { data, timestamp: Date.now(), ttl: this.SERIES_TTL });
+  }
+  
+  getCacheStats(): { playlists: number; media: number; series: number } {
+    return {
+      playlists: this.playlistCache.size,
+      media: this.mediaCache.size,
+      series: this.seriesEpisodesCache.size + this.seriesInfoCache.size
+    };
+  }
+}
+
+export const jwPlayerCache = new JWPlayerCache();
+
 export const PLAYLISTS = {
   heroBanner: "KMhhEA3u",
   featured: "WqLLBMnx",
@@ -63,6 +143,12 @@ export interface JWPlayerPlaylistResponse {
 }
 
 export async function fetchJWPlayerPlaylist(playlistId: string): Promise<JWPlayerPlaylistItem[]> {
+  // Check cache first
+  const cached = jwPlayerCache.getPlaylist(playlistId);
+  if (cached !== null) {
+    return cached;
+  }
+  
   try {
     const response = await fetch(
       `https://cdn.jwplayer.com/v2/playlists/${playlistId}`,
@@ -75,18 +161,33 @@ export async function fetchJWPlayerPlaylist(playlistId: string): Promise<JWPlaye
 
     if (!response.ok) {
       console.error(`JW Player Delivery API error: ${response.status} ${response.statusText}`);
+      // Cache empty result for 30s to avoid hammering upstream on failures
+      jwPlayerCache.setPlaylist(playlistId, [], 30 * 1000);
       return [];
     }
 
     const data: JWPlayerPlaylistResponse = await response.json();
-    return data.playlist || [];
+    const playlist = data.playlist || [];
+    
+    // Cache the result
+    jwPlayerCache.setPlaylist(playlistId, playlist);
+    
+    return playlist;
   } catch (error) {
     console.error("Failed to fetch JW Player playlist:", error);
+    // Cache empty result for 30s on network errors
+    jwPlayerCache.setPlaylist(playlistId, [], 30 * 1000);
     return [];
   }
 }
 
 export async function fetchJWPlayerMedia(mediaId: string): Promise<JWPlayerPlaylistItem | null> {
+  // Check cache first
+  const cached = jwPlayerCache.getMedia(mediaId);
+  if (cached !== undefined) {
+    return cached;
+  }
+  
   try {
     const response = await fetch(
       `https://cdn.jwplayer.com/v2/media/${mediaId}`,
@@ -98,11 +199,17 @@ export async function fetchJWPlayerMedia(mediaId: string): Promise<JWPlayerPlayl
     );
 
     if (!response.ok) {
+      jwPlayerCache.setMedia(mediaId, null);
       return null;
     }
 
     const data: JWPlayerPlaylistResponse = await response.json();
-    return data.playlist?.[0] || null;
+    const media = data.playlist?.[0] || null;
+    
+    // Cache the result
+    jwPlayerCache.setMedia(mediaId, media);
+    
+    return media;
   } catch (error) {
     console.error("Failed to fetch JW Player media:", error);
     return null;
@@ -147,6 +254,12 @@ export interface SeriesInfo {
 }
 
 export async function fetchSeriesInfo(seriesId: string): Promise<SeriesInfo | null> {
+  // Check cache first
+  const cached = jwPlayerCache.getSeriesInfo(seriesId);
+  if (cached !== null) {
+    return cached;
+  }
+  
   try {
     const response = await fetch(
       `https://cdn.jwplayer.com/apps/series/${seriesId}`,
@@ -161,7 +274,9 @@ export async function fetchSeriesInfo(seriesId: string): Promise<SeriesInfo | nu
       return null;
     }
 
-    return await response.json();
+    const data = await response.json();
+    jwPlayerCache.setSeriesInfo(seriesId, data);
+    return data;
   } catch (error) {
     console.error("Failed to fetch JW Player series info:", error);
     return null;
@@ -169,6 +284,13 @@ export async function fetchSeriesInfo(seriesId: string): Promise<SeriesInfo | nu
 }
 
 export async function fetchSeriesEpisodes(seriesId: string, seasonNumber: number = 1): Promise<SeriesEpisode[]> {
+  // Check cache first
+  const cacheKey = `${seriesId}_s${seasonNumber}`;
+  const cached = jwPlayerCache.getSeriesEpisodes(cacheKey);
+  if (cached !== null) {
+    return cached;
+  }
+  
   try {
     const response = await fetch(
       `https://cdn.jwplayer.com/apps/series/${seriesId}/seasons/${seasonNumber}/episodes`,
@@ -185,7 +307,9 @@ export async function fetchSeriesEpisodes(seriesId: string, seasonNumber: number
     }
 
     const data: SeriesEpisodesResponse = await response.json();
-    return data.episodes || [];
+    const episodes = data.episodes || [];
+    jwPlayerCache.setSeriesEpisodes(cacheKey, episodes);
+    return episodes;
   } catch (error) {
     console.error("Failed to fetch JW Player series episodes:", error);
     return [];
@@ -370,4 +494,48 @@ export function getJWPlayerPlayerUrl(mediaId: string): string {
 
 export function getJWPlayerVideoUrl(mediaId: string): string {
   return `https://cdn.jwplayer.com/manifests/${mediaId}.m3u8`;
+}
+
+// Pre-warm cache on server startup
+export async function prewarmCache(): Promise<void> {
+  console.log("Pre-warming JW Player cache...");
+  const startTime = Date.now();
+  
+  try {
+    // Fetch all main playlists in parallel
+    const playlistPromises = [
+      fetchJWPlayerPlaylist(PLAYLISTS.heroBanner),
+      fetchJWPlayerPlaylist(PLAYLISTS.featured),
+      fetchJWPlayerPlaylist(PLAYLISTS.recommended),
+      fetchJWPlayerPlaylist(PLAYLISTS.popular),
+      fetchJWPlayerPlaylist(PLAYLISTS.newMovies),
+      fetchJWPlayerPlaylist(PLAYLISTS.documentaries),
+    ];
+    
+    // Also fetch sport playlists
+    const sportPromises = SPORT_PLAYLISTS.map(sport => 
+      fetchJWPlayerPlaylist(sport.id)
+    );
+    
+    const results = await Promise.all([...playlistPromises, ...sportPromises]);
+    
+    // Extract series IDs from hero banner to prefetch episode data
+    const heroBannerItems = results[0] || [];
+    const seriesIds = heroBannerItems
+      .filter(item => item.contentType === "Series")
+      .map(item => item.mediaid);
+    
+    // Prefetch series episodes for hero items
+    if (seriesIds.length > 0) {
+      await Promise.all(
+        seriesIds.map(seriesId => fetchSeriesEpisodes(seriesId, 1))
+      );
+    }
+    
+    const duration = Date.now() - startTime;
+    const stats = jwPlayerCache.getCacheStats();
+    console.log(`Cache pre-warmed in ${duration}ms - Playlists: ${stats.playlists}, Media: ${stats.media}, Series: ${stats.series}`);
+  } catch (error) {
+    console.error("Failed to pre-warm cache:", error);
+  }
 }
