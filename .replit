@@ -52,3 +52,4 @@ mockupState = "FULLSTACK"
 [userenv.shared]
 VITE_AUTH0_DOMAIN = "dev-bvnbzw2cuwqlyk7o.us.auth0.com"
 VITE_AUTH0_CLIENT_ID = "lBgtjGdVhjcQW2wOJbuoHJvD6iTCVKfd"
+CLEENG_SANDBOX = "true"
