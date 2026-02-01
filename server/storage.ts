@@ -350,13 +350,22 @@ export class MemStorage implements IStorage {
       return !title.includes("trailer") && !tags.includes("trailer");
     };
     
+    // Filter out episodes from global content (episodes should only appear in series detail pages)
+    const isNotEpisode = (m: JWPlayerPlaylistItem) => {
+      const contentType = extractContentType(m);
+      return contentType !== "Episode";
+    };
+    
+    // Combined filter for content rows
+    const isGlobalContent = (m: JWPlayerPlaylistItem) => isNotTrailer(m) && isNotEpisode(m);
+    
     if (totalItems > 0) {
       console.log(`Found ${totalItems} total items from JW Player playlists`);
       this.lastFetch = now;
       this.isInitialized = true;
       
       const heroBannerFiltered = heroBanner.filter(isNotTrailer);
-      const featuredFiltered = featured.filter(isNotTrailer);
+      const featuredFiltered = featured.filter(isGlobalContent);
       const heroItemsRaw = heroBannerFiltered.map(m => convertJWPlayerToHeroItem(m));
       this.heroItems = await enrichItemsWithMotionThumbnails(heroItemsRaw);
       
@@ -369,22 +378,22 @@ export class MemStorage implements IStorage {
         {
           id: "r2",
           title: "Recommended For You",
-          items: recommended.filter(isNotTrailer).map(m => convertJWPlayerToRowItem(m))
+          items: recommended.filter(isGlobalContent).map(m => convertJWPlayerToRowItem(m))
         },
         {
           id: "r3",
           title: "Popular",
-          items: popular.filter(isNotTrailer).map(m => convertJWPlayerToRowItem(m))
+          items: popular.filter(isGlobalContent).map(m => convertJWPlayerToRowItem(m))
         },
         {
           id: "r4",
           title: "New Movies",
-          items: newMovies.filter(isNotTrailer).map(m => convertJWPlayerToRowItem(m))
+          items: newMovies.filter(isGlobalContent).map(m => convertJWPlayerToRowItem(m))
         },
         {
           id: "r5",
           title: "Documentaries",
-          items: documentaries.filter(isNotTrailer).map(m => convertJWPlayerToRowItem(m))
+          items: documentaries.filter(isGlobalContent).map(m => convertJWPlayerToRowItem(m))
         }
       ];
       
