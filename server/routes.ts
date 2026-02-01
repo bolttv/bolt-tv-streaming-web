@@ -156,87 +156,31 @@ export async function registerRoutes(
     }
   });
 
-  // Get available offers (fetching specific offer IDs from Cleeng)
+  // Get available offers (using Cleeng API 3.1 with X-Publisher-Token)
   app.get("/api/cleeng/offers", async (req, res) => {
-    const defaultPlans = [
-      {
-        id: "S899494078_US",
-        longId: "S899494078_US",
-        title: "Monthly",
-        description: "Monthly subscription",
-        price: { amount: 9.99, currency: "USD" },
-        billingCycle: { periodUnit: "month", periodLength: 1 },
-        active: true,
-        tags: [],
-      },
-      {
-        id: "S205557953_US",
-        longId: "S205557953_US",
-        title: "Annual",
-        description: "Annual subscription - save 16%",
-        price: { amount: 99.99, currency: "USD" },
-        billingCycle: { periodUnit: "year", periodLength: 1 },
-        active: true,
-        tags: ["Best Value"],
-      },
-      {
-        id: "S869336873_US",
-        longId: "S869336873_US",
-        title: "Premium Monthly",
-        description: "Premium monthly subscription",
-        price: { amount: 14.99, currency: "USD" },
-        billingCycle: { periodUnit: "month", periodLength: 1 },
-        active: true,
-        tags: [],
-      },
-      {
-        id: "S366428835_US",
-        longId: "S366428835_US",
-        title: "Premium Annual",
-        description: "Premium annual subscription",
-        price: { amount: 149.99, currency: "USD" },
-        billingCycle: { periodUnit: "year", periodLength: 1 },
-        active: true,
-        tags: ["Most Popular"],
-      },
-    ];
-    
     try {
-      const offerIds = ["S899494078_US", "S205557953_US", "S869336873_US", "S366428835_US"];
-      const baseUrls = ["https://api.sandbox.cleeng.com/3.1", "https://api.cleeng.com/3.1"];
-      
-      const fetchOffer = async (offerId: string) => {
-        for (const baseUrl of baseUrls) {
-          try {
-            const response = await fetch(`${baseUrl}/offers/${offerId}`, {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-                "X-Publisher-Token": CLEENG_API_SECRET,
-              },
-            });
-            if (response.ok) {
-              const data = await response.json();
-              console.log(`Fetched offer ${offerId} from ${baseUrl}`);
-              return data;
-            }
-          } catch {}
+      // Cleeng API 3.1 endpoint for offers
+      const response = await fetch(
+        `https://api.cleeng.com/3.1/offers?publisherId=${CLEENG_PUBLISHER_ID}&active=true`,
+        { 
+          headers: { 
+            "Content-Type": "application/json",
+            "X-Publisher-Token": CLEENG_API_SECRET,
+          } 
         }
-        return null;
-      };
+      );
       
-      const offers = (await Promise.all(offerIds.map(fetchOffer))).filter(Boolean);
+      const data = await response.json();
       
-      if (offers.length > 0) {
-        console.log(`Successfully fetched ${offers.length} Cleeng offers`);
-        return res.json(offers);
+      if (!response.ok) {
+        console.error("Cleeng offers API error:", data);
+        return res.status(response.status).json(data);
       }
       
-      console.log("Using default plans (Cleeng API unavailable)");
-      res.json(defaultPlans);
+      res.json(data);
     } catch (error) {
       console.error("Cleeng offers error:", error);
-      res.json(defaultPlans);
+      res.status(500).json({ error: "Failed to fetch offers" });
     }
   });
 
