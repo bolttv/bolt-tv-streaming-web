@@ -2,10 +2,200 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 
+// Cleeng API configuration
+const CLEENG_SANDBOX = process.env.CLEENG_SANDBOX === "true";
+// MediaStore API - for customer operations (registration, login, subscriptions)
+const CLEENG_MEDIASTORE_URL = CLEENG_SANDBOX 
+  ? "https://mediastoreapi-sandbox.cleeng.com" 
+  : "https://mediastoreapi.cleeng.com";
+// Core API - for publisher operations (offers listing via JSON-RPC)
+const CLEENG_CORE_API_URL = CLEENG_SANDBOX
+  ? "https://api.sandbox.cleeng.com"
+  : "https://api.cleeng.com";
+const CLEENG_PUBLISHER_ID = process.env.CLEENG_PUBLISHER_ID || "";
+const CLEENG_API_SECRET = process.env.CLEENG_API_SECRET || "";
+
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+
+  // Cleeng configuration endpoint for frontend
+  app.get("/api/cleeng/config", (req, res) => {
+    res.json({
+      publisherId: CLEENG_PUBLISHER_ID,
+      environment: CLEENG_SANDBOX ? "sandbox" : "production",
+    });
+  });
+
+  // List subscription offers using JSON-RPC (Core API)
+  app.get("/api/cleeng/offers", async (req, res) => {
+    try {
+      if (!CLEENG_API_SECRET) {
+        return res.status(500).json({ error: "Cleeng API not configured" });
+      }
+      
+      const response = await fetch(CLEENG_CORE_API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          method: "listSubscriptionOffers",
+          params: {
+            publisherToken: CLEENG_API_SECRET,
+            criteria: { active: true },
+            offset: 0,
+            limit: 50
+          },
+          jsonrpc: "2.0",
+          id: 1
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.error) {
+        console.error("Cleeng offers error:", data.error);
+        return res.status(400).json({ error: data.error.message });
+      }
+      
+      const offers = data.result?.items || [];
+      res.json(offers);
+    } catch (error) {
+      console.error("Cleeng offers error:", error);
+      res.status(500).json({ error: "Failed to fetch offers" });
+    }
+  });
+
+  // Customer registration (MediaStore API)
+  app.post("/api/cleeng/register", async (req, res) => {
+    try {
+      const { email, password, locale = "en_US", country = "US", currency = "USD" } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ errors: ["Email and password are required"] });
+      }
+      
+      const response = await fetch(`${CLEENG_MEDIASTORE_URL}/customers`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          password,
+          locale,
+          country,
+          currency,
+          publisherId: CLEENG_PUBLISHER_ID,
+        }),
+      });
+      
+      const data = await response.json();
+      if (!response.ok) {
+        return res.status(response.status).json(data);
+      }
+      
+      res.json(data);
+    } catch (error) {
+      console.error("Cleeng registration error:", error);
+      res.status(500).json({ errors: ["Registration failed"] });
+    }
+  });
+
+  // Customer login (MediaStore API)
+  app.post("/api/cleeng/login", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ errors: ["Email and password are required"] });
+      }
+      
+      const response = await fetch(`${CLEENG_MEDIASTORE_URL}/auths`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          password,
+          publisherId: CLEENG_PUBLISHER_ID,
+        }),
+      });
+      
+      const data = await response.json();
+      if (!response.ok) {
+        return res.status(response.status).json(data);
+      }
+      
+      res.json(data);
+    } catch (error) {
+      console.error("Cleeng login error:", error);
+      res.status(500).json({ errors: ["Login failed"] });
+    }
+  });
+
+  // SSO login - link Auth0 user to Cleeng customer (MediaStore API)
+  app.post("/api/cleeng/sso", async (req, res) => {
+    try {
+      const { email, externalId } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ errors: ["Email is required"] });
+      }
+      
+      const response = await fetch(`${CLEENG_MEDIASTORE_URL}/customers/sso`, {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "X-Publisher-Token": CLEENG_API_SECRET,
+        },
+        body: JSON.stringify({
+          publisherId: CLEENG_PUBLISHER_ID,
+          email,
+          externalCustomerId: externalId || email,
+          locale: "en_US",
+          country: "US",
+          currency: "USD",
+        }),
+      });
+      
+      const data = await response.json();
+      if (!response.ok) {
+        console.error("Cleeng SSO error:", data);
+        return res.status(response.status).json(data);
+      }
+      
+      res.json(data);
+    } catch (error) {
+      console.error("Cleeng SSO error:", error);
+      res.status(500).json({ errors: ["SSO login failed"] });
+    }
+  });
+
+  // Get customer subscriptions
+  app.get("/api/cleeng/subscriptions/:customerId", async (req, res) => {
+    try {
+      const { customerId } = req.params;
+      const token = req.headers.authorization?.replace("Bearer ", "");
+      
+      if (!token) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      
+      const response = await fetch(
+        `${CLEENG_MEDIASTORE_URL}/customers/${customerId}/subscriptions`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+        }
+      );
+      
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error("Cleeng subscriptions error:", error);
+      res.status(500).json({ error: "Failed to fetch subscriptions" });
+    }
+  });
 
   // Get all hero items for the carousel (with prefetched next episode data)
   app.get("/api/content/hero", async (req, res) => {
