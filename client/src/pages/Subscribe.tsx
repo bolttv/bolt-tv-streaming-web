@@ -1,12 +1,10 @@
-import { useState, useEffect } from "react";
-import { Link, useLocation } from "wouter";
+import { useState } from "react";
+import { Link } from "wouter";
 import { ArrowLeft, Check, Loader2 } from "lucide-react";
 import { useAuth0 } from "@auth0/auth0-react";
-import { getOffers, CleengOffer } from "@/lib/cleeng";
 
 interface PricingPlan {
   id: string;
-  offerId?: string;
   name: string;
   price: string;
   period: string;
@@ -15,7 +13,7 @@ interface PricingPlan {
   badge?: string;
 }
 
-const defaultPlans: PricingPlan[] = [
+const plans: PricingPlan[] = [
   {
     id: "monthly",
     name: "Monthly",
@@ -41,6 +39,7 @@ const defaultPlans: PricingPlan[] = [
       "Save $20 per year",
     ],
     popular: true,
+    badge: "Most Popular",
   },
   {
     id: "premium",
@@ -57,87 +56,15 @@ const defaultPlans: PricingPlan[] = [
   },
 ];
 
-function formatCurrency(price: number, currency: string): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: currency || 'USD',
-  }).format(price);
-}
-
-function mapCleengOffersToPlan(offers: CleengOffer[]): PricingPlan[] {
-  if (!offers || offers.length === 0) return defaultPlans;
-  
-  return offers.map((offer, index) => {
-    // Check for badge tags like "Most Popular", "Most Value", etc.
-    const badgeTags = ["Most Popular", "Most Value", "Best Value"];
-    const badge = offer.tags?.find(tag => badgeTags.some(b => tag.toLowerCase().includes(b.toLowerCase())));
-    
-    return {
-      id: offer.offerId,
-      offerId: offer.offerId,
-      name: offer.offerTitle || `Plan ${index + 1}`,
-      price: formatCurrency(offer.price, offer.currency),
-      period: offer.period ? `/${offer.period}` : "/month",
-      features: [
-        "Unlimited streaming",
-        "HD quality",
-        "Cancel anytime",
-      ],
-      popular: !!badge,
-      badge: badge,
-    };
-  });
-}
-
 export default function Subscribe() {
-  const [, setLocation] = useLocation();
   const { isAuthenticated, loginWithRedirect } = useAuth0();
-  const [allPlans, setAllPlans] = useState<PricingPlan[]>([]);
   const [billingPeriod, setBillingPeriod] = useState<"month" | "year">("month");
-  const [selectedPlan, setSelectedPlan] = useState<string>("");
+  const [selectedPlan, setSelectedPlan] = useState<string>("monthly");
   const [loading, setLoading] = useState(false);
-  const [loadingOffers, setLoadingOffers] = useState(true);
-  const [offersError, setOffersError] = useState<string | null>(null);
 
-  const filteredPlans = allPlans
+  const filteredPlans = plans
     .filter(plan => plan.period === `/${billingPeriod}`)
     .sort((a, b) => parseFloat(a.price.replace('$', '')) - parseFloat(b.price.replace('$', '')));
-
-  useEffect(() => {
-    const fetchOffers = async () => {
-      try {
-        const offers = await getOffers();
-        // Filter to only active offers
-        const activeOffers = offers.filter((o: any) => o.active !== false);
-        if (activeOffers.length > 0) {
-          const mappedPlans = mapCleengOffersToPlan(activeOffers);
-          setAllPlans(mappedPlans);
-          // Select first monthly plan by default
-          const monthlyPlans = mappedPlans.filter(p => p.period === "/month");
-          if (monthlyPlans.length > 0) {
-            setSelectedPlan(monthlyPlans[0].id);
-          }
-        } else {
-          setOffersError("No subscription plans are currently available. Please try again later.");
-        }
-      } catch (error) {
-        console.error("Failed to fetch offers:", error);
-        setOffersError("Unable to load subscription plans. Please try again later.");
-      } finally {
-        setLoadingOffers(false);
-      }
-    };
-    
-    fetchOffers();
-  }, []);
-
-  // Update selected plan when billing period changes
-  useEffect(() => {
-    const plansForPeriod = allPlans.filter(p => p.period === `/${billingPeriod}`);
-    if (plansForPeriod.length > 0 && !plansForPeriod.find(p => p.id === selectedPlan)) {
-      setSelectedPlan(plansForPeriod[0].id);
-    }
-  }, [billingPeriod, allPlans]);
 
   const handleSubscribe = async () => {
     if (!isAuthenticated) {
@@ -150,17 +77,11 @@ export default function Subscribe() {
 
     setLoading(true);
     
-    const selectedPlanData = allPlans.find(p => p.id === selectedPlan);
+    const selectedPlanData = plans.find(p => p.id === selectedPlan);
     
-    // In production, this would initiate the Cleeng/Adyen checkout flow
-    // The offerId would be used to create an order via the Cleeng API
     setTimeout(() => {
       setLoading(false);
-      if (selectedPlanData?.offerId) {
-        alert(`Proceeding to checkout for: ${selectedPlanData.name} (${selectedPlanData.price}${selectedPlanData.period})\n\nOffer ID: ${selectedPlanData.offerId}\n\nIn production, this initiates the Cleeng/Adyen payment flow.`);
-      } else {
-        alert("Checkout integration with Cleeng/Adyen is configured. In production, this will redirect to the payment flow.");
-      }
+      alert(`Proceeding to checkout for: ${selectedPlanData?.name} (${selectedPlanData?.price}${selectedPlanData?.period})\n\nPayment integration coming soon.`);
     }, 1000);
   };
 
@@ -218,25 +139,8 @@ export default function Subscribe() {
           </div>
         </div>
 
-        {loadingOffers ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-white/60" />
-          </div>
-        ) : offersError ? (
-          <div className="text-center py-12">
-            <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-6 max-w-md mx-auto">
-              <p className="text-red-400 mb-4">{offersError}</p>
-              <button 
-                onClick={() => window.location.reload()}
-                className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition"
-              >
-                Retry
-              </button>
-            </div>
-          </div>
-        ) : (
         <div className={`grid gap-6 mb-12 ${filteredPlans.length === 2 ? 'md:grid-cols-2 max-w-3xl mx-auto' : 'md:grid-cols-3'}`}>
-          {filteredPlans.map((plan, index) => (
+          {filteredPlans.map((plan) => (
             <div
               key={plan.id}
               onClick={() => setSelectedPlan(plan.id)}
@@ -286,7 +190,6 @@ export default function Subscribe() {
             </div>
           ))}
         </div>
-        )}
 
         <div className="max-w-md mx-auto">
           <button
