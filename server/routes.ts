@@ -28,38 +28,36 @@ export async function registerRoutes(
     });
   });
 
-  // List subscription offers using JSON-RPC (Core API)
+  // List subscription offers using REST API (Core API 3.1)
   app.get("/api/cleeng/offers", async (req, res) => {
     try {
       if (!CLEENG_API_SECRET) {
         return res.status(500).json({ error: "Cleeng API not configured" });
       }
       
-      const response = await fetch(CLEENG_CORE_API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          method: "listSubscriptionOffers",
-          params: {
-            publisherToken: CLEENG_API_SECRET,
-            criteria: { active: true },
-            offset: 0,
-            limit: 50
-          },
-          jsonrpc: "2.0",
-          id: 1
-        })
+      // Core API 3.1 uses X-Publisher-Token header for authentication
+      const apiUrl = `${CLEENG_CORE_API_URL}/3.1/offers?active=true`;
+      console.log(`Cleeng offers request to ${apiUrl}`);
+      
+      const response = await fetch(apiUrl, {
+        method: "GET",
+        headers: { 
+          "Content-Type": "application/json",
+          "X-Publisher-Token": CLEENG_API_SECRET
+        }
       });
       
       const data = await response.json();
+      console.log("Cleeng offers response:", JSON.stringify(data, null, 2));
       
-      if (data.error) {
-        console.error("Cleeng offers error:", data.error);
-        return res.status(400).json({ error: data.error.message });
+      if (!response.ok) {
+        console.error("Cleeng offers error:", data);
+        return res.status(response.status).json({ error: data.message || "Failed to fetch offers" });
       }
       
-      const offers = data.result?.items || [];
-      res.json(offers);
+      // Core API 3.1 returns items array directly or in responseData
+      const offers = data.items || data.responseData?.items || data || [];
+      res.json(Array.isArray(offers) ? offers : []);
     } catch (error) {
       console.error("Cleeng offers error:", error);
       res.status(500).json({ error: "Failed to fetch offers" });

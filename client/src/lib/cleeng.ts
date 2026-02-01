@@ -1,15 +1,20 @@
 export interface CleengOffer {
   id: string;
-  offerId: string;
+  longId: string;
   title: string;
   description?: string;
-  price: number;
-  currency: string;
-  period?: string;
-  periodUnit?: string;
-  freePeriods?: number;
+  price: {
+    amount: number;
+    currency: string;
+    taxIncluded?: boolean;
+  };
+  type: string;
   active?: boolean;
   tags?: string[];
+  billingCycle?: {
+    periodUnit: string;
+    amount: number;
+  };
 }
 
 export interface CleengCustomer {
@@ -65,18 +70,7 @@ export async function getOffers(): Promise<CleengOffer[]> {
   const data = await response.json();
   
   if (Array.isArray(data)) {
-    return data.map((offer: any) => ({
-      id: offer.id || offer.offerId,
-      offerId: offer.offerId || offer.id,
-      title: offer.title || offer.offerTitle,
-      description: offer.description,
-      price: offer.price || 0,
-      currency: offer.currency || "USD",
-      period: offer.period,
-      periodUnit: offer.periodUnit,
-      active: offer.active,
-      tags: offer.tags || [],
-    }));
+    return data as CleengOffer[];
   }
   return [];
 }

@@ -28,18 +28,14 @@ function mapOffersToPlan(offers: CleengOffer[]): PricingPlan[] {
       badgeTags.some(b => tag.toLowerCase().includes(b.toLowerCase()))
     );
     
-    let period = "/month";
-    if (offer.periodUnit) {
-      period = `/${offer.periodUnit.toLowerCase()}`;
-    } else if (offer.period) {
-      period = `/${offer.period.toLowerCase()}`;
-    }
+    const periodUnit = offer.billingCycle?.periodUnit || "month";
+    const period = `/${periodUnit.toLowerCase()}`;
     
     return {
       id: offer.id,
-      offerId: offer.offerId,
+      offerId: offer.longId,
       name: offer.title,
-      price: formatPrice(offer.price, offer.currency),
+      price: formatPrice(offer.price.amount, offer.price.currency),
       period,
       features: defaultFeatures,
       popular: !!badge,
