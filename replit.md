@@ -102,3 +102,33 @@ Preferred communication style: Simple, everyday language.
 - API endpoint: `GET /api/series/:seriesId/next-episode` (requires `x-session-id` header)
 - Returns: `{ seasonNumber, episodeNumber, mediaId }` or `null`
 - Frontend uses this to determine button text and link destination
+
+## Cleeng Integration (Subscription Management)
+
+### Overview
+Cleeng is integrated for subscription management and payment processing. The integration uses two separate APIs:
+- **Core API** (`api.cleeng.com`): For publisher operations like listing offers (JSON-RPC)
+- **MediaStore API** (`mediastoreapi.cleeng.com`): For customer operations like registration, login, SSO
+
+### Environment Variables
+- `CLEENG_PUBLISHER_ID`: Publisher ID from Cleeng Dashboard
+- `CLEENG_API_SECRET`: Publisher Token/API Key from Dashboard > Admin & Tools > API Keys
+- `CLEENG_SANDBOX`: Set to "true" to use sandbox environment (optional)
+
+### API Endpoints
+- `GET /api/cleeng/config`: Returns publisher ID and environment
+- `GET /api/cleeng/offers`: Lists active subscription offers (Core API JSON-RPC)
+- `POST /api/cleeng/register`: Customer registration (MediaStore API)
+- `POST /api/cleeng/login`: Customer login (MediaStore API)
+- `POST /api/cleeng/sso`: SSO login to link Auth0 users (MediaStore API)
+- `GET /api/cleeng/subscriptions/:customerId`: Get customer subscriptions (MediaStore API)
+
+### Frontend Integration
+- `client/src/lib/cleeng.ts`: Type definitions and API helper functions
+- `client/src/lib/useAuth.ts`: Hook that links Auth0 users to Cleeng customers via SSO
+- `client/src/pages/Subscribe.tsx`: Subscription page that fetches real offers from Cleeng
+
+### Important Notes
+- Subscription offers must be created in the Cleeng Dashboard before they appear
+- The Subscribe page shows an error if no offers are available
+- Auth0 users are automatically linked to Cleeng customers on login via SSO
