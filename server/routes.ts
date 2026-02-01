@@ -8,7 +8,7 @@ const CLEENG_API_URL = CLEENG_SANDBOX
   ? "https://mediastoreapi-sandbox.cleeng.com" 
   : "https://mediastoreapi.cleeng.com";
 const CLEENG_API_V3_URL = CLEENG_SANDBOX
-  ? "https://api-sandbox.cleeng.com/3.1"
+  ? "https://sandbox.cleeng.com/3.1"
   : "https://api.cleeng.com/3.1";
 const CLEENG_PUBLISHER_ID = process.env.CLEENG_PUBLISHER_ID || "";
 const CLEENG_API_SECRET = process.env.CLEENG_API_SECRET || "";
@@ -181,13 +181,16 @@ export async function registerRoutes(
       
       if (!response.ok) {
         console.error("Cleeng offers API error:", data);
-        return res.status(response.status).json(data);
+        // Return empty array to let frontend use default plans
+        // This handles cases where sandbox doesn't have offers configured
+        return res.json([]);
       }
       
       res.json(data);
     } catch (error) {
       console.error("Cleeng offers error:", error);
-      res.status(500).json({ error: "Failed to fetch offers" });
+      // Return empty array on error to let frontend use default plans
+      res.json([]);
     }
   });
 
