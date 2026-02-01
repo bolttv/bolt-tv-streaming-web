@@ -159,9 +159,9 @@ export async function registerRoutes(
   // Get available offers (using Cleeng API 3.1 with X-Publisher-Token)
   app.get("/api/cleeng/offers", async (req, res) => {
     try {
-      // Cleeng API 3.1 endpoint for offers
+      // Cleeng API 3.1 endpoint for offers - publisher is identified by the token
       const response = await fetch(
-        `https://api.cleeng.com/3.1/offers?publisherId=${CLEENG_PUBLISHER_ID}&active=true`,
+        `https://api.cleeng.com/3.1/offers`,
         { 
           headers: { 
             "Content-Type": "application/json",

@@ -116,9 +116,16 @@ export default function Subscribe() {
           if (monthlyPlans.length > 0) {
             setSelectedPlan(monthlyPlans[0].id);
           }
+        } else {
+          // Fall back to default plans if no offers from API
+          setAllPlans(defaultPlans);
+          setSelectedPlan(defaultPlans[0].id);
         }
       } catch (error) {
         console.error("Failed to fetch offers:", error);
+        // Fall back to default plans on error
+        setAllPlans(defaultPlans);
+        setSelectedPlan(defaultPlans[0].id);
       } finally {
         setLoadingOffers(false);
       }
