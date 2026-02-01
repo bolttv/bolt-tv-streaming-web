@@ -156,20 +156,18 @@ export async function registerRoutes(
     }
   });
 
-  // Get available offers (using Cleeng MediaStore API)
+  // Get available offers (using Cleeng Core API 3.1)
   app.get("/api/cleeng/offers", async (req, res) => {
     try {
-      // Try the MediaStore API endpoint for offers
+      // Use Cleeng Core API 3.1 with X-Publisher-Token header
       const response = await fetch(
-        `${CLEENG_API_URL}/offers`,
+        `https://api.cleeng.com/3.1/publisher/${CLEENG_PUBLISHER_ID}/offers`,
         { 
-          method: "POST",
+          method: "GET",
           headers: { 
             "Content-Type": "application/json",
+            "X-Publisher-Token": CLEENG_API_SECRET,
           },
-          body: JSON.stringify({
-            publisherId: CLEENG_PUBLISHER_ID,
-          }),
         }
       );
       
