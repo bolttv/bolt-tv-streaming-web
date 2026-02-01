@@ -2,7 +2,14 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 
-const CLEENG_API_URL = "https://mediastoreapi.cleeng.com";
+// Cleeng environment: use sandbox if CLEENG_SANDBOX=true, otherwise production
+const CLEENG_SANDBOX = process.env.CLEENG_SANDBOX === "true";
+const CLEENG_API_URL = CLEENG_SANDBOX 
+  ? "https://mediastoreapi.sandbox.cleeng.com" 
+  : "https://mediastoreapi.cleeng.com";
+const CLEENG_CORE_API_URL = CLEENG_SANDBOX
+  ? "https://api.sandbox.cleeng.com"
+  : "https://api.cleeng.com";
 const CLEENG_PUBLISHER_ID = process.env.CLEENG_PUBLISHER_ID || "";
 const CLEENG_API_SECRET = process.env.CLEENG_API_SECRET || "";
 const AUTH0_DOMAIN = process.env.AUTH0_DOMAIN || "";
@@ -17,7 +24,7 @@ export async function registerRoutes(
   app.get("/api/cleeng/config", (req, res) => {
     res.json({
       publisherId: CLEENG_PUBLISHER_ID,
-      environment: "production",
+      environment: CLEENG_SANDBOX ? "sandbox" : "production",
     });
   });
 
@@ -160,8 +167,11 @@ export async function registerRoutes(
   app.get("/api/cleeng/offers", async (req, res) => {
     try {
       // Cleeng API 3.1 endpoint for offers - publisher is identified by the token
+      const apiUrl = `${CLEENG_CORE_API_URL}/3.1/offers`;
+      console.log(`Fetching Cleeng offers from: ${apiUrl} (sandbox: ${CLEENG_SANDBOX})`);
+      
       const response = await fetch(
-        `https://api.cleeng.com/3.1/offers`,
+        apiUrl,
         { 
           headers: { 
             "Content-Type": "application/json",

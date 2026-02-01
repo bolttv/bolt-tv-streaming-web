@@ -97,6 +97,7 @@ export default function Subscribe() {
   const [selectedPlan, setSelectedPlan] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [loadingOffers, setLoadingOffers] = useState(true);
+  const [offersError, setOffersError] = useState<string | null>(null);
 
   const filteredPlans = allPlans
     .filter(plan => plan.period === `/${billingPeriod}`)
@@ -117,15 +118,11 @@ export default function Subscribe() {
             setSelectedPlan(monthlyPlans[0].id);
           }
         } else {
-          // Fall back to default plans if no offers from API
-          setAllPlans(defaultPlans);
-          setSelectedPlan(defaultPlans[0].id);
+          setOffersError("No subscription plans are currently available. Please try again later.");
         }
       } catch (error) {
         console.error("Failed to fetch offers:", error);
-        // Fall back to default plans on error
-        setAllPlans(defaultPlans);
-        setSelectedPlan(defaultPlans[0].id);
+        setOffersError("Unable to load subscription plans. Please try again later.");
       } finally {
         setLoadingOffers(false);
       }
@@ -224,6 +221,18 @@ export default function Subscribe() {
         {loadingOffers ? (
           <div className="flex justify-center py-12">
             <Loader2 className="w-8 h-8 animate-spin text-white/60" />
+          </div>
+        ) : offersError ? (
+          <div className="text-center py-12">
+            <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-6 max-w-md mx-auto">
+              <p className="text-red-400 mb-4">{offersError}</p>
+              <button 
+                onClick={() => window.location.reload()}
+                className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition"
+              >
+                Retry
+              </button>
+            </div>
           </div>
         ) : (
         <div className={`grid gap-6 mb-12 ${filteredPlans.length === 2 ? 'md:grid-cols-2 max-w-3xl mx-auto' : 'md:grid-cols-3'}`}>
