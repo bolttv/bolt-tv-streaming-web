@@ -83,6 +83,24 @@ Preferred communication style: Simple, everyday language.
 - `checkMotionThumbnailExists()` - async fallback URL check
 - `enrichItemsWithMotionThumbnails()` - applies to all content arrays
 
+### Thumbnail Image Labels (JW Player)
+**Rule**: All thumbnails must use specific JW Player image labels from the media's additional images:
+
+1. **Regular content cards** (Featured rows, Popular, New Movies, etc.): Use `Vertical-Poster.jpg` label
+   - URL pattern: `https://cdn.jwplayer.com/v2/media/{mediaId}/images/Vertical-Poster.jpg`
+   - Fallback: Standard poster image (`poster.jpg?width=720`)
+
+2. **Continue Watching rail**: Use `Horizontal-Poster-Logo.jpg` label
+   - URL pattern: `https://cdn.jwplayer.com/v2/media/{mediaId}/images/Horizontal-Poster-Logo.jpg`
+   - Fallback: Standard poster image (`poster.jpg?width=480`)
+
+**Important**: JW Player image labels are case-sensitive. Use exact capitalization.
+
+**Implementation**:
+- `getJWPlayerVerticalPoster()` - returns Vertical-Poster.jpg URL
+- `getJWPlayerHorizontalPosterLogo()` - returns Horizontal-Poster-Logo.jpg URL
+- Frontend components include onError fallback handlers
+
 ### Hero Banner Logos
 - Logo images use pattern: `{mediaId}/images/hero-banner-logo.png`
 - Frontend falls back to text title if logo doesn't exist or fails to load

@@ -6,6 +6,7 @@ interface ContinueWatchingItem {
   mediaId: string;
   title: string;
   posterImage: string;
+  horizontalPosterLogo?: string;
   duration: number;
   watchedSeconds: number;
   progress: number;
@@ -27,7 +28,7 @@ export default function ContinueWatchingCard({ item }: ContinueWatchingCardProps
     ? `${Math.ceil(remainingSeconds / 60)} min left`
     : `${Math.round(remainingSeconds)} sec left`;
 
-  const horizontalPosterLogoUrl = `https://cdn.jwplayer.com/v2/media/${item.mediaId}/images/horizontal-poster-logo.webp?width=640`;
+  const horizontalPosterLogoUrl = item.horizontalPosterLogo || `https://cdn.jwplayer.com/v2/media/${item.mediaId}/images/Horizontal-Poster-Logo.jpg`;
   const fallbackPosterUrl = `https://cdn.jwplayer.com/v2/media/${item.mediaId}/poster.jpg?width=480`;
 
   return (

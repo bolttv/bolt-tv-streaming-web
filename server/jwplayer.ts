@@ -396,6 +396,10 @@ export function getJWPlayerVerticalPoster(mediaId: string): string {
   return `https://cdn.jwplayer.com/v2/media/${mediaId}/images/Vertical-Poster.jpg`;
 }
 
+export function getJWPlayerHorizontalPosterLogo(mediaId: string): string {
+  return `https://cdn.jwplayer.com/v2/media/${mediaId}/images/Horizontal-Poster-Logo.jpg`;
+}
+
 export function getJWPlayerHeroImage(mediaId: string): string {
   return `https://cdn.jwplayer.com/v2/media/${mediaId}/poster.jpg?width=1920`;
 }

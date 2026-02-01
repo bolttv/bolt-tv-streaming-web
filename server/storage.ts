@@ -1,6 +1,6 @@
 import { type User, type InsertUser, type WatchHistory, type InsertWatchHistory, watchHistory } from "@shared/schema";
 import { randomUUID } from "crypto";
-import { fetchJWPlayerPlaylist, fetchJWPlayerMedia, fetchSeriesEpisodes, fetchSeriesInfo, getJWPlayerThumbnail, getJWPlayerHeroImage, getJWPlayerVerticalPoster, getJWPlayerHeroBannerLogo, getJWPlayerMotionThumbnail, extractMotionThumbnailFromImages, checkMotionThumbnailExists, extractTrailerId, JWPlayerPlaylistItem, PLAYLISTS, SPORT_PLAYLISTS } from "./jwplayer";
+import { fetchJWPlayerPlaylist, fetchJWPlayerMedia, fetchSeriesEpisodes, fetchSeriesInfo, getJWPlayerThumbnail, getJWPlayerHeroImage, getJWPlayerVerticalPoster, getJWPlayerHorizontalPosterLogo, getJWPlayerHeroBannerLogo, getJWPlayerMotionThumbnail, extractMotionThumbnailFromImages, checkMotionThumbnailExists, extractTrailerId, JWPlayerPlaylistItem, PLAYLISTS, SPORT_PLAYLISTS } from "./jwplayer";
 import { db } from "./db";
 import { eq, and, desc, sql, inArray } from "drizzle-orm";
 
@@ -28,6 +28,7 @@ export interface RowItem {
   title: string;
   posterImage: string;
   verticalPosterImage?: string;
+  horizontalPosterLogo?: string;
   heroImage?: string;
   motionThumbnail?: string;
   logoImage?: string;
@@ -64,6 +65,7 @@ export interface ContinueWatchingItem {
   mediaId: string;
   title: string;
   posterImage: string;
+  horizontalPosterLogo: string;
   duration: number;
   watchedSeconds: number;
   progress: number;
@@ -881,6 +883,7 @@ export class MemStorage implements IStorage {
       mediaId: item.mediaId,
       title: item.title,
       posterImage: item.posterImage || "",
+      horizontalPosterLogo: getJWPlayerHorizontalPosterLogo(item.mediaId),
       duration: item.duration,
       watchedSeconds: item.watchedSeconds,
       progress: item.progress,
