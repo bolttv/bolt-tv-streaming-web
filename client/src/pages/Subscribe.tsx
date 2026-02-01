@@ -250,7 +250,7 @@ export default function Subscribe() {
               <button
                 onClick={handleSubscribe}
                 disabled={loading || !selectedPlan}
-                className="w-full bg-white text-black font-bold py-4 rounded-lg text-lg hover:bg-gray-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-white text-black font-bold py-4 rounded-full text-lg hover:bg-gray-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 data-testid="button-subscribe"
               >
                 {loading ? "Processing..." : isAuthenticated ? "Continue to Payment" : "Start 7-Day Free Trial"}
