@@ -163,31 +163,45 @@ export async function registerRoutes(
     }
   });
 
-  // Get available offers (using Cleeng API 3.1 with X-Publisher-Token)
+  // Get available offers using JSON-RPC listSubscriptionOffers
   app.get("/api/cleeng/offers", async (req, res) => {
     try {
-      // Cleeng API 3.1 endpoint for offers - publisher is identified by the token
-      const apiUrl = `${CLEENG_CORE_API_URL}/3.1/offers`;
-      console.log(`Fetching Cleeng offers from: ${apiUrl} (sandbox: ${CLEENG_SANDBOX})`);
+      // Try JSON-RPC method first (uses publisherToken in body)
+      const jsonRpcBody = {
+        method: "listSubscriptionOffers",
+        params: {
+          publisherToken: CLEENG_API_SECRET,
+          criteria: { active: true },
+          offset: 0,
+          limit: 50
+        },
+        jsonrpc: "2.0",
+        id: 1
+      };
+      
+      console.log(`Fetching Cleeng offers via JSON-RPC from: ${CLEENG_API_URL}`);
       
       const response = await fetch(
-        apiUrl,
+        CLEENG_API_URL,
         { 
+          method: "POST",
           headers: { 
             "Content-Type": "application/json",
-            "X-Publisher-Token": CLEENG_API_SECRET,
-          } 
+          },
+          body: JSON.stringify(jsonRpcBody)
         }
       );
       
       const data = await response.json();
       
-      if (!response.ok) {
-        console.error("Cleeng offers API error:", data);
-        return res.status(response.status).json(data);
+      if (data.error) {
+        console.error("Cleeng offers API error:", data.error);
+        return res.status(401).json({ message: data.error.message || "Unauthorized" });
       }
       
-      res.json(data);
+      // JSON-RPC returns offers in result.items
+      const offers = data.result?.items || [];
+      res.json(offers);
     } catch (error) {
       console.error("Cleeng offers error:", error);
       res.status(500).json({ error: "Failed to fetch offers" });
