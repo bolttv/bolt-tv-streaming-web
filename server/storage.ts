@@ -314,6 +314,7 @@ export class MemStorage implements IStorage {
   private categoryMapPromise: Promise<void> | null = null;
   private lastFetch: number = 0;
   private isInitialized: boolean = false;
+  private refreshPromise: Promise<void> | null = null;
 
   constructor() {
     this.users = new Map();
@@ -330,6 +331,21 @@ export class MemStorage implements IStorage {
       return;
     }
 
+    // If a refresh is already in progress, wait for it instead of starting a new one
+    if (this.refreshPromise) {
+      return this.refreshPromise;
+    }
+
+    this.refreshPromise = this.doRefreshJWPlayerContent();
+    try {
+      await this.refreshPromise;
+    } finally {
+      this.refreshPromise = null;
+    }
+  }
+
+  private async doRefreshJWPlayerContent(): Promise<void> {
+    const now = Date.now();
     console.log("Fetching content from JW Player playlists...");
     
     const [heroBanner, featured, recommended, popular, newMovies, documentaries] = await Promise.all([

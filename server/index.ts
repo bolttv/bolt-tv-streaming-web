@@ -4,6 +4,7 @@ import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
 import { prewarmCache } from "./jwplayer";
+import { storage } from "./storage";
 
 const app = express();
 const httpServer = createServer(app);
@@ -95,6 +96,13 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || "5000", 10);
+  
+  // Pre-warm the JW Player cache and initialize content BEFORE accepting requests
+  console.log("Initializing content...");
+  await prewarmCache();
+  await storage.refreshJWPlayerContent();
+  console.log("Content initialized, starting server...");
+  
   httpServer.listen(
     {
       port,
@@ -103,8 +111,6 @@ app.use((req, res, next) => {
     },
     () => {
       log(`serving on port ${port}`);
-      // Pre-warm the JW Player cache after server starts
-      prewarmCache().catch(err => console.error("Cache prewarm failed:", err));
     },
   );
 })();
