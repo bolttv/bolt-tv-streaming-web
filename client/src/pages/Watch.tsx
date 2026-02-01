@@ -243,8 +243,9 @@ export default function Watch() {
   }, [scriptLoaded, mediaId, saveProgress, queryClient, contentNotFound]);
 
   const handleBack = () => {
-    if (content?.id) {
-      setLocation(`/content/${content.id}`);
+    // Go back to the previous page in history, or home if no history
+    if (window.history.length > 1) {
+      window.history.back();
     } else {
       setLocation("/");
     }
