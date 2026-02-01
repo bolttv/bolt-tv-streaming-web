@@ -253,7 +253,7 @@ export default function Subscribe() {
                 className="w-full bg-white text-black font-bold py-4 rounded-lg text-lg hover:bg-gray-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 data-testid="button-subscribe"
               >
-                {loading ? "Processing..." : isAuthenticated ? "Continue to Payment" : "Sign Up to Subscribe"}
+                {loading ? "Processing..." : isAuthenticated ? "Continue to Payment" : "Start 7-Day Free Trial"}
               </button>
 
               <p className="text-center text-white/40 text-sm mt-4">
