@@ -258,7 +258,7 @@ export default function Checkout() {
               <button
                 onClick={handleSubscribe}
                 disabled={processing}
-                className="w-full py-4 bg-primary text-white rounded-lg font-semibold text-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors"
+                className="w-full py-4 bg-purple-600 text-white rounded-lg font-semibold text-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors"
                 data-testid="button-subscribe"
               >
                 {processing ? (
