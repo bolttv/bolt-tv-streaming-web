@@ -11,6 +11,7 @@ export interface CleengOffer {
   type: string;
   active?: boolean;
   tags?: string[];
+  freeDays?: number;
   billingCycle?: {
     periodUnit: string;
     amount: number;
