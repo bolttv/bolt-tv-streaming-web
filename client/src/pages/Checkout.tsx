@@ -128,14 +128,14 @@ export default function Checkout() {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="max-w-md mx-auto text-center p-8">
-          <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Check className="w-8 h-8 text-green-500" />
+          <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-8">
+            <Check className="w-10 h-10 text-green-500" />
           </div>
-          <h1 className="text-2xl font-bold mb-4">Welcome to Bolt TV!</h1>
+          <h1 className="text-3xl font-bold mb-4">You're All Set!</h1>
           <p className="text-gray-400 mb-2">
             Your subscription is now active.
           </p>
-          <p className="text-gray-500 text-sm mb-8">
+          <p className="text-gray-500 text-sm mb-10">
             {offer?.freeDays && offer.freeDays > 0 
               ? `Your ${offer.freeDays}-day free trial has started. You won't be charged until it ends.`
               : `You now have full access to all premium content.`
@@ -143,10 +143,10 @@ export default function Checkout() {
           </p>
           <Link 
             href="/"
-            className="inline-flex items-center justify-center px-8 py-4 bg-primary text-white rounded-lg font-semibold hover:bg-primary/90 transition-colors"
-            data-testid="button-start-watching"
+            className="inline-flex items-center justify-center px-10 py-4 bg-purple-600 text-white rounded-lg font-semibold text-lg hover:bg-purple-700 transition-colors"
+            data-testid="button-start-streaming"
           >
-            Start Watching
+            Start Streaming
           </Link>
         </div>
       </div>
