@@ -6,7 +6,7 @@ import { getOffers, CleengOffer, formatPrice } from "@/lib/cleeng";
 
 export default function Checkout() {
   const [, setLocation] = useLocation();
-  const { isAuthenticated, cleengCustomer, isLinking, user } = useAuth();
+  const { isAuthenticated, cleengCustomer, isLinking, user, isLoading: authLoading } = useAuth();
   const [offer, setOffer] = useState<CleengOffer | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -22,6 +22,11 @@ export default function Checkout() {
   const offerId = new URLSearchParams(window.location.search).get("offerId");
 
   useEffect(() => {
+    // Wait for Auth0 to finish loading before checking authentication
+    if (authLoading) {
+      return;
+    }
+    
     // If not authenticated at all, redirect to subscribe
     if (!isAuthenticated) {
       setLocation("/subscribe");
@@ -65,7 +70,7 @@ export default function Checkout() {
     };
 
     fetchOffer();
-  }, [offerId, isAuthenticated, isLinking, setLocation]);
+  }, [offerId, isAuthenticated, isLinking, authLoading, setLocation]);
 
   const formatCardNumber = (value: string) => {
     const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
@@ -108,7 +113,7 @@ export default function Checkout() {
     setProcessing(false);
   };
 
-  if (loading || isLinking) {
+  if (loading || isLinking || authLoading) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="text-center">
