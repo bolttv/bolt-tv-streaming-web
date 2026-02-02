@@ -22,13 +22,26 @@ export default function Checkout() {
   const offerId = new URLSearchParams(window.location.search).get("offerId");
 
   useEffect(() => {
+    // If not authenticated at all, redirect to subscribe
     if (!isAuthenticated) {
       setLocation("/subscribe");
       return;
     }
 
+    // Wait for Cleeng SSO to complete before fetching offer
+    if (isLinking) {
+      setLoading(true);
+      return;
+    }
+
     const fetchOffer = async () => {
       if (!offerId) {
+        // Check localStorage for pending checkout offer
+        const pendingOffer = localStorage.getItem("pending_checkout_offer");
+        if (pendingOffer) {
+          setLocation(`/checkout?offerId=${encodeURIComponent(pendingOffer)}`);
+          return;
+        }
         setError("No offer selected");
         setLoading(false);
         return;
@@ -39,6 +52,8 @@ export default function Checkout() {
         const selectedOffer = offers.find(o => o.id === offerId || o.longId === offerId);
         if (selectedOffer) {
           setOffer(selectedOffer);
+          // Clear pending checkout offer from localStorage
+          localStorage.removeItem("pending_checkout_offer");
         } else {
           setError("Offer not found");
         }
@@ -50,7 +65,7 @@ export default function Checkout() {
     };
 
     fetchOffer();
-  }, [offerId, isAuthenticated, setLocation]);
+  }, [offerId, isAuthenticated, isLinking, setLocation]);
 
   const formatCardNumber = (value: string) => {
     const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
@@ -96,7 +111,10 @@ export default function Checkout() {
   if (loading || isLinking) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-gray-400">{isLinking ? "Setting up your account..." : "Loading..."}</p>
+        </div>
       </div>
     );
   }

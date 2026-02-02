@@ -108,10 +108,12 @@ export default function Subscribe() {
       return;
     }
 
-    // If not authenticated, redirect to Auth0
+    // If not authenticated, save the selected plan and redirect to Auth0
     if (!isAuthenticated) {
+      // Store selected plan in localStorage so we can redirect to checkout after login
+      localStorage.setItem("pending_checkout_offer", selectedPlanData.offerId);
       loginWithRedirect({
-        appState: { returnTo: "/subscribe" },
+        appState: { returnTo: `/checkout?offerId=${encodeURIComponent(selectedPlanData.offerId)}` },
         authorizationParams: { screen_hint: "signup" },
       });
       return;
@@ -123,12 +125,8 @@ export default function Subscribe() {
       return;
     }
 
-    // Check if Cleeng customer is linked
-    if (!cleengCustomer?.jwt) {
-      setCheckoutError("Setting up your account, please try again in a moment...");
-      return;
-    }
-
+    // Check if Cleeng customer is linked - if not, just proceed anyway
+    // The checkout page will handle the SSO if needed
     setLoading(true);
     setCheckoutError(null);
 

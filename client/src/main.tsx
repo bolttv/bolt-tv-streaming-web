@@ -8,7 +8,8 @@ const clientId = import.meta.env.VITE_AUTH0_CLIENT_ID || "";
 
 const onRedirectCallback = (appState?: AppState) => {
   const returnTo = appState?.returnTo || "/";
-  window.history.replaceState({}, document.title, returnTo);
+  // Use full page navigation to ensure the route is properly loaded
+  window.location.replace(returnTo);
 };
 
 createRoot(document.getElementById("root")!).render(
