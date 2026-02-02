@@ -125,8 +125,8 @@ Preferred communication style: Simple, everyday language.
 
 ### Overview
 Cleeng is integrated for subscription management and payment processing. The integration uses two separate APIs:
-- **Core API** (`api.cleeng.com`): For publisher operations like listing offers (JSON-RPC)
-- **MediaStore API** (`mediastoreapi.cleeng.com`): For customer operations like registration, login, SSO
+- **Core API** (`api.cleeng.com`): For publisher operations like listing offers and server-side customer registration (JSON-RPC)
+- **MediaStore API** (`mediastoreapi.cleeng.com`): For customer operations like login and checkout
 
 ### Environment Variables
 - `CLEENG_PUBLISHER_ID`: Publisher ID from Cleeng Dashboard
@@ -135,18 +135,32 @@ Cleeng is integrated for subscription management and payment processing. The int
 
 ### API Endpoints
 - `GET /api/cleeng/config`: Returns publisher ID and environment
-- `GET /api/cleeng/offers`: Lists active subscription offers (Core API JSON-RPC)
+- `GET /api/cleeng/offers`: Lists active subscription offers (Core API 3.1)
 - `POST /api/cleeng/register`: Customer registration (MediaStore API)
 - `POST /api/cleeng/login`: Customer login (MediaStore API)
-- `POST /api/cleeng/sso`: SSO login to link Auth0 users (MediaStore API)
+- `POST /api/cleeng/sso`: SSO login to link Auth0 users (Core API JSON-RPC with publisherToken)
 - `GET /api/cleeng/subscriptions/:customerId`: Get customer subscriptions (MediaStore API)
+- `POST /api/cleeng/checkout`: Create checkout order for subscription (MediaStore API)
+
+### SSO Flow (Auth0 → Cleeng)
+1. User authenticates with Auth0
+2. SSO endpoint registers customer in Cleeng using Core API `registerCustomer` method (bypasses reCAPTCHA)
+3. For existing customers, uses `generateCustomerToken` to get a JWT
+4. JWT is stored in localStorage and used for checkout operations
 
 ### Frontend Integration
 - `client/src/lib/cleeng.ts`: Type definitions and API helper functions
 - `client/src/lib/useAuth.ts`: Hook that links Auth0 users to Cleeng customers via SSO
-- `client/src/pages/Subscribe.tsx`: Subscription page that fetches real offers from Cleeng
+- `client/src/pages/Subscribe.tsx`: Subscription page with checkout flow
+
+### Checkout Flow
+1. User selects a plan and clicks "Start Free Trial" or "Continue to Payment"
+2. If not authenticated, redirects to Auth0
+3. After Auth0 authentication, SSO creates/links Cleeng customer
+4. `createCheckout()` creates an order with Cleeng
+5. User is redirected to Cleeng's hosted checkout page for payment
 
 ### Important Notes
 - Subscription offers must be created in the Cleeng Dashboard before they appear
-- The Subscribe page shows an error if no offers are available
-- Auth0 users are automatically linked to Cleeng customers on login via SSO
+- Payment methods must be configured in Cleeng Dashboard (Settings → Payment Methods)
+- Auth0 users are automatically registered/linked as Cleeng customers on login

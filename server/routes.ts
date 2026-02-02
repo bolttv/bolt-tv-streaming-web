@@ -129,7 +129,8 @@ export async function registerRoutes(
     }
   });
 
-  // SSO login - link Auth0 user to Cleeng customer (MediaStore API)
+  // SSO login - link Auth0 user to Cleeng customer (Core API with publisherToken)
+  // First registers the customer if they don't exist, then returns a customer token
   app.post("/api/cleeng/sso", async (req, res) => {
     try {
       const { email, externalId } = req.body;
@@ -138,29 +139,94 @@ export async function registerRoutes(
         return res.status(400).json({ errors: ["Email is required"] });
       }
       
-      const response = await fetch(`${CLEENG_MEDIASTORE_URL}/customers/sso`, {
+      console.log("Cleeng SSO request for email:", email);
+      
+      // Generate a secure random password for SSO customers
+      // They authenticate via Auth0, so this password is never used directly
+      const randomPassword = `SSO_${crypto.randomUUID()}_${Date.now()}!`;
+      
+      // Use Core API with publisherToken for server-side registration (bypasses reCAPTCHA)
+      const registerResponse = await fetch(`${CLEENG_CORE_API_URL}/3.0/json-rpc`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
-          "X-Publisher-Token": CLEENG_API_SECRET,
         },
         body: JSON.stringify({
-          publisherId: CLEENG_PUBLISHER_ID,
-          email,
-          externalCustomerId: externalId || email,
-          locale: "en_US",
-          country: "US",
-          currency: "USD",
+          method: "registerCustomer",
+          params: {
+            publisherToken: CLEENG_API_SECRET,
+            customerData: {
+              email,
+              password: randomPassword,
+              locale: "en_US",
+              country: "US",
+              currency: "USD",
+              externalId: externalId || email,
+            }
+          },
+          jsonrpc: "2.0",
+          id: 1
         }),
       });
       
-      const data = await response.json();
-      if (!response.ok) {
-        console.error("Cleeng SSO error:", data);
-        return res.status(response.status).json(data);
+      const registerData = await registerResponse.json();
+      console.log("Cleeng registration response:", JSON.stringify(registerData, null, 2));
+      
+      // If registration succeeded, extract the token
+      if (registerData.result?.token) {
+        console.log("Cleeng customer registered successfully");
+        return res.json({ 
+          jwt: registerData.result.token,
+          customerId: registerData.result.customerId || email,
+          email: email
+        });
       }
       
-      res.json(data);
+      // If customer already exists (error indicates duplicate), generate a token for existing customer
+      if (registerData.error?.message?.includes("already") || 
+          registerData.error?.message?.includes("exists") ||
+          registerData.error?.code === -1) {
+        console.log("Customer already exists, generating token...");
+        
+        // Use generateCustomerToken for existing customers
+        const tokenResponse = await fetch(`${CLEENG_CORE_API_URL}/3.0/json-rpc`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            method: "generateCustomerToken",
+            params: {
+              publisherToken: CLEENG_API_SECRET,
+              customerEmail: email
+            },
+            jsonrpc: "2.0",
+            id: 1
+          }),
+        });
+        
+        const tokenData = await tokenResponse.json();
+        console.log("Cleeng token generation response:", JSON.stringify(tokenData, null, 2));
+        
+        if (tokenData.result?.token) {
+          return res.json({
+            jwt: tokenData.result.token,
+            customerId: tokenData.result.customerId || email,
+            email: email
+          });
+        }
+        
+        // If token generation fails, return the error
+        console.error("Cleeng token generation error:", tokenData);
+        return res.status(400).json({ 
+          errors: [tokenData.error?.message || "Failed to generate customer token"],
+        });
+      }
+      
+      // Some other registration error
+      console.error("Cleeng registration error:", registerData);
+      return res.status(400).json({ 
+        errors: [registerData.error?.message || "Registration failed"] 
+      });
+      
     } catch (error) {
       console.error("Cleeng SSO error:", error);
       res.status(500).json({ errors: ["SSO login failed"] });
