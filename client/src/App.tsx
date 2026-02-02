@@ -10,6 +10,7 @@ import SignIn from "@/pages/SignIn";
 import Register from "@/pages/Register";
 import Subscribe from "@/pages/Subscribe";
 import Checkout from "@/pages/Checkout";
+import VerifyEmail from "@/pages/VerifyEmail";
 import Search from "@/pages/Search";
 import NotFound from "@/pages/not-found";
 
@@ -24,6 +25,7 @@ function Router() {
       <Route path="/register" component={Register} />
       <Route path="/subscribe" component={Subscribe} />
       <Route path="/checkout" component={Checkout} />
+      <Route path="/verify-email" component={VerifyEmail} />
       <Route path="/search" component={Search} />
       <Route component={NotFound} />
     </Switch>

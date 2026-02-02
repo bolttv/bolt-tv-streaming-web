@@ -33,6 +33,13 @@ export default function Checkout() {
       return;
     }
 
+    // Check if email is verified - redirect to verify email page if not
+    if (user && !user.email_verified) {
+      const currentUrl = window.location.pathname + window.location.search;
+      setLocation(`/verify-email?returnTo=${encodeURIComponent(currentUrl)}`);
+      return;
+    }
+
     // Wait for Cleeng SSO to complete before fetching offer
     if (isLinking) {
       setLoading(true);
@@ -70,7 +77,7 @@ export default function Checkout() {
     };
 
     fetchOffer();
-  }, [offerId, isAuthenticated, isLinking, authLoading, setLocation]);
+  }, [offerId, isAuthenticated, isLinking, authLoading, user, setLocation]);
 
   const formatCardNumber = (value: string) => {
     const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
