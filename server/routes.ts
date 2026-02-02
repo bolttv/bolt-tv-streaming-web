@@ -129,8 +129,8 @@ export async function registerRoutes(
     }
   });
 
-  // SSO login - link Auth0 user to Cleeng customer (Core API with publisherToken)
-  // First registers the customer if they don't exist, then returns a customer token
+  // SSO login - link Auth0 user to Cleeng customer
+  // First registers the customer if they don't exist, then gets a JWT from MediaStore API
   app.post("/api/cleeng/sso", async (req, res) => {
     try {
       const { email, externalId } = req.body;
@@ -142,15 +142,12 @@ export async function registerRoutes(
       console.log("Cleeng SSO request for email:", email);
       
       // Generate a secure random password for SSO customers
-      // They authenticate via Auth0, so this password is never used directly
       const randomPassword = `SSO_${crypto.randomUUID()}_${Date.now()}!`;
       
-      // Use Core API with publisherToken for server-side registration (bypasses reCAPTCHA)
+      // Step 1: Try to register customer with Core API (bypasses reCAPTCHA)
       const registerResponse = await fetch(`${CLEENG_CORE_API_URL}/3.0/json-rpc`, {
         method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           method: "registerCustomer",
           params: {
@@ -172,23 +169,53 @@ export async function registerRoutes(
       const registerData = await registerResponse.json();
       console.log("Cleeng registration response:", JSON.stringify(registerData, null, 2));
       
-      // If registration succeeded, extract the token
-      if (registerData.result?.token) {
-        console.log("Cleeng customer registered successfully");
-        return res.json({ 
-          jwt: registerData.result.token,
-          customerId: registerData.result.customerId || email,
-          email: email
+      // Step 2: Get JWT from MediaStore API's SSO endpoint
+      // This works for both new and existing customers
+      const getJwt = async () => {
+        const ssoResponse = await fetch(`${CLEENG_MEDIASTORE_URL}/sso/auths`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            publisherToken: CLEENG_API_SECRET,
+            publisherId: parseInt(CLEENG_PUBLISHER_ID),
+            customerEmail: email,
+          }),
         });
-      }
+        
+        const ssoData = await ssoResponse.json();
+        console.log("Cleeng SSO JWT response:", JSON.stringify(ssoData, null, 2));
+        return ssoData;
+      };
       
-      // If customer already exists (error indicates duplicate), generate a token for existing customer
-      if (registerData.error?.message?.includes("already") || 
+      // If registration succeeded or customer already exists, get JWT
+      if (registerData.result?.token || 
+          registerData.error?.message?.includes("already") || 
           registerData.error?.message?.includes("exists") ||
           registerData.error?.code === -1) {
-        console.log("Customer already exists, generating token...");
         
-        // Use generateCustomerToken for existing customers
+        const jwtData = await getJwt();
+        
+        if (jwtData.jwt) {
+          return res.json({
+            jwt: jwtData.jwt,
+            refreshToken: jwtData.refreshToken,
+            customerId: jwtData.customerId || email,
+            email: email
+          });
+        }
+        
+        // If SSO JWT fails, try using the customerToken from registration
+        if (registerData.result?.token) {
+          console.log("SSO JWT failed, using customerToken as fallback");
+          return res.json({ 
+            jwt: registerData.result.token,
+            customerId: registerData.result.customerId || email,
+            email: email
+          });
+        }
+        
+        // Last resort: generate customerToken via Core API
+        console.log("Trying generateCustomerToken...");
         const tokenResponse = await fetch(`${CLEENG_CORE_API_URL}/3.0/json-rpc`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -214,10 +241,9 @@ export async function registerRoutes(
           });
         }
         
-        // If token generation fails, return the error
-        console.error("Cleeng token generation error:", tokenData);
+        console.error("All token methods failed:", jwtData, tokenData);
         return res.status(400).json({ 
-          errors: [tokenData.error?.message || "Failed to generate customer token"],
+          errors: ["Failed to generate authentication token"],
         });
       }
       
@@ -261,7 +287,7 @@ export async function registerRoutes(
     }
   });
 
-  // Create a Cleeng checkout order
+  // Get Cleeng checkout URL for hosted checkout
   app.post("/api/cleeng/checkout", async (req, res) => {
     try {
       const { offerId, customerJwt } = req.body;
@@ -274,33 +300,21 @@ export async function registerRoutes(
         return res.status(401).json({ error: "Customer authentication required" });
       }
 
-      // Create order using Cleeng MediaStore API
-      const orderResponse = await fetch(`${CLEENG_MEDIASTORE_URL}/orders`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${customerJwt}`,
-        },
-        body: JSON.stringify({
-          offerId: offerId,
-          buyAsAGift: false,
-        }),
-      });
+      console.log("Cleeng checkout request - offerId:", offerId, "token length:", customerJwt?.length);
 
-      const orderData = await orderResponse.json();
-      console.log("Cleeng order response:", orderData);
+      // For Cleeng hosted checkout, return the checkout URL directly
+      // The customer token is passed as a query parameter
+      const baseUrl = CLEENG_SANDBOX 
+        ? "https://checkout.sandbox.cleeng.com"
+        : "https://checkout.cleeng.com";
+      
+      const checkoutUrl = `${baseUrl}?offerId=${encodeURIComponent(offerId)}&publisherId=${encodeURIComponent(CLEENG_PUBLISHER_ID)}&customerToken=${encodeURIComponent(customerJwt)}`;
+      
+      console.log("Generated checkout URL:", checkoutUrl);
 
-      if (!orderResponse.ok) {
-        return res.status(orderResponse.status).json({ 
-          error: orderData.message || "Failed to create order",
-          details: orderData
-        });
-      }
-
-      // Return the order data - frontend will use this to redirect to payment
       res.json({
-        orderId: orderData.responseData?.id || orderData.id,
-        order: orderData.responseData || orderData,
+        checkoutUrl: checkoutUrl,
+        offerId: offerId,
         publisherId: CLEENG_PUBLISHER_ID,
         environment: CLEENG_SANDBOX ? "sandbox" : "production",
       });

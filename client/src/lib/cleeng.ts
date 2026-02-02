@@ -120,15 +120,8 @@ export function formatPrice(price: number, currency: string): string {
 }
 
 export interface CheckoutResponse {
-  orderId: string;
-  order: {
-    id: number;
-    customerId: number;
-    offerId: string;
-    totalPrice: number;
-    currency: string;
-    paymentMethodId?: number;
-  };
+  checkoutUrl: string;
+  offerId: string;
   publisherId: string;
   environment: string;
 }
