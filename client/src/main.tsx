@@ -1,10 +1,15 @@
 import { createRoot } from "react-dom/client";
-import { Auth0Provider } from "@auth0/auth0-react";
+import { Auth0Provider, AppState } from "@auth0/auth0-react";
 import App from "./App";
 import "./index.css";
 
 const domain = import.meta.env.VITE_AUTH0_DOMAIN || "";
 const clientId = import.meta.env.VITE_AUTH0_CLIENT_ID || "";
+
+const onRedirectCallback = (appState?: AppState) => {
+  const returnTo = appState?.returnTo || "/";
+  window.history.replaceState({}, document.title, returnTo);
+};
 
 createRoot(document.getElementById("root")!).render(
   <Auth0Provider
@@ -14,6 +19,7 @@ createRoot(document.getElementById("root")!).render(
       redirect_uri: window.location.origin,
     }}
     cacheLocation="localstorage"
+    onRedirectCallback={onRedirectCallback}
   >
     <App />
   </Auth0Provider>

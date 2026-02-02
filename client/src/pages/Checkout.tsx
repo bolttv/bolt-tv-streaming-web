@@ -118,13 +118,12 @@ export default function Checkout() {
               : `You now have full access to all premium content.`
             }
           </p>
-          <Link href="/">
-            <a 
-              className="inline-flex items-center justify-center px-8 py-4 bg-primary text-white rounded-lg font-semibold hover:bg-primary/90 transition-colors"
-              data-testid="button-start-watching"
-            >
-              Start Watching
-            </a>
+          <Link 
+            href="/"
+            className="inline-flex items-center justify-center px-8 py-4 bg-primary text-white rounded-lg font-semibold hover:bg-primary/90 transition-colors"
+            data-testid="button-start-watching"
+          >
+            Start Watching
           </Link>
         </div>
       </div>
@@ -134,11 +133,9 @@ export default function Checkout() {
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="container mx-auto px-4 py-8">
-        <Link href="/subscribe">
-          <a className="inline-flex items-center text-gray-400 hover:text-white mb-8">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to plans
-          </a>
+        <Link href="/subscribe" className="inline-flex items-center text-gray-400 hover:text-white mb-8">
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to plans
         </Link>
 
         <div className="max-w-2xl mx-auto">

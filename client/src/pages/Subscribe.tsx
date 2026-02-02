@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { ArrowLeft, Check, Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/useAuth";
 import { getOffers, CleengOffer, formatPrice } from "@/lib/cleeng";
@@ -45,6 +45,7 @@ function mapOffersToPlan(offers: CleengOffer[]): PricingPlan[] {
 }
 
 export default function Subscribe() {
+  const [, setLocation] = useLocation();
   const { isAuthenticated, loginWithRedirect, cleengCustomer, isLinking } = useAuth();
   const [plans, setPlans] = useState<PricingPlan[]>([]);
   const [billingPeriod, setBillingPeriod] = useState<"month" | "year">("month");
@@ -100,6 +101,14 @@ export default function Subscribe() {
   }, [billingPeriod, plans, selectedPlan]);
 
   const handleSubscribe = async () => {
+    // Check if plan is selected first
+    const selectedPlanData = plans.find(p => p.id === selectedPlan);
+    if (!selectedPlanData) {
+      setCheckoutError("Please select a plan");
+      return;
+    }
+
+    // If not authenticated, redirect to Auth0
     if (!isAuthenticated) {
       loginWithRedirect({
         appState: { returnTo: "/subscribe" },
@@ -110,38 +119,29 @@ export default function Subscribe() {
 
     // Wait for Cleeng customer to be linked
     if (isLinking) {
+      setCheckoutError("Setting up your account...");
       return;
     }
 
+    // Check if Cleeng customer is linked
     if (!cleengCustomer?.jwt) {
-      setCheckoutError("Please wait while we set up your account...");
+      setCheckoutError("Setting up your account, please try again in a moment...");
       return;
     }
 
     setLoading(true);
     setCheckoutError(null);
-    
-    const selectedPlanData = plans.find(p => p.id === selectedPlan);
-    
-    if (!selectedPlanData) {
-      setLoading(false);
-      setCheckoutError("Please select a plan");
-      return;
-    }
 
-    // Redirect to in-app checkout page
-    window.location.href = `/checkout?offerId=${encodeURIComponent(selectedPlanData.offerId)}`;
-    setLoading(false);
+    // Navigate to checkout page using wouter
+    setLocation(`/checkout?offerId=${encodeURIComponent(selectedPlanData.offerId)}`);
   };
 
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="p-4 md:p-8">
-        <Link href="/">
-          <button className="flex items-center gap-2 text-white/70 hover:text-white transition" data-testid="button-back">
-            <ArrowLeft className="w-5 h-5" />
-            <span>Back</span>
-          </button>
+        <Link href="/" className="flex items-center gap-2 text-white/70 hover:text-white transition" data-testid="button-back">
+          <ArrowLeft className="w-5 h-5" />
+          <span>Back</span>
         </Link>
       </div>
 
