@@ -9,6 +9,7 @@ import SportCategory from "@/pages/SportCategory";
 import SignIn from "@/pages/SignIn";
 import Register from "@/pages/Register";
 import Subscribe from "@/pages/Subscribe";
+import Checkout from "@/pages/Checkout";
 import Search from "@/pages/Search";
 import NotFound from "@/pages/not-found";
 
@@ -22,6 +23,7 @@ function Router() {
       <Route path="/signin" component={SignIn} />
       <Route path="/register" component={Register} />
       <Route path="/subscribe" component={Subscribe} />
+      <Route path="/checkout" component={Checkout} />
       <Route path="/search" component={Search} />
       <Route component={NotFound} />
     </Switch>

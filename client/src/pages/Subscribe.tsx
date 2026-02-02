@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { ArrowLeft, Check, Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/useAuth";
-import { getOffers, CleengOffer, formatPrice, createCheckout } from "@/lib/cleeng";
+import { getOffers, CleengOffer, formatPrice } from "@/lib/cleeng";
 
 interface PricingPlan {
   id: string;
@@ -129,20 +129,9 @@ export default function Subscribe() {
       return;
     }
 
-    try {
-      const checkoutData = await createCheckout(selectedPlanData.offerId, cleengCustomer.jwt);
-      
-      // Redirect to Cleeng's hosted checkout URL
-      if (checkoutData.checkoutUrl) {
-        window.location.href = checkoutData.checkoutUrl;
-      } else {
-        throw new Error("No checkout URL returned");
-      }
-    } catch (error) {
-      console.error("Checkout error:", error);
-      setCheckoutError(error instanceof Error ? error.message : "Failed to start checkout");
-      setLoading(false);
-    }
+    // Redirect to in-app checkout page
+    window.location.href = `/checkout?offerId=${encodeURIComponent(selectedPlanData.offerId)}`;
+    setLoading(false);
   };
 
   return (

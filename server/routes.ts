@@ -324,6 +324,57 @@ export async function registerRoutes(
     }
   });
 
+  // Create a subscription (free trial or immediate activation)
+  app.post("/api/cleeng/subscribe", async (req, res) => {
+    try {
+      const { offerId, customerToken, customerEmail } = req.body;
+      
+      if (!offerId) {
+        return res.status(400).json({ error: "Offer ID is required" });
+      }
+      
+      if (!customerToken) {
+        return res.status(401).json({ error: "Customer authentication required" });
+      }
+
+      console.log("Cleeng subscribe request - offerId:", offerId, "email:", customerEmail);
+
+      // Use Core API to create a subscription directly (for free trials or testing)
+      const subscribeResponse = await fetch(`${CLEENG_CORE_API_URL}/3.0/json-rpc`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          method: "registerSubscription",
+          params: {
+            publisherToken: CLEENG_API_SECRET,
+            customerEmail: customerEmail,
+            offerId: offerId,
+          },
+          jsonrpc: "2.0",
+          id: 1
+        }),
+      });
+
+      const subscribeData = await subscribeResponse.json();
+      console.log("Cleeng subscribe response:", JSON.stringify(subscribeData, null, 2));
+
+      if (subscribeData.error) {
+        return res.status(400).json({ 
+          error: subscribeData.error.message || "Subscription failed",
+          details: subscribeData.error
+        });
+      }
+
+      res.json({
+        success: true,
+        subscription: subscribeData.result,
+      });
+    } catch (error) {
+      console.error("Cleeng subscribe error:", error);
+      res.status(500).json({ error: "Failed to create subscription" });
+    }
+  });
+
   // Get all hero items for the carousel (with prefetched next episode data)
   app.get("/api/content/hero", async (req, res) => {
     try {

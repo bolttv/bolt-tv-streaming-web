@@ -154,13 +154,25 @@ Cleeng is integrated for subscription management and payment processing. The int
 - `client/src/pages/Subscribe.tsx`: Subscription page with checkout flow
 
 ### Checkout Flow
-1. User selects a plan and clicks "Start Free Trial" or "Continue to Payment"
+1. User selects a plan on `/subscribe` page
 2. If not authenticated, redirects to Auth0
-3. After Auth0 authentication, SSO creates/links Cleeng customer
-4. `createCheckout()` creates an order with Cleeng
-5. User is redirected to Cleeng's hosted checkout page for payment
+3. After Auth0 authentication, SSO creates/links Cleeng customer via `registerCustomer` method
+4. User is redirected to in-app checkout page at `/checkout?offerId=...`
+5. Checkout page shows order summary and account information
+
+### Pages
+- `/subscribe`: Plan selection page with pricing cards
+- `/checkout`: In-app checkout page showing order summary and subscription details
 
 ### Important Notes
 - Subscription offers must be created in the Cleeng Dashboard before they appear
 - Payment methods must be configured in Cleeng Dashboard (Settings → Payment Methods)
 - Auth0 users are automatically registered/linked as Cleeng customers on login
+
+### Payment Integration Status
+The current implementation registers customers via Cleeng SSO but does not include payment collection. To complete the integration:
+1. Configure Adyen or PayPal in Cleeng Dashboard
+2. Integrate Adyen Web Drop-in or PayPal SDK in the checkout page
+3. Or downgrade to React 18 to use Cleeng's MediaStore SDK components
+
+**Known limitation**: Cleeng MediaStore SDK requires React 18 (this project uses React 19)
