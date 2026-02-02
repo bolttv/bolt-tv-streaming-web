@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { ArrowLeft, Check, Loader2 } from "lucide-react";
-import { useAuth0 } from "@auth0/auth0-react";
-import { getOffers, CleengOffer, formatPrice } from "@/lib/cleeng";
+import { useAuth } from "@/lib/useAuth";
+import { getOffers, CleengOffer, formatPrice, createCheckout, getCleengCheckoutUrl } from "@/lib/cleeng";
 
 interface PricingPlan {
   id: string;
@@ -45,13 +45,14 @@ function mapOffersToPlan(offers: CleengOffer[]): PricingPlan[] {
 }
 
 export default function Subscribe() {
-  const { isAuthenticated, loginWithRedirect } = useAuth0();
+  const { isAuthenticated, loginWithRedirect, cleengCustomer, isLinking } = useAuth();
   const [plans, setPlans] = useState<PricingPlan[]>([]);
   const [billingPeriod, setBillingPeriod] = useState<"month" | "year">("month");
   const [selectedPlan, setSelectedPlan] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [loadingOffers, setLoadingOffers] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   const filteredPlans = plans
     .filter(plan => plan.period === `/${billingPeriod}`)
@@ -107,16 +108,43 @@ export default function Subscribe() {
       return;
     }
 
+    // Wait for Cleeng customer to be linked
+    if (isLinking) {
+      return;
+    }
+
+    if (!cleengCustomer?.jwt) {
+      setCheckoutError("Please wait while we set up your account...");
+      return;
+    }
+
     setLoading(true);
+    setCheckoutError(null);
     
     const selectedPlanData = plans.find(p => p.id === selectedPlan);
     
-    setTimeout(() => {
+    if (!selectedPlanData) {
       setLoading(false);
-      if (selectedPlanData) {
-        alert(`Proceeding to checkout for: ${selectedPlanData.name} (${selectedPlanData.price}${selectedPlanData.period})\n\nOffer ID: ${selectedPlanData.offerId}\n\nPayment flow integration coming soon.`);
-      }
-    }, 1000);
+      setCheckoutError("Please select a plan");
+      return;
+    }
+
+    try {
+      const checkoutData = await createCheckout(selectedPlanData.offerId, cleengCustomer.jwt);
+      
+      // Redirect to Cleeng's hosted checkout
+      const checkoutUrl = getCleengCheckoutUrl(
+        checkoutData.order.id || checkoutData.orderId,
+        checkoutData.publisherId,
+        checkoutData.environment
+      );
+      
+      window.location.href = checkoutUrl;
+    } catch (error) {
+      console.error("Checkout error:", error);
+      setCheckoutError(error instanceof Error ? error.message : "Failed to start checkout");
+      setLoading(false);
+    }
   };
 
   return (
@@ -247,13 +275,19 @@ export default function Subscribe() {
             </div>
 
             <div className="max-w-md mx-auto">
+              {checkoutError && (
+                <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-400 text-sm text-center">
+                  {checkoutError}
+                </div>
+              )}
+              
               <button
                 onClick={handleSubscribe}
-                disabled={loading || !selectedPlan}
+                disabled={loading || isLinking || !selectedPlan}
                 className="w-full bg-white text-black font-bold py-4 rounded-full text-lg hover:bg-gray-200 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 data-testid="button-subscribe"
               >
-                {loading ? "Processing..." : isAuthenticated ? "Continue to Payment" : "Start 7-Day Free Trial"}
+                {loading ? "Processing..." : isLinking ? "Setting up account..." : isAuthenticated ? "Continue to Payment" : "Start 7-Day Free Trial"}
               </button>
 
               <p className="text-center text-white/40 text-sm mt-4">

@@ -195,6 +195,55 @@ export async function registerRoutes(
     }
   });
 
+  // Create a Cleeng checkout order
+  app.post("/api/cleeng/checkout", async (req, res) => {
+    try {
+      const { offerId, customerJwt } = req.body;
+      
+      if (!offerId) {
+        return res.status(400).json({ error: "Offer ID is required" });
+      }
+      
+      if (!customerJwt) {
+        return res.status(401).json({ error: "Customer authentication required" });
+      }
+
+      // Create order using Cleeng MediaStore API
+      const orderResponse = await fetch(`${CLEENG_MEDIASTORE_URL}/orders`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${customerJwt}`,
+        },
+        body: JSON.stringify({
+          offerId: offerId,
+          buyAsAGift: false,
+        }),
+      });
+
+      const orderData = await orderResponse.json();
+      console.log("Cleeng order response:", orderData);
+
+      if (!orderResponse.ok) {
+        return res.status(orderResponse.status).json({ 
+          error: orderData.message || "Failed to create order",
+          details: orderData
+        });
+      }
+
+      // Return the order data - frontend will use this to redirect to payment
+      res.json({
+        orderId: orderData.responseData?.id || orderData.id,
+        order: orderData.responseData || orderData,
+        publisherId: CLEENG_PUBLISHER_ID,
+        environment: CLEENG_SANDBOX ? "sandbox" : "production",
+      });
+    } catch (error) {
+      console.error("Cleeng checkout error:", error);
+      res.status(500).json({ error: "Failed to create checkout" });
+    }
+  });
+
   // Get all hero items for the carousel (with prefetched next episode data)
   app.get("/api/content/hero", async (req, res) => {
     try {

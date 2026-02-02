@@ -118,3 +118,39 @@ export function formatPrice(price: number, currency: string): string {
     currency: currency || 'USD',
   }).format(price);
 }
+
+export interface CheckoutResponse {
+  orderId: string;
+  order: {
+    id: number;
+    customerId: number;
+    offerId: string;
+    totalPrice: number;
+    currency: string;
+    paymentMethodId?: number;
+  };
+  publisherId: string;
+  environment: string;
+}
+
+export async function createCheckout(offerId: string, customerJwt: string): Promise<CheckoutResponse> {
+  const response = await fetch("/api/cleeng/checkout", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ offerId, customerJwt }),
+  });
+  
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error || "Failed to create checkout");
+  }
+  
+  return response.json();
+}
+
+export function getCleengCheckoutUrl(orderId: string | number, publisherId: string, environment: string): string {
+  const baseUrl = environment === "sandbox" 
+    ? "https://checkout.sandbox.cleeng.com"
+    : "https://checkout.cleeng.com";
+  return `${baseUrl}/?orderId=${orderId}&publisherId=${publisherId}`;
+}
