@@ -121,6 +121,33 @@ Preferred communication style: Simple, everyday language.
 - Returns: `{ seasonNumber, episodeNumber, mediaId }` or `null`
 - Frontend uses this to determine button text and link destination
 
+## Supabase Authentication
+
+### Overview
+Authentication uses Supabase Auth with email OTP (One-Time Password) verification. This provides passwordless login with automatic email verification - users receive a 6-digit code to verify their email and log in simultaneously.
+
+### Environment Variables
+- `VITE_SUPABASE_URL`: Supabase project URL
+- `VITE_SUPABASE_ANON_KEY`: Supabase public anonymous key
+
+### Auth Flow
+1. User enters email on `/login` page
+2. Supabase sends 6-digit OTP code to email
+3. User enters OTP code (6 separate input boxes with auto-focus and paste support)
+4. On successful verification, user is authenticated with verified email
+5. AuthContext automatically links user to Cleeng customer via SSO using `user.id`
+
+### Key Files
+- `client/src/lib/supabase.ts`: Supabase client initialization
+- `client/src/lib/AuthContext.tsx`: Auth provider with Cleeng SSO integration
+- `client/src/pages/Login.tsx`: OTP login UI
+
+### AuthContext Features
+- Manages Supabase auth state
+- Automatically links authenticated users to Cleeng customers
+- Stores Cleeng customer ID in `profiles.cleeng_customer_id`
+- Provides: `user`, `isAuthenticated`, `isLoading`, `cleengCustomer`, `isLinking`, `logout`
+
 ## Cleeng Integration (Subscription Management)
 
 ### Overview
@@ -138,36 +165,37 @@ Cleeng is integrated for subscription management and payment processing. The int
 - `GET /api/cleeng/offers`: Lists active subscription offers (Core API 3.1)
 - `POST /api/cleeng/register`: Customer registration (MediaStore API)
 - `POST /api/cleeng/login`: Customer login (MediaStore API)
-- `POST /api/cleeng/sso`: SSO login to link Auth0 users (Core API JSON-RPC with publisherToken)
+- `POST /api/cleeng/sso`: SSO login to link Supabase users (Core API JSON-RPC with publisherToken)
 - `GET /api/cleeng/subscriptions/:customerId`: Get customer subscriptions (MediaStore API)
 - `POST /api/cleeng/checkout`: Create checkout order for subscription (MediaStore API)
 
-### SSO Flow (Auth0 → Cleeng)
-1. User authenticates with Auth0
+### SSO Flow (Supabase → Cleeng)
+1. User authenticates with Supabase (email OTP)
 2. SSO endpoint registers customer in Cleeng using Core API `registerCustomer` method (bypasses reCAPTCHA)
 3. For existing customers, uses `generateCustomerToken` to get a JWT
 4. JWT is stored in localStorage and used for checkout operations
 
 ### Frontend Integration
 - `client/src/lib/cleeng.ts`: Type definitions and API helper functions
-- `client/src/lib/useAuth.ts`: Hook that links Auth0 users to Cleeng customers via SSO
+- `client/src/lib/AuthContext.tsx`: Context that links Supabase users to Cleeng customers via SSO
 - `client/src/pages/Subscribe.tsx`: Subscription page with checkout flow
 
 ### Checkout Flow
 1. User selects a plan on `/subscribe` page
-2. If not authenticated, redirects to Auth0
-3. After Auth0 authentication, SSO creates/links Cleeng customer via `registerCustomer` method
+2. If not authenticated, redirects to `/login` with returnTo URL
+3. After Supabase authentication, SSO creates/links Cleeng customer via `registerCustomer` method
 4. User is redirected to in-app checkout page at `/checkout?offerId=...`
 5. Checkout page shows order summary and account information
 
 ### Pages
+- `/login`: Email OTP login page
 - `/subscribe`: Plan selection page with pricing cards
 - `/checkout`: In-app checkout page showing order summary and subscription details
 
 ### Important Notes
 - Subscription offers must be created in the Cleeng Dashboard before they appear
 - Payment methods must be configured in Cleeng Dashboard (Settings → Payment Methods)
-- Auth0 users are automatically registered/linked as Cleeng customers on login
+- Supabase users are automatically registered/linked as Cleeng customers on login via SSO
 
 ### Payment Integration Status
 The current implementation registers customers via Cleeng SSO but does not include payment collection. To complete the integration:
