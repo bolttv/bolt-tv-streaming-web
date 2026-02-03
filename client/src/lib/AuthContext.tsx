@@ -3,7 +3,7 @@ import { Session, User } from "@supabase/supabase-js";
 import { supabase, Profile, getProfile, updateProfile } from "./supabase";
 import { ssoLogin, saveCleengCustomer, getCleengCustomer, clearCleengCustomer, CleengCustomer } from "./cleeng";
 
-type AuthStep = "email" | "otp" | "authenticated";
+type AuthStep = "email" | "magic_link_sent" | "authenticated";
 
 interface AuthContextType {
   session: Session | null;
@@ -15,8 +15,7 @@ interface AuthContextType {
   pendingEmail: string | null;
   cleengCustomer: CleengCustomer | null;
   isLinking: boolean;
-  sendOtp: (email: string) => Promise<{ success: boolean; error?: string }>;
-  verifyOtp: (email: string, token: string) => Promise<{ success: boolean; error?: string }>;
+  sendMagicLink: (email: string, returnTo?: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   setAuthStep: (step: AuthStep) => void;
   setPendingEmail: (email: string | null) => void;
@@ -123,12 +122,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [isAuthenticated, cleengCustomer]);
 
-  const sendOtp = async (email: string): Promise<{ success: boolean; error?: string }> => {
+  const sendMagicLink = async (email: string, returnTo?: string): Promise<{ success: boolean; error?: string }> => {
     try {
+      const baseUrl = window.location.origin;
+      const redirectUrl = returnTo ? `${baseUrl}${returnTo}` : baseUrl;
+      
       const { error } = await supabase.auth.signInWithOtp({
         email,
         options: {
           shouldCreateUser: true,
+          emailRedirectTo: redirectUrl,
         },
       });
 
@@ -137,36 +140,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       setPendingEmail(email);
-      setAuthStep("otp");
+      setAuthStep("magic_link_sent");
       return { success: true };
     } catch (error) {
-      return { success: false, error: "Failed to send verification code" };
-    }
-  };
-
-  const verifyOtp = async (email: string, token: string): Promise<{ success: boolean; error?: string }> => {
-    try {
-      const { data, error } = await supabase.auth.verifyOtp({
-        email,
-        token,
-        type: "email",
-      });
-
-      if (error) {
-        return { success: false, error: error.message };
-      }
-
-      if (data.session) {
-        setSession(data.session);
-        setUser(data.session.user);
-        setAuthStep("authenticated");
-        setPendingEmail(null);
-        return { success: true };
-      }
-
-      return { success: false, error: "Verification failed" };
-    } catch (error) {
-      return { success: false, error: "Failed to verify code" };
+      return { success: false, error: "Failed to send magic link" };
     }
   };
 
@@ -194,8 +171,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         pendingEmail,
         cleengCustomer,
         isLinking,
-        sendOtp,
-        verifyOtp,
+        sendMagicLink,
         logout,
         setAuthStep,
         setPendingEmail,

@@ -124,7 +124,7 @@ Preferred communication style: Simple, everyday language.
 ## Supabase Authentication
 
 ### Overview
-Authentication uses Supabase Auth with email OTP (One-Time Password) verification. This provides passwordless login with automatic email verification - users receive a 6-digit code to verify their email and log in simultaneously.
+Authentication uses Supabase Auth with magic link verification. This provides passwordless login with automatic email verification - users receive an email with a link to sign in.
 
 ### Environment Variables
 - `VITE_SUPABASE_URL`: Supabase project URL
@@ -132,9 +132,9 @@ Authentication uses Supabase Auth with email OTP (One-Time Password) verificatio
 
 ### Auth Flow
 1. User enters email on `/login` page
-2. Supabase sends 8-digit OTP code to email
-3. User enters OTP code (8 separate input boxes with auto-focus and paste support)
-4. On successful verification, user is authenticated with verified email
+2. Supabase sends magic link email
+3. User clicks link in email
+4. User is redirected back to app and automatically authenticated
 5. AuthContext automatically links user to Cleeng customer via SSO using `user.id`
 
 ### Key Files
