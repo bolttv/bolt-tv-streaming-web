@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { ArrowLeft, Check, Loader2 } from "lucide-react";
-import { useAuth } from "@/lib/useAuth";
+import { useAuth } from "@/lib/AuthContext";
 import { getOffers, CleengOffer, formatPrice } from "@/lib/cleeng";
 
 interface PricingPlan {
@@ -46,7 +46,7 @@ function mapOffersToPlan(offers: CleengOffer[]): PricingPlan[] {
 
 export default function Subscribe() {
   const [, setLocation] = useLocation();
-  const { isAuthenticated, loginWithRedirect, cleengCustomer, isLinking } = useAuth();
+  const { isAuthenticated, cleengCustomer, isLinking } = useAuth();
   const [plans, setPlans] = useState<PricingPlan[]>([]);
   const [billingPeriod, setBillingPeriod] = useState<"month" | "year">("month");
   const [selectedPlan, setSelectedPlan] = useState<string>("");
@@ -108,14 +108,10 @@ export default function Subscribe() {
       return;
     }
 
-    // If not authenticated, save the selected plan and redirect to Auth0
+    // If not authenticated, save the selected plan and redirect to login
     if (!isAuthenticated) {
-      // Store selected plan in localStorage so we can redirect to checkout after login
       localStorage.setItem("pending_checkout_offer", selectedPlanData.offerId);
-      loginWithRedirect({
-        appState: { returnTo: `/checkout?offerId=${encodeURIComponent(selectedPlanData.offerId)}` },
-        authorizationParams: { screen_hint: "signup" },
-      });
+      setLocation(`/login?returnTo=${encodeURIComponent(`/checkout?offerId=${encodeURIComponent(selectedPlanData.offerId)}`)}`);
       return;
     }
 

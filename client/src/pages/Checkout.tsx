@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { ArrowLeft, Check, CreditCard, Loader2, AlertCircle, Lock } from "lucide-react";
-import { useAuth } from "@/lib/useAuth";
+import { useAuth } from "@/lib/AuthContext";
 import { getOffers, CleengOffer, formatPrice } from "@/lib/cleeng";
 
 export default function Checkout() {
@@ -22,7 +22,7 @@ export default function Checkout() {
   const offerId = new URLSearchParams(window.location.search).get("offerId");
 
   useEffect(() => {
-    // Wait for Auth0 to finish loading before checking authentication
+    // Wait for auth to finish loading before checking authentication
     if (authLoading) {
       return;
     }
@@ -30,13 +30,6 @@ export default function Checkout() {
     // If not authenticated at all, redirect to subscribe
     if (!isAuthenticated) {
       setLocation("/subscribe");
-      return;
-    }
-
-    // Check if email is verified - redirect to verify email page if not
-    if (user && !user.email_verified) {
-      const currentUrl = window.location.pathname + window.location.search;
-      setLocation(`/verify-email?returnTo=${encodeURIComponent(currentUrl)}`);
       return;
     }
 

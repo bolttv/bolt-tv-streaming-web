@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import { Search, User, Loader2, X, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useAuth0 } from "@auth0/auth0-react";
+import { useAuth } from "@/lib/AuthContext";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -10,7 +10,7 @@ export default function Navbar() {
   const [searchQuery, setSearchQuery] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [, setLocation] = useLocation();
-  const { isAuthenticated, isLoading, logout, loginWithRedirect } = useAuth0();
+  const { isAuthenticated, isLoading, logout } = useAuth();
   const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -40,8 +40,8 @@ export default function Navbar() {
     }
   };
 
-  const handleSignOut = () => {
-    logout({ logoutParams: { returnTo: window.location.origin } });
+  const handleSignOut = async () => {
+    await logout();
   };
 
   
@@ -163,16 +163,17 @@ export default function Navbar() {
               <span className="hidden md:inline whitespace-nowrap">Sign Out</span>
             </button>
           ) : (
-            <button 
-              onClick={() => loginWithRedirect()}
-              className="flex items-center gap-2 hover:text-white transition font-bold text-sm flex-shrink-0" 
-              data-testid="button-nav-signin"
-            >
-              <div className="p-1 border-2 border-current rounded-full">
-                <User className="w-4 h-4 md:w-5 md:h-5 fill-current" />
-              </div>
-              <span className="hidden md:inline whitespace-nowrap">Sign In</span>
-            </button>
+            <Link href="/login">
+              <span 
+                className="flex items-center gap-2 hover:text-white transition font-bold text-sm flex-shrink-0 cursor-pointer" 
+                data-testid="button-nav-signin"
+              >
+                <div className="p-1 border-2 border-current rounded-full">
+                  <User className="w-4 h-4 md:w-5 md:h-5 fill-current" />
+                </div>
+                <span className="hidden md:inline whitespace-nowrap">Sign In</span>
+              </span>
+            </Link>
           )}
           
           <button 

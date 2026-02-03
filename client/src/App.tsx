@@ -6,11 +6,9 @@ import Home from "@/pages/home";
 import ContentDetails from "@/pages/ContentDetails";
 import Watch from "@/pages/Watch";
 import SportCategory from "@/pages/SportCategory";
-import SignIn from "@/pages/SignIn";
-import Register from "@/pages/Register";
+import Login from "@/pages/Login";
 import Subscribe from "@/pages/Subscribe";
 import Checkout from "@/pages/Checkout";
-import VerifyEmail from "@/pages/VerifyEmail";
 import Search from "@/pages/Search";
 import NotFound from "@/pages/not-found";
 
@@ -21,11 +19,10 @@ function Router() {
       <Route path="/content/:id" component={ContentDetails} />
       <Route path="/watch/:id" component={Watch} />
       <Route path="/sport/:playlistId" component={SportCategory} />
-      <Route path="/signin" component={SignIn} />
-      <Route path="/register" component={Register} />
+      <Route path="/login" component={Login} />
+      <Route path="/signin" component={Login} />
       <Route path="/subscribe" component={Subscribe} />
       <Route path="/checkout" component={Checkout} />
-      <Route path="/verify-email" component={VerifyEmail} />
       <Route path="/search" component={Search} />
       <Route component={NotFound} />
     </Switch>
