@@ -17,7 +17,7 @@ export default function Login() {
   } = useAuth();
   
   const [email, setEmail] = useState("");
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [otp, setOtp] = useState(["", "", "", "", "", "", "", ""]);
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [verifying, setVerifying] = useState(false);
@@ -61,11 +61,11 @@ export default function Login() {
     newOtp[index] = value;
     setOtp(newOtp);
 
-    if (value && index < 5) {
+    if (value && index < 7) {
       otpInputs.current[index + 1]?.focus();
     }
 
-    if (newOtp.every(digit => digit) && newOtp.join("").length === 6) {
+    if (newOtp.every(digit => digit) && newOtp.join("").length === 8) {
       handleVerifyOtp(newOtp.join(""));
     }
   };
@@ -78,7 +78,7 @@ export default function Login() {
 
   const handleOtpPaste = (e: React.ClipboardEvent) => {
     e.preventDefault();
-    const pastedData = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+    const pastedData = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 8);
     const newOtp = [...otp];
     
     for (let i = 0; i < pastedData.length; i++) {
@@ -87,7 +87,7 @@ export default function Login() {
     
     setOtp(newOtp);
     
-    if (pastedData.length === 6) {
+    if (pastedData.length === 8) {
       handleVerifyOtp(pastedData);
     } else {
       otpInputs.current[pastedData.length]?.focus();
@@ -104,7 +104,7 @@ export default function Login() {
     
     if (!result.success) {
       setError(result.error || "Invalid code");
-      setOtp(["", "", "", "", "", ""]);
+      setOtp(["", "", "", "", "", "", "", ""]);
       otpInputs.current[0]?.focus();
     }
     
@@ -129,7 +129,7 @@ export default function Login() {
   const handleBack = () => {
     setAuthStep("email");
     setPendingEmail(null);
-    setOtp(["", "", "", "", "", ""]);
+    setOtp(["", "", "", "", "", "", "", ""]);
     setError(null);
   };
 
@@ -227,7 +227,7 @@ export default function Login() {
 
                 <h1 className="text-2xl font-bold text-center mb-2">Check Your Email</h1>
                 <p className="text-gray-400 text-center mb-2">
-                  We sent a 6-digit code to
+                  We sent an 8-digit code to
                 </p>
                 <p className="text-white font-semibold text-center mb-8">
                   {pendingEmail}

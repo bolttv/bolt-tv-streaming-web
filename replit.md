@@ -132,8 +132,8 @@ Authentication uses Supabase Auth with email OTP (One-Time Password) verificatio
 
 ### Auth Flow
 1. User enters email on `/login` page
-2. Supabase sends 6-digit OTP code to email
-3. User enters OTP code (6 separate input boxes with auto-focus and paste support)
+2. Supabase sends 8-digit OTP code to email
+3. User enters OTP code (8 separate input boxes with auto-focus and paste support)
 4. On successful verification, user is authenticated with verified email
 5. AuthContext automatically links user to Cleeng customer via SSO using `user.id`
 
