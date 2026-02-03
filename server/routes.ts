@@ -129,7 +129,7 @@ export async function registerRoutes(
     }
   });
 
-  // SSO login - link Auth0 user to Cleeng customer
+  // SSO login - link Supabase user to Cleeng customer
   // First registers the customer if they don't exist, then gets a JWT from MediaStore API
   app.post("/api/cleeng/sso", async (req, res) => {
     try {
