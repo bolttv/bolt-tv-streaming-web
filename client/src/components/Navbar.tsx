@@ -124,7 +124,7 @@ export default function Navbar() {
             
             <button 
               className={cn(
-                "hover:text-white transition p-1",
+                "hover:text-white transition p-1 cursor-pointer",
                 searchOpen && "text-white"
               )}
               onClick={() => setSearchOpen(!searchOpen)}
@@ -135,7 +135,7 @@ export default function Navbar() {
           </div>
           
           <button 
-            className="lg:hidden hover:text-white transition p-1"
+            className="lg:hidden hover:text-white transition p-1 cursor-pointer"
             onClick={() => setSearchOpen(!searchOpen)}
             data-testid="button-search-mobile"
           >
