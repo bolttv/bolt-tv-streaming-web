@@ -131,14 +131,15 @@ Authentication uses Supabase Auth with email/password authentication and email v
 - `VITE_SUPABASE_ANON_KEY`: Supabase public anonymous key
 
 ### Auth Flow
-**Sign Up (New Users):**
-1. User enters email on `/login` page (Sign Up mode)
-2. Supabase sends "Verify Your Email" email
-3. User clicks "Verify Email" button in email
-4. User is redirected to `/verify-callback` → `/login`
-5. User creates their password
-6. Account is created and user is authenticated
-7. AuthContext automatically links user to Cleeng customer via SSO
+**Sign Up (New Users via Subscribe):**
+1. User selects a plan on `/subscribe` page
+2. User enters email on the next step
+3. Supabase sends "Verify Your Email" email
+4. User clicks "Verify Email" button in email
+5. User is redirected to `/create-account`
+6. User enters password, first name, and last name
+7. Account is created and user is authenticated
+8. AuthContext automatically links user to Cleeng customer via SSO
 
 **Sign In (Existing Users):**
 1. User enters email and password on `/login` page
@@ -147,7 +148,9 @@ Authentication uses Supabase Auth with email/password authentication and email v
 ### Key Files
 - `client/src/lib/supabase.ts`: Supabase client initialization
 - `client/src/lib/AuthContext.tsx`: Auth provider with Cleeng SSO integration
-- `client/src/pages/Login.tsx`: OTP login UI
+- `client/src/pages/Login.tsx`: Sign in page for returning users
+- `client/src/pages/Subscribe.tsx`: Subscription flow with plan selection and email verification
+- `client/src/pages/CreateAccount.tsx`: Account creation page with password/name fields
 
 ### AuthContext Features
 - Manages Supabase auth state

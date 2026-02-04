@@ -15,9 +15,9 @@ interface AuthContextType {
   pendingEmail: string | null;
   cleengCustomer: CleengCustomer | null;
   isLinking: boolean;
-  signUp: (email: string) => Promise<{ success: boolean; error?: string }>;
+  signUp: (email: string) => Promise<{ success: boolean; error?: string; existingUser?: boolean }>;
   signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  setPassword: (password: string) => Promise<{ success: boolean; error?: string }>;
+  completeAccountSetup: (password: string, firstName: string, lastName: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   setAuthStep: (step: AuthStep) => void;
   setPendingEmail: (email: string | null) => void;
@@ -82,16 +82,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [cleengCustomer]);
 
+  const checkAccountSetupComplete = (currentUser: User): boolean => {
+    // Check if user has completed account setup (has password set and profile info)
+    const passwordSet = currentUser.user_metadata?.password_set === true;
+    return passwordSet;
+  };
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        // Check if user needs to set password (just verified email)
-        const needsPassword = !session.user.user_metadata?.password_set;
-        if (needsPassword && session.user.email_confirmed_at) {
+        // Check if user needs to complete account setup
+        const setupComplete = checkAccountSetupComplete(session.user);
+        if (!setupComplete && session.user.email_confirmed_at) {
           setAuthStep("create_password");
-        } else {
+        } else if (setupComplete) {
           setAuthStep("authenticated");
         }
         getProfile(session.user.id).then(setProfile);
@@ -106,11 +112,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Check if this is a new signup that just verified email
-          const needsPassword = !session.user.user_metadata?.password_set;
-          if (needsPassword && session.user.email_confirmed_at) {
+          const setupComplete = checkAccountSetupComplete(session.user);
+          if (!setupComplete && session.user.email_confirmed_at) {
             setAuthStep("create_password");
-          } else {
+          } else if (setupComplete) {
             setAuthStep("authenticated");
           }
           getProfile(session.user.id).then(setProfile);
@@ -125,10 +130,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (isAuthenticated && user && !cleengCustomer && !isLinking && !linkAttempted) {
+    if (isAuthenticated && user && authStep === "authenticated" && !cleengCustomer && !isLinking && !linkAttempted) {
       linkToCleeng(user);
     }
-  }, [isAuthenticated, user, cleengCustomer, isLinking, linkAttempted, linkToCleeng]);
+  }, [isAuthenticated, user, authStep, cleengCustomer, isLinking, linkAttempted, linkToCleeng]);
 
   useEffect(() => {
     if (!isAuthenticated && cleengCustomer) {
@@ -137,26 +142,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [isAuthenticated, cleengCustomer]);
 
-  const signUp = async (email: string): Promise<{ success: boolean; error?: string }> => {
+  const signUp = async (email: string): Promise<{ success: boolean; error?: string; existingUser?: boolean }> => {
     try {
       const baseUrl = window.location.origin;
+      
+      // Get pending offer to include in user metadata for cross-device persistence
+      const pendingOffer = localStorage.getItem("pending_checkout_offer");
       
       // Sign up with a temporary random password - user will set real password after verification
       const tempPassword = crypto.randomUUID();
       
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password: tempPassword,
         options: {
-          emailRedirectTo: `${baseUrl}/verify-callback`,
+          emailRedirectTo: `${baseUrl}/create-account`,
           data: {
-            password_set: false, // Flag to indicate user needs to set password
+            password_set: false,
+            pending_offer: pendingOffer || undefined,
           },
         },
       });
 
       if (error) {
+        // Check if user already exists
+        if (error.message.toLowerCase().includes("already registered") || 
+            error.message.toLowerCase().includes("user already exists")) {
+          return { success: false, error: "An account with this email already exists. Please sign in instead.", existingUser: true };
+        }
         return { success: false, error: error.message };
+      }
+
+      // Check if this is an existing user (Supabase returns user but no session for existing emails)
+      if (data.user && !data.session && data.user.identities?.length === 0) {
+        return { success: false, error: "An account with this email already exists. Please sign in instead.", existingUser: true };
       }
 
       setPendingEmail(email);
@@ -191,12 +210,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const setPassword = async (password: string): Promise<{ success: boolean; error?: string }> => {
+  const completeAccountSetup = async (
+    password: string, 
+    firstName: string, 
+    lastName: string
+  ): Promise<{ success: boolean; error?: string }> => {
     try {
+      // Update user password and metadata
       const { data, error } = await supabase.auth.updateUser({
         password,
         data: {
           password_set: true,
+          first_name: firstName,
+          last_name: lastName,
+          full_name: `${firstName} ${lastName}`,
         },
       });
 
@@ -206,13 +233,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (data.user) {
         setUser(data.user);
+        
+        // Try to update profile in database (may fail if table doesn't have columns yet)
+        try {
+          await updateProfile(data.user.id, {
+            first_name: firstName,
+            last_name: lastName,
+          });
+        } catch (profileError) {
+          // Profile update is non-critical - names are stored in user metadata
+          console.log("Profile update skipped - names stored in user metadata");
+        }
+        
+        // Clear pending offer from user metadata now that setup is complete
+        // The checkout flow will read it before we clear it
+        await supabase.auth.updateUser({
+          data: {
+            pending_offer: null,
+          },
+        });
+        
         setAuthStep("authenticated");
         return { success: true };
       }
 
-      return { success: false, error: "Failed to set password" };
+      return { success: false, error: "Failed to complete account setup" };
     } catch (error) {
-      return { success: false, error: "Failed to set password" };
+      return { success: false, error: "Failed to complete account setup" };
     }
   };
 
@@ -242,7 +289,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLinking,
         signUp,
         signIn,
-        setPassword,
+        completeAccountSetup,
         logout,
         setAuthStep,
         setPendingEmail,

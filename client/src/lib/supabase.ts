@@ -19,6 +19,8 @@ export type Profile = {
   id: string;
   email: string;
   display_name: string | null;
+  first_name: string | null;
+  last_name: string | null;
   avatar_url: string | null;
   subscription_tier: "free" | "basic" | "premium";
   cleeng_customer_id: string | null;
