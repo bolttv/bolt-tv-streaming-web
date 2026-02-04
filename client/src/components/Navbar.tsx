@@ -143,7 +143,7 @@ export default function Navbar() {
           </button>
           
           <Link href="/subscribe">
-            <button className="hidden md:block bg-white text-black font-bold px-4 py-1.5 rounded hover:bg-gray-200 transition text-sm whitespace-nowrap" data-testid="button-nav-subscribe">
+            <button className="hidden md:block bg-white text-black font-bold px-4 py-1.5 rounded hover:bg-gray-200 transition text-sm whitespace-nowrap cursor-pointer" data-testid="button-nav-subscribe">
               Subscribe
             </button>
           </Link>
@@ -229,7 +229,7 @@ export default function Navbar() {
             ))}
             <Link href="/subscribe">
               <button 
-                className="w-full bg-white text-black font-bold px-4 py-3 rounded hover:bg-gray-200 transition text-sm mt-2"
+                className="w-full bg-white text-black font-bold px-4 py-3 rounded hover:bg-gray-200 transition text-sm mt-2 cursor-pointer"
                 onClick={() => setMobileMenuOpen(false)}
                 data-testid="button-mobile-subscribe"
               >
