@@ -1,6 +1,14 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import { createClient } from "@supabase/supabase-js";
 import { storage } from "./storage";
+
+// Supabase Admin client for server-side operations
+const supabaseUrl = process.env.VITE_SUPABASE_URL || "";
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+const supabaseAdmin = supabaseUrl && supabaseServiceKey 
+  ? createClient(supabaseUrl, supabaseServiceKey, { auth: { persistSession: false } })
+  : null;
 
 // Cleeng API configuration
 const CLEENG_SANDBOX = process.env.CLEENG_SANDBOX === "true";
@@ -357,6 +365,183 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Cleeng checkout error:", error);
       res.status(500).json({ error: "Failed to create checkout" });
+    }
+  });
+
+  // Cleeng Webhook endpoint - receives subscription events and syncs to Supabase
+  app.post("/api/cleeng/webhook", async (req, res) => {
+    try {
+      const { broadcasterId, topic, data } = req.body;
+      console.log("Cleeng webhook received:", { topic, broadcasterId, data: JSON.stringify(data, null, 2) });
+      
+      // Verify the webhook is from our publisher
+      if (broadcasterId && String(broadcasterId) !== CLEENG_PUBLISHER_ID) {
+        console.warn("Webhook from unknown publisher:", broadcasterId);
+        return res.status(200).json({ received: true }); // Always return 200 to prevent retries
+      }
+
+      if (!supabaseAdmin) {
+        console.error("Supabase admin client not configured - cannot sync subscription");
+        return res.status(200).json({ received: true, warning: "Supabase not configured" });
+      }
+
+      // Handle subscription-related events
+      if (topic === "transactionCreated" || topic === "subscriptionRenewed" || topic === "subscriptionSwitched") {
+        const customerEmail = data?.customerEmail || data?.email;
+        const customerId = data?.customerId;
+        const offerId = data?.offerId || data?.offer?.id;
+        const period = data?.period || data?.billingPeriod || data?.subscriptionPeriod;
+        
+        console.log("Processing subscription event:", { topic, customerEmail, customerId, offerId, period });
+        
+        if (customerEmail) {
+          // Determine subscription tier and billing period from offer
+          let subscriptionTier: "free" | "basic" | "premium" = "basic";
+          let billingPeriodValue: "monthly" | "annual" | "none" = "monthly";
+          
+          // Try to get offer details from Cleeng to determine billing period
+          if (offerId && CLEENG_API_SECRET) {
+            try {
+              const offerResponse = await fetch(`${CLEENG_CORE_API_URL}/3.1/offers/${offerId}`, {
+                headers: { "X-Publisher-Token": CLEENG_API_SECRET },
+              });
+              if (offerResponse.ok) {
+                const offerData = await offerResponse.json();
+                console.log("Fetched offer details:", JSON.stringify(offerData, null, 2));
+                
+                // Check offer period (e.g., "month", "year", "week")
+                const offerPeriod = offerData.period || offerData.freePeriod || "";
+                if (offerPeriod.toLowerCase().includes("year")) {
+                  billingPeriodValue = "annual";
+                } else if (offerPeriod.toLowerCase().includes("month")) {
+                  billingPeriodValue = "monthly";
+                }
+                
+                // Check offer title for tier hints
+                const offerTitle = (offerData.title || "").toLowerCase();
+                if (offerTitle.includes("premium") || offerTitle.includes("pro")) {
+                  subscriptionTier = "premium";
+                }
+              }
+            } catch (offerError) {
+              console.error("Error fetching offer details:", offerError);
+            }
+          }
+          
+          // Fallback: Parse billing period from webhook data
+          if (period && billingPeriodValue === "monthly") {
+            const periodLower = String(period).toLowerCase();
+            if (periodLower.includes("year") || periodLower.includes("annual") || periodLower === "year" || periodLower === "yearly") {
+              billingPeriodValue = "annual";
+            }
+          }
+          
+          // Parse tier from offer ID (format: S123456789_US for basic, premium offers have different IDs)
+          if (offerId) {
+            const offerIdStr = String(offerId).toLowerCase();
+            if (offerIdStr.includes("premium")) {
+              subscriptionTier = "premium";
+            }
+          }
+          
+          // Update Supabase profile by email
+          const { data: profiles, error: findError } = await supabaseAdmin
+            .from("profiles")
+            .select("id")
+            .eq("email", customerEmail);
+          
+          if (findError) {
+            console.error("Error finding profile by email:", findError);
+          } else if (profiles && profiles.length > 0) {
+            const profileId = profiles[0].id;
+            
+            const { error: updateError } = await supabaseAdmin
+              .from("profiles")
+              .update({
+                subscription_tier: subscriptionTier,
+                billing_period: billingPeriodValue,
+                cleeng_customer_id: customerId ? String(customerId) : undefined,
+                updated_at: new Date().toISOString(),
+              })
+              .eq("id", profileId);
+            
+            if (updateError) {
+              console.error("Error updating profile from webhook:", updateError);
+            } else {
+              console.log(`Successfully synced subscription to Supabase: ${customerEmail} -> ${subscriptionTier}/${billingPeriodValue}`);
+            }
+          } else {
+            console.log("No Supabase profile found for email:", customerEmail);
+          }
+        }
+      }
+      
+      // Handle subscription cancellation
+      if (topic === "subscriptionCanceled" || topic === "subscriptionTerminated") {
+        const customerEmail = data?.customerEmail || data?.email;
+        
+        if (customerEmail && supabaseAdmin) {
+          const { data: profiles } = await supabaseAdmin
+            .from("profiles")
+            .select("id")
+            .eq("email", customerEmail);
+          
+          if (profiles && profiles.length > 0) {
+            await supabaseAdmin
+              .from("profiles")
+              .update({
+                subscription_tier: "free",
+                billing_period: "none",
+                updated_at: new Date().toISOString(),
+              })
+              .eq("id", profiles[0].id);
+            
+            console.log(`Subscription cancelled for ${customerEmail}`);
+          }
+        }
+      }
+      
+      // Always return 200 to acknowledge receipt
+      res.status(200).json({ received: true });
+    } catch (error) {
+      console.error("Cleeng webhook error:", error);
+      // Still return 200 to prevent Cleeng from retrying
+      res.status(200).json({ received: true, error: "Processing error" });
+    }
+  });
+
+  // Endpoint to register webhooks with Cleeng (call once to set up)
+  app.post("/api/cleeng/register-webhooks", async (req, res) => {
+    try {
+      if (!CLEENG_API_SECRET) {
+        return res.status(500).json({ error: "Cleeng API not configured" });
+      }
+
+      const webhookUrl = `${req.protocol}://${req.get("host")}/api/cleeng/webhook`;
+      console.log("Registering Cleeng webhook URL:", webhookUrl);
+      
+      const topics = ["transactionCreated", "subscriptionRenewed", "subscriptionSwitched", "subscriptionCanceled", "subscriptionTerminated"];
+      const results = [];
+      
+      for (const topic of topics) {
+        const response = await fetch(`${CLEENG_CORE_API_URL}/3.1/webhook_subscriptions/${topic}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Publisher-Token": CLEENG_API_SECRET,
+          },
+          body: JSON.stringify([{ url: webhookUrl }]),
+        });
+        
+        const data = await response.json();
+        results.push({ topic, status: response.status, data });
+        console.log(`Registered webhook for ${topic}:`, data);
+      }
+      
+      res.json({ success: true, webhookUrl, results });
+    } catch (error) {
+      console.error("Error registering webhooks:", error);
+      res.status(500).json({ error: "Failed to register webhooks" });
     }
   });
 
