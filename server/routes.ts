@@ -129,6 +129,29 @@ export async function registerRoutes(
     }
   });
 
+  // Helper function to decode JWT and extract customer ID
+  const extractCustomerIdFromJwt = (jwt: string): string | null => {
+    try {
+      // JWT has 3 parts: header.payload.signature
+      const parts = jwt.split('.');
+      if (parts.length !== 3) return null;
+      
+      // Decode the payload (second part) - it's base64url encoded
+      const payload = parts[1];
+      const decoded = Buffer.from(payload, 'base64url').toString('utf-8');
+      const data = JSON.parse(decoded);
+      
+      // Cleeng JWT contains customerId in various possible fields
+      const customerId = data.customerId || data.cid || data.sub || data.customer_id;
+      console.log("Decoded JWT payload:", JSON.stringify(data, null, 2));
+      
+      return customerId ? String(customerId) : null;
+    } catch (error) {
+      console.error("Error decoding JWT:", error);
+      return null;
+    }
+  };
+
   // SSO login - link Supabase user to Cleeng customer
   // First registers the customer if they don't exist, then gets a JWT from MediaStore API
   app.post("/api/cleeng/sso", async (req, res) => {
@@ -196,10 +219,15 @@ export async function registerRoutes(
         const jwtData = await getJwt();
         
         if (jwtData.jwt) {
+          // Extract the real customer ID from the JWT token
+          const extractedCustomerId = extractCustomerIdFromJwt(jwtData.jwt);
+          const customerId = extractedCustomerId || jwtData.customerId;
+          console.log("Cleeng customer ID extracted:", customerId);
+          
           return res.json({
             jwt: jwtData.jwt,
             refreshToken: jwtData.refreshToken,
-            customerId: jwtData.customerId || email,
+            customerId: customerId,
             email: email
           });
         }
@@ -207,9 +235,13 @@ export async function registerRoutes(
         // If SSO JWT fails, try using the customerToken from registration
         if (registerData.result?.token) {
           console.log("SSO JWT failed, using customerToken as fallback");
+          const extractedCustomerId = extractCustomerIdFromJwt(registerData.result.token);
+          const customerId = extractedCustomerId || registerData.result.customerId;
+          console.log("Cleeng customer ID from registration:", customerId);
+          
           return res.json({ 
             jwt: registerData.result.token,
-            customerId: registerData.result.customerId || email,
+            customerId: customerId,
             email: email
           });
         }
@@ -234,9 +266,13 @@ export async function registerRoutes(
         console.log("Cleeng token generation response:", JSON.stringify(tokenData, null, 2));
         
         if (tokenData.result?.token) {
+          const extractedCustomerId = extractCustomerIdFromJwt(tokenData.result.token);
+          const customerId = extractedCustomerId || tokenData.result.customerId;
+          console.log("Cleeng customer ID from token generation:", customerId);
+          
           return res.json({
             jwt: tokenData.result.token,
-            customerId: tokenData.result.customerId || email,
+            customerId: customerId,
             email: email
           });
         }
