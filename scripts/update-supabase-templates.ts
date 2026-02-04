@@ -39,15 +39,15 @@ const magicLinkTemplate = `
 
 const confirmationTemplate = `
 <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px;">
-  <h2 style="color: #1a1a1a; margin-bottom: 16px;">Confirm your Bolt TV account</h2>
+  <h2 style="color: #1a1a1a; margin-bottom: 16px;">Verify Your Email</h2>
 
   <p style="color: #333; font-size: 16px; margin-bottom: 24px;">
-    Click the button below to confirm your email address and complete your registration.
+    Thank you for signing up for Bolt TV! Click the button below to verify your email address and create your password.
   </p>
 
   <div style="text-align: center; margin: 32px 0;">
     <a href="{{ .ConfirmationURL }}" style="display: inline-block; background: linear-gradient(135deg, #7c3aed 0%, #2563eb 100%); color: white; text-decoration: none; padding: 14px 32px; border-radius: 8px; font-weight: 600; font-size: 16px;">
-      Confirm Email
+      Verify Email
     </a>
   </div>
 
@@ -78,7 +78,7 @@ async function updateTemplates() {
     body: JSON.stringify({
       mailer_subjects_magic_link: "Sign in to Bolt TV",
       mailer_templates_magic_link_content: magicLinkTemplate,
-      mailer_subjects_confirmation: "Confirm your Bolt TV account",
+      mailer_subjects_confirmation: "Verify Your Email - Bolt TV",
       mailer_templates_confirmation_content: confirmationTemplate,
     }),
   });

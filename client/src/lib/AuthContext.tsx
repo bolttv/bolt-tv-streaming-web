@@ -3,7 +3,7 @@ import { Session, User } from "@supabase/supabase-js";
 import { supabase, Profile, getProfile, updateProfile } from "./supabase";
 import { ssoLogin, saveCleengCustomer, getCleengCustomer, clearCleengCustomer, CleengCustomer } from "./cleeng";
 
-type AuthStep = "email" | "magic_link_sent" | "authenticated";
+type AuthStep = "email" | "verification_sent" | "create_password" | "authenticated";
 
 interface AuthContextType {
   session: Session | null;
@@ -15,7 +15,9 @@ interface AuthContextType {
   pendingEmail: string | null;
   cleengCustomer: CleengCustomer | null;
   isLinking: boolean;
-  sendMagicLink: (email: string, returnTo?: string) => Promise<{ success: boolean; error?: string }>;
+  signUp: (email: string) => Promise<{ success: boolean; error?: string }>;
+  signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  setPassword: (password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   setAuthStep: (step: AuthStep) => void;
   setPendingEmail: (email: string | null) => void;
@@ -48,8 +50,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     setIsLinking(true);
+
     try {
-      console.log("Linking Supabase user to Cleeng:", currentUser.email);
+      const profile = await getProfile(currentUser.id);
+      
       const response = await ssoLogin(currentUser.email, currentUser.id);
       
       if (response.jwt) {
@@ -76,32 +80,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLinking(false);
       setLinkAttempted(true);
     }
-  }, [cleengCustomer, profile]);
+  }, [cleengCustomer]);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        setAuthStep("authenticated");
+        // Check if user needs to set password (just verified email)
+        const needsPassword = !session.user.user_metadata?.password_set;
+        if (needsPassword && session.user.email_confirmed_at) {
+          setAuthStep("create_password");
+        } else {
+          setAuthStep("authenticated");
+        }
         getProfile(session.user.id).then(setProfile);
       }
       setIsLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      async (event, session) => {
+        console.log("Auth state changed:", event, session?.user?.email);
         setSession(session);
         setUser(session?.user ?? null);
+        
         if (session?.user) {
-          setAuthStep("authenticated");
-          const userProfile = await getProfile(session.user.id);
-          setProfile(userProfile);
+          // Check if this is a new signup that just verified email
+          const needsPassword = !session.user.user_metadata?.password_set;
+          if (needsPassword && session.user.email_confirmed_at) {
+            setAuthStep("create_password");
+          } else {
+            setAuthStep("authenticated");
+          }
+          getProfile(session.user.id).then(setProfile);
         } else {
-          setProfile(null);
           setAuthStep("email");
-          clearCleengCustomer();
-          setCleengCustomer(null);
+          setProfile(null);
         }
       }
     );
@@ -122,16 +137,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [isAuthenticated, cleengCustomer]);
 
-  const sendMagicLink = async (email: string, returnTo?: string): Promise<{ success: boolean; error?: string }> => {
+  const signUp = async (email: string): Promise<{ success: boolean; error?: string }> => {
     try {
       const baseUrl = window.location.origin;
-      const redirectUrl = returnTo ? `${baseUrl}${returnTo}` : baseUrl;
       
-      const { error } = await supabase.auth.signInWithOtp({
+      // Sign up with a temporary random password - user will set real password after verification
+      const tempPassword = crypto.randomUUID();
+      
+      const { error } = await supabase.auth.signUp({
         email,
+        password: tempPassword,
         options: {
-          shouldCreateUser: true,
-          emailRedirectTo: redirectUrl,
+          emailRedirectTo: `${baseUrl}/verify-callback`,
+          data: {
+            password_set: false, // Flag to indicate user needs to set password
+          },
         },
       });
 
@@ -140,10 +160,59 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       setPendingEmail(email);
-      setAuthStep("magic_link_sent");
+      setAuthStep("verification_sent");
       return { success: true };
     } catch (error) {
-      return { success: false, error: "Failed to send magic link" };
+      return { success: false, error: "Failed to send verification email" };
+    }
+  };
+
+  const signIn = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      if (data.session) {
+        setSession(data.session);
+        setUser(data.session.user);
+        setAuthStep("authenticated");
+        return { success: true };
+      }
+
+      return { success: false, error: "Sign in failed" };
+    } catch (error) {
+      return { success: false, error: "Failed to sign in" };
+    }
+  };
+
+  const setPassword = async (password: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const { data, error } = await supabase.auth.updateUser({
+        password,
+        data: {
+          password_set: true,
+        },
+      });
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      if (data.user) {
+        setUser(data.user);
+        setAuthStep("authenticated");
+        return { success: true };
+      }
+
+      return { success: false, error: "Failed to set password" };
+    } catch (error) {
+      return { success: false, error: "Failed to set password" };
     }
   };
 
@@ -171,7 +240,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         pendingEmail,
         cleengCustomer,
         isLinking,
-        sendMagicLink,
+        signUp,
+        signIn,
+        setPassword,
         logout,
         setAuthStep,
         setPendingEmail,

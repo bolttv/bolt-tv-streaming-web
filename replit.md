@@ -124,18 +124,25 @@ Preferred communication style: Simple, everyday language.
 ## Supabase Authentication
 
 ### Overview
-Authentication uses Supabase Auth with magic link verification. This provides passwordless login with automatic email verification - users receive an email with a link to sign in.
+Authentication uses Supabase Auth with email/password authentication and email verification. New users must verify their email before creating a password.
 
 ### Environment Variables
 - `VITE_SUPABASE_URL`: Supabase project URL
 - `VITE_SUPABASE_ANON_KEY`: Supabase public anonymous key
 
 ### Auth Flow
-1. User enters email on `/login` page
-2. Supabase sends magic link email
-3. User clicks link in email
-4. User is redirected back to app and automatically authenticated
-5. AuthContext automatically links user to Cleeng customer via SSO using `user.id`
+**Sign Up (New Users):**
+1. User enters email on `/login` page (Sign Up mode)
+2. Supabase sends "Verify Your Email" email
+3. User clicks "Verify Email" button in email
+4. User is redirected to `/verify-callback` → `/login`
+5. User creates their password
+6. Account is created and user is authenticated
+7. AuthContext automatically links user to Cleeng customer via SSO
+
+**Sign In (Existing Users):**
+1. User enters email and password on `/login` page
+2. User is authenticated immediately
 
 ### Key Files
 - `client/src/lib/supabase.ts`: Supabase client initialization

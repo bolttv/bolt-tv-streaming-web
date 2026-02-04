@@ -7,6 +7,7 @@ import ContentDetails from "@/pages/ContentDetails";
 import Watch from "@/pages/Watch";
 import SportCategory from "@/pages/SportCategory";
 import Login from "@/pages/Login";
+import VerifyCallback from "@/pages/VerifyCallback";
 import Subscribe from "@/pages/Subscribe";
 import Checkout from "@/pages/Checkout";
 import Search from "@/pages/Search";
@@ -21,6 +22,7 @@ function Router() {
       <Route path="/sport/:playlistId" component={SportCategory} />
       <Route path="/login" component={Login} />
       <Route path="/signin" component={Login} />
+      <Route path="/verify-callback" component={VerifyCallback} />
       <Route path="/subscribe" component={Subscribe} />
       <Route path="/checkout" component={Checkout} />
       <Route path="/search" component={Search} />
