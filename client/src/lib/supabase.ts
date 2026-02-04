@@ -23,6 +23,7 @@ export type Profile = {
   last_name: string | null;
   avatar_url: string | null;
   subscription_tier: "free" | "basic" | "premium";
+  billing_period: "none" | "monthly" | "annual" | null;
   cleeng_customer_id: string | null;
   created_at: string;
   updated_at: string;

@@ -68,8 +68,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         saveCleengCustomer(customer);
         setCleengCustomer(customer);
 
-        // Fetch user's subscriptions from Cleeng to determine tier
+        // Fetch user's subscriptions from Cleeng to determine tier and billing period
         let subscriptionTier: "free" | "basic" | "premium" = "free";
+        let billingPeriod: "none" | "monthly" | "annual" = "none";
+        
         try {
           const subscriptionsResponse = await getSubscriptions(cleengId || currentUser.email, response.jwt);
           console.log("Cleeng subscriptions response:", subscriptionsResponse);
@@ -83,13 +85,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (activeSubscription) {
               // Determine tier based on offer ID or price
               const offerId = activeSubscription.offerId || "";
-              console.log("Active subscription offer ID:", offerId);
+              const period = activeSubscription.period || "";
+              console.log("Active subscription - offerId:", offerId, "period:", period);
               
-              // Map offer IDs to tiers (adjust based on your Cleeng offer IDs)
-              if (offerId.includes("premium") || offerId.includes("annual")) {
+              // Determine billing period from Cleeng subscription data
+              // Cleeng uses periods like "month", "year", "week", etc.
+              if (period.toLowerCase().includes("year") || period.toLowerCase().includes("annual")) {
+                billingPeriod = "annual";
+              } else if (period.toLowerCase().includes("month")) {
+                billingPeriod = "monthly";
+              } else {
+                // Check offer ID as fallback
+                if (offerId.toLowerCase().includes("annual") || offerId.toLowerCase().includes("yearly")) {
+                  billingPeriod = "annual";
+                } else if (offerId.toLowerCase().includes("monthly")) {
+                  billingPeriod = "monthly";
+                }
+              }
+              
+              // Map offer IDs to tiers
+              if (offerId.toLowerCase().includes("premium")) {
                 subscriptionTier = "premium";
-              } else if (offerId.includes("basic") || offerId.includes("monthly")) {
-                subscriptionTier = "basic";
               } else {
                 // Default to basic for any active subscription
                 subscriptionTier = "basic";
@@ -100,15 +116,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           console.error("Error fetching subscriptions:", subError);
         }
 
-        // Always upsert the profile with the Cleeng customer ID and subscription tier
+        // Always upsert the profile with the Cleeng customer ID, subscription tier, and billing period
         if (cleengId) {
-          console.log("Upserting profile with Cleeng customer ID:", cleengId, "and tier:", subscriptionTier);
+          console.log("Upserting profile with Cleeng customer ID:", cleengId, "tier:", subscriptionTier, "billing:", billingPeriod);
           const updatedProfile = await upsertProfile(
             currentUser.id, 
             currentUser.email, 
             { 
               cleeng_customer_id: cleengId,
-              subscription_tier: subscriptionTier
+              subscription_tier: subscriptionTier,
+              billing_period: billingPeriod
             }
           );
           console.log("Profile upsert result:", updatedProfile);
@@ -117,7 +134,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         }
 
-        console.log("Cleeng customer linked successfully with ID:", cleengId, "tier:", subscriptionTier);
+        console.log("Cleeng customer linked successfully with ID:", cleengId, "tier:", subscriptionTier, "billing:", billingPeriod);
       } else if (response.errors) {
         console.error("Cleeng SSO error:", response.errors);
       }
