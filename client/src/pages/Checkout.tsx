@@ -1,7 +1,15 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useLocation } from "wouter";
-import { ArrowLeft, Loader2, AlertCircle, Check } from "lucide-react";
+import { ArrowLeft, Loader2, Check } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
+
+declare global {
+  interface Window {
+    cleeng?: {
+      setAuthTokens: (tokens: { jwt: string; refreshToken?: string }) => Promise<void>;
+    };
+  }
+}
 
 const CLEENG_PUBLISHER_ID = "870553921";
 
@@ -10,10 +18,10 @@ export default function Checkout() {
   const { isAuthenticated, cleengCustomer, isLinking, user, isLoading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
   const [success, setSuccess] = useState(false);
+  const [authSet, setAuthSet] = useState(false);
   const widgetContainerRef = useRef<HTMLDivElement>(null);
 
   const offerId = new URLSearchParams(window.location.search).get("offerId") || "S899494078_US";
-  const customerToken = localStorage.getItem("cleeng_jwt") || cleengCustomer?.jwt || "";
 
   useEffect(() => {
     if (authLoading) {
@@ -34,40 +42,79 @@ export default function Checkout() {
     setLoading(false);
   }, [isAuthenticated, isLinking, authLoading, setLocation, offerId]);
 
+  const setCleengAuth = useCallback(async () => {
+    const jwt = localStorage.getItem("cleeng_jwt") || cleengCustomer?.jwt;
+    const refreshToken = localStorage.getItem("cleeng_refresh_token") || cleengCustomer?.refreshToken;
+    
+    if (!jwt) {
+      console.log("No Cleeng JWT available");
+      return false;
+    }
+
+    const waitForCleeng = (): Promise<boolean> => {
+      return new Promise((resolve) => {
+        let attempts = 0;
+        const maxAttempts = 50;
+        
+        const check = () => {
+          attempts++;
+          if (window.cleeng?.setAuthTokens) {
+            resolve(true);
+          } else if (attempts >= maxAttempts) {
+            resolve(false);
+          } else {
+            setTimeout(check, 100);
+          }
+        };
+        check();
+      });
+    };
+
+    const cleengReady = await waitForCleeng();
+    if (!cleengReady) {
+      console.error("Cleeng SDK not available");
+      return false;
+    }
+
+    try {
+      console.log("Setting Cleeng auth tokens...");
+      await window.cleeng!.setAuthTokens({
+        jwt: jwt,
+        refreshToken: refreshToken || undefined,
+      });
+      console.log("Cleeng auth tokens set successfully");
+      return true;
+    } catch (error) {
+      console.error("Error setting Cleeng auth tokens:", error);
+      return false;
+    }
+  }, [cleengCustomer]);
+
   useEffect(() => {
-    if (loading || !widgetContainerRef.current) return;
+    if (loading || authSet) return;
+
+    const initAuth = async () => {
+      const success = await setCleengAuth();
+      setAuthSet(success);
+    };
+
+    initAuth();
+  }, [loading, authSet, setCleengAuth]);
+
+  useEffect(() => {
+    if (loading || !authSet || !widgetContainerRef.current) return;
 
     const container = widgetContainerRef.current;
     container.innerHTML = "";
 
     const widgetDiv = document.createElement("div");
-    widgetDiv.setAttribute("data-cleeng-offer-id", offerId);
-    widgetDiv.setAttribute("data-cleeng-publisher-id", CLEENG_PUBLISHER_ID);
     widgetDiv.setAttribute("data-cleeng-widget", "checkout");
-    
-    if (customerToken) {
-      widgetDiv.setAttribute("data-cleeng-customer-token", customerToken);
-    }
+    widgetDiv.setAttribute("data-cleeng-publisher-id", CLEENG_PUBLISHER_ID);
+    widgetDiv.setAttribute("data-cleeng-offer-id", offerId);
+    widgetDiv.setAttribute("data-cleeng-language", "en-US");
 
     container.appendChild(widgetDiv);
-
-    const checkCleeng = setInterval(() => {
-      const cleengScript = document.querySelector('script[src*="cleeng.js"]');
-      if (cleengScript && (window as any).Cleeng) {
-        clearInterval(checkCleeng);
-        try {
-          (window as any).Cleeng?.widgets?.init?.({
-            publisherId: CLEENG_PUBLISHER_ID,
-            customerToken: customerToken || undefined,
-          });
-        } catch (e) {
-          console.log("Cleeng widget auto-initializes");
-        }
-      }
-    }, 200);
-
-    return () => clearInterval(checkCleeng);
-  }, [loading, offerId, customerToken]);
+  }, [loading, authSet, offerId]);
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -143,9 +190,11 @@ export default function Checkout() {
             className="cleeng-checkout-container bg-white rounded-xl min-h-[500px] overflow-hidden"
             style={{ colorScheme: 'light' }}
           >
-            <div className="flex items-center justify-center h-[500px]">
-              <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
-            </div>
+            {!authSet && (
+              <div className="flex items-center justify-center h-[500px]">
+                <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+              </div>
+            )}
           </div>
 
           <p className="text-center text-sm text-gray-500 mt-6">
