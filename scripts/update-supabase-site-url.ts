@@ -8,7 +8,7 @@ if (!SUPABASE_ACCESS_TOKEN || !PROJECT_REF) {
   process.exit(1);
 }
 
-const SITE_URL = "https://bolt-tv.replit.app";
+const SITE_URL = "https://asset-manager-1-nate348.replit.app";
 
 async function updateSiteUrl() {
   console.log(`Updating Supabase Site URL to: ${SITE_URL}`);
