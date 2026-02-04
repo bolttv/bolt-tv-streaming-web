@@ -35,12 +35,6 @@ const AUTH_CHANGE_EVENT = "cleeng_auth_change";
 
 export function saveCleengCustomer(customer: CleengCustomer) {
   localStorage.setItem(CLEENG_CUSTOMER_KEY, JSON.stringify(customer));
-  if (customer.jwt) {
-    localStorage.setItem("cleeng_jwt", customer.jwt);
-  }
-  if (customer.refreshToken) {
-    localStorage.setItem("cleeng_refresh_token", customer.refreshToken);
-  }
   window.dispatchEvent(new CustomEvent(AUTH_CHANGE_EVENT));
 }
 
@@ -55,8 +49,6 @@ export function getCleengCustomer(): CleengCustomer | null {
 
 export function clearCleengCustomer() {
   localStorage.removeItem(CLEENG_CUSTOMER_KEY);
-  localStorage.removeItem("cleeng_jwt");
-  localStorage.removeItem("cleeng_refresh_token");
   window.dispatchEvent(new CustomEvent(AUTH_CHANGE_EVENT));
 }
 
