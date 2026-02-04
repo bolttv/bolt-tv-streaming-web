@@ -517,7 +517,9 @@ export async function registerRoutes(
         return res.status(500).json({ error: "Cleeng API not configured" });
       }
 
-      const webhookUrl = `${req.protocol}://${req.get("host")}/api/cleeng/webhook`;
+      // Use the public HTTPS domain for webhooks
+      const publicDomain = process.env.REPLIT_DEV_DOMAIN || process.env.REPLIT_DOMAINS?.split(",")[0] || req.get("host");
+      const webhookUrl = `https://${publicDomain}/api/cleeng/webhook`;
       console.log("Registering Cleeng webhook URL:", webhookUrl);
       
       const topics = ["transactionCreated", "subscriptionRenewed", "subscriptionSwitched", "subscriptionCanceled", "subscriptionTerminated"];
