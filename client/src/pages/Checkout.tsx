@@ -1,15 +1,7 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { ArrowLeft, Loader2, Check } from "lucide-react";
+import { ArrowLeft, Loader2, Check, CreditCard, Shield } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
-
-declare global {
-  interface Window {
-    cleeng?: {
-      setAuthTokens: (tokens: { jwt: string; refreshToken?: string }) => Promise<void>;
-    };
-  }
-}
 
 const CLEENG_PUBLISHER_ID = "870553921";
 
@@ -17,11 +9,11 @@ export default function Checkout() {
   const [, setLocation] = useLocation();
   const { isAuthenticated, cleengCustomer, isLinking, user, isLoading: authLoading } = useAuth();
   const [loading, setLoading] = useState(true);
-  const [success, setSuccess] = useState(false);
-  const [authSet, setAuthSet] = useState(false);
-  const widgetContainerRef = useRef<HTMLDivElement>(null);
+  const [redirecting, setRedirecting] = useState(false);
 
-  const offerId = new URLSearchParams(window.location.search).get("offerId") || "S899494078_US";
+  const searchParams = new URLSearchParams(window.location.search);
+  const offerId = searchParams.get("offerId") || "S899494078_US";
+  const success = searchParams.get("success") === "true";
 
   useEffect(() => {
     if (authLoading) {
@@ -42,93 +34,15 @@ export default function Checkout() {
     setLoading(false);
   }, [isAuthenticated, isLinking, authLoading, setLocation, offerId]);
 
-  const setCleengAuth = useCallback(async () => {
-    const jwt = localStorage.getItem("cleeng_jwt") || cleengCustomer?.jwt;
-    const refreshToken = localStorage.getItem("cleeng_refresh_token") || cleengCustomer?.refreshToken;
+  const handleCheckout = () => {
+    setRedirecting(true);
+    const customerToken = localStorage.getItem("cleeng_jwt") || cleengCustomer?.jwt || "";
     
-    if (!jwt) {
-      console.log("No Cleeng JWT available");
-      return false;
-    }
-
-    const waitForCleeng = (): Promise<boolean> => {
-      return new Promise((resolve) => {
-        let attempts = 0;
-        const maxAttempts = 50;
-        
-        const check = () => {
-          attempts++;
-          if (window.cleeng?.setAuthTokens) {
-            resolve(true);
-          } else if (attempts >= maxAttempts) {
-            resolve(false);
-          } else {
-            setTimeout(check, 100);
-          }
-        };
-        check();
-      });
-    };
-
-    const cleengReady = await waitForCleeng();
-    if (!cleengReady) {
-      console.error("Cleeng SDK not available");
-      return false;
-    }
-
-    try {
-      console.log("Setting Cleeng auth tokens...");
-      await window.cleeng!.setAuthTokens({
-        jwt: jwt,
-        refreshToken: refreshToken || undefined,
-      });
-      console.log("Cleeng auth tokens set successfully");
-      return true;
-    } catch (error) {
-      console.error("Error setting Cleeng auth tokens:", error);
-      return false;
-    }
-  }, [cleengCustomer]);
-
-  useEffect(() => {
-    if (loading || authSet) return;
-
-    const initAuth = async () => {
-      const success = await setCleengAuth();
-      setAuthSet(success);
-    };
-
-    initAuth();
-  }, [loading, authSet, setCleengAuth]);
-
-  useEffect(() => {
-    if (loading || !authSet || !widgetContainerRef.current) return;
-
-    const container = widgetContainerRef.current;
-    container.innerHTML = "";
-
-    const widgetDiv = document.createElement("div");
-    widgetDiv.setAttribute("data-cleeng-widget", "checkout");
-    widgetDiv.setAttribute("data-cleeng-publisher-id", CLEENG_PUBLISHER_ID);
-    widgetDiv.setAttribute("data-cleeng-offer-id", offerId);
-    widgetDiv.setAttribute("data-cleeng-language", "en-US");
-
-    container.appendChild(widgetDiv);
-  }, [loading, authSet, offerId]);
-
-  useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type === "cleeng:checkout:success" || 
-          event.data?.event === "checkout_success" ||
-          event.data?.status === "success") {
-        console.log("Cleeng checkout success detected:", event.data);
-        setSuccess(true);
-      }
-    };
-
-    window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
-  }, []);
+    const checkoutUrl = `https://checkout.cleeng.com?offerId=${encodeURIComponent(offerId)}&publisherId=${CLEENG_PUBLISHER_ID}${customerToken ? `&customerToken=${encodeURIComponent(customerToken)}` : ""}`;
+    
+    console.log("Redirecting to Cleeng checkout:", checkoutUrl);
+    window.location.href = checkoutUrl;
+  };
 
   if (loading || isLinking || authLoading) {
     return (
@@ -167,6 +81,17 @@ export default function Checkout() {
     );
   }
 
+  if (redirecting) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-gray-400">Redirecting to secure checkout...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="container mx-auto px-4 py-8">
@@ -175,31 +100,52 @@ export default function Checkout() {
           Back to plans
         </Link>
 
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-lg mx-auto">
           <h1 className="text-3xl font-bold mb-8 text-center">Complete Your Subscription</h1>
 
           <div className="bg-gray-900 rounded-xl p-6 mb-6">
-            <div className="flex items-center gap-2 text-sm text-gray-500">
+            <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
               <span>Account:</span>
               <span className="text-gray-300">{user?.email || cleengCustomer?.email}</span>
             </div>
+            
+            <div className="border-t border-gray-800 pt-4">
+              <h3 className="font-semibold mb-3">What you'll get:</h3>
+              <ul className="space-y-2 text-gray-400">
+                <li className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-green-500" />
+                  Unlimited streaming
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-green-500" />
+                  HD quality content
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-green-500" />
+                  Watch on any device
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-green-500" />
+                  Cancel anytime
+                </li>
+              </ul>
+            </div>
           </div>
 
-          <div 
-            ref={widgetContainerRef}
-            className="cleeng-checkout-container bg-white rounded-xl min-h-[500px] overflow-hidden"
-            style={{ colorScheme: 'light' }}
+          <button
+            onClick={handleCheckout}
+            disabled={redirecting}
+            className="w-full py-4 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white rounded-lg font-semibold text-lg transition-colors flex items-center justify-center gap-3 cursor-pointer"
+            data-testid="button-checkout"
           >
-            {!authSet && (
-              <div className="flex items-center justify-center h-[500px]">
-                <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
-              </div>
-            )}
-          </div>
+            <CreditCard className="w-5 h-5" />
+            Continue to Payment
+          </button>
 
-          <p className="text-center text-sm text-gray-500 mt-6">
-            Secure checkout powered by Cleeng
-          </p>
+          <div className="flex items-center justify-center gap-2 text-sm text-gray-500 mt-6">
+            <Shield className="w-4 h-4" />
+            <span>Secure checkout powered by Cleeng</span>
+          </div>
         </div>
       </div>
     </div>
