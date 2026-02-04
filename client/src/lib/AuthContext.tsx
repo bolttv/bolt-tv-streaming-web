@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase, Profile, getProfile, updateProfile, upsertProfile } from "./supabase";
-import { ssoLogin, saveCleengCustomer, getCleengCustomer, clearCleengCustomer, CleengCustomer } from "./cleeng";
+import { ssoLogin, saveCleengCustomer, getCleengCustomer, clearCleengCustomer, CleengCustomer, getSubscriptions } from "./cleeng";
 
 type AuthStep = "email" | "verification_sent" | "create_password" | "authenticated";
 
@@ -68,13 +68,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         saveCleengCustomer(customer);
         setCleengCustomer(customer);
 
-        // Always upsert the profile with the Cleeng customer ID
+        // Fetch user's subscriptions from Cleeng to determine tier
+        let subscriptionTier: "free" | "basic" | "premium" = "free";
+        try {
+          const subscriptionsResponse = await getSubscriptions(cleengId || currentUser.email, response.jwt);
+          console.log("Cleeng subscriptions response:", subscriptionsResponse);
+          
+          if (subscriptionsResponse.items && subscriptionsResponse.items.length > 0) {
+            // Find an active subscription
+            const activeSubscription = subscriptionsResponse.items.find(
+              (sub: any) => sub.status === "active" || sub.status === "paid"
+            );
+            
+            if (activeSubscription) {
+              // Determine tier based on offer ID or price
+              const offerId = activeSubscription.offerId || "";
+              console.log("Active subscription offer ID:", offerId);
+              
+              // Map offer IDs to tiers (adjust based on your Cleeng offer IDs)
+              if (offerId.includes("premium") || offerId.includes("annual")) {
+                subscriptionTier = "premium";
+              } else if (offerId.includes("basic") || offerId.includes("monthly")) {
+                subscriptionTier = "basic";
+              } else {
+                // Default to basic for any active subscription
+                subscriptionTier = "basic";
+              }
+            }
+          }
+        } catch (subError) {
+          console.error("Error fetching subscriptions:", subError);
+        }
+
+        // Always upsert the profile with the Cleeng customer ID and subscription tier
         if (cleengId) {
-          console.log("Upserting profile with Cleeng customer ID:", cleengId);
+          console.log("Upserting profile with Cleeng customer ID:", cleengId, "and tier:", subscriptionTier);
           const updatedProfile = await upsertProfile(
             currentUser.id, 
             currentUser.email, 
-            { cleeng_customer_id: cleengId }
+            { 
+              cleeng_customer_id: cleengId,
+              subscription_tier: subscriptionTier
+            }
           );
           console.log("Profile upsert result:", updatedProfile);
           if (updatedProfile) {
@@ -82,7 +117,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         }
 
-        console.log("Cleeng customer linked successfully with ID:", cleengId);
+        console.log("Cleeng customer linked successfully with ID:", cleengId, "tier:", subscriptionTier);
       } else if (response.errors) {
         console.error("Cleeng SSO error:", response.errors);
       }
