@@ -1,8 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { ArrowLeft, Loader2, AlertCircle, Lock, Eye, EyeOff, User } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
-import { supabase } from "@/lib/supabase";
 
 export default function CreateAccount() {
   const [, setLocation] = useLocation();
@@ -21,77 +20,33 @@ export default function CreateAccount() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [processingCallback, setProcessingCallback] = useState(true);
-  const hasCheckedCallback = useRef(false);
   
   // Check for pending offer in localStorage or user metadata (for cross-device persistence)
   const pendingOfferId = localStorage.getItem("pending_checkout_offer") || 
     user?.user_metadata?.pending_offer;
 
-  // Handle the Supabase auth callback from email verification
-  useEffect(() => {
-    if (hasCheckedCallback.current) return;
-    hasCheckedCallback.current = true;
-
-    const handleCallback = async () => {
-      // Check if this is a redirect from Supabase email verification
-      // The URL hash contains access_token and other auth data
-      const hashParams = new URLSearchParams(window.location.hash.substring(1));
-      const accessToken = hashParams.get("access_token");
-      const refreshToken = hashParams.get("refresh_token");
-      const type = hashParams.get("type");
-
-      if (accessToken && refreshToken && type === "signup") {
-        try {
-          // Set the session from the URL tokens
-          const { error } = await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken,
-          });
-
-          if (error) {
-            console.error("Error setting session from callback:", error);
-            setError("Failed to verify your email. Please try again.");
-          }
-
-          // Clear the hash from URL for cleaner look
-          window.history.replaceState(null, "", window.location.pathname);
-        } catch (err) {
-          console.error("Callback processing error:", err);
-        }
-      }
-
-      // Wait a moment for the auth state to update
-      setTimeout(() => {
-        setProcessingCallback(false);
-      }, 500);
-    };
-
-    handleCallback();
-  }, []);
-
   useEffect(() => {
     // If fully authenticated (account setup complete), redirect
-    if (!processingCallback && isAuthenticated && authStep === "authenticated" && !isLoading) {
+    if (isAuthenticated && authStep === "authenticated" && !isLoading) {
       if (pendingOfferId) {
         setLocation(`/checkout?offerId=${encodeURIComponent(pendingOfferId)}`);
       } else {
         setLocation("/");
       }
     }
-  }, [isAuthenticated, authStep, isLoading, pendingOfferId, setLocation, processingCallback]);
+  }, [isAuthenticated, authStep, isLoading, pendingOfferId, setLocation]);
 
   useEffect(() => {
-    // If not in create_password step and not loading and callback is processed, redirect to login
+    // If not in create_password step and not loading, redirect to login
     // Give extra time for auth state to settle
-    if (!processingCallback && !isLoading && authStep !== "create_password" && !isAuthenticated) {
+    if (!isLoading && authStep !== "create_password" && !isAuthenticated) {
       // Wait a bit more before redirecting as a fallback
       const timeout = setTimeout(() => {
         setLocation("/login");
-      }, 1000);
+      }, 1500);
       return () => clearTimeout(timeout);
     }
-  }, [isLoading, authStep, isAuthenticated, setLocation, processingCallback]);
+  }, [isLoading, authStep, isAuthenticated, setLocation]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -140,11 +95,11 @@ export default function CreateAccount() {
     }
   };
 
-  if (isLoading || processingCallback) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center">
         <Loader2 className="w-12 h-12 animate-spin text-purple-500 mb-4" />
-        <p className="text-gray-400">Verifying your email...</p>
+        <p className="text-gray-400">Loading...</p>
       </div>
     );
   }
