@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
 import { Session, User } from "@supabase/supabase-js";
-import { supabase, Profile, getProfile, updateProfile } from "./supabase";
+import { supabase, Profile, getProfile, updateProfile, upsertProfile } from "./supabase";
 import { ssoLogin, saveCleengCustomer, getCleengCustomer, clearCleengCustomer, CleengCustomer } from "./cleeng";
 
 type AuthStep = "email" | "verification_sent" | "create_password" | "authenticated";
@@ -52,13 +52,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLinking(true);
 
     try {
-      const profile = await getProfile(currentUser.id);
-      
       const response = await ssoLogin(currentUser.email, currentUser.id);
+      console.log("Cleeng SSO response:", response);
       
       if (response.jwt) {
+        const cleengId = response.customerId;
+        console.log("Cleeng customer ID from response:", cleengId);
+        
         const customer: CleengCustomer = {
-          id: response.customerId || response.email || currentUser.email,
+          id: cleengId || currentUser.email,
           email: response.email || currentUser.email,
           jwt: response.jwt,
           refreshToken: response.refreshToken,
@@ -66,11 +68,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         saveCleengCustomer(customer);
         setCleengCustomer(customer);
 
-        if (profile && !profile.cleeng_customer_id) {
-          await updateProfile(currentUser.id, { cleeng_customer_id: customer.id });
+        // Always upsert the profile with the Cleeng customer ID
+        if (cleengId) {
+          console.log("Upserting profile with Cleeng customer ID:", cleengId);
+          const updatedProfile = await upsertProfile(
+            currentUser.id, 
+            currentUser.email, 
+            { cleeng_customer_id: cleengId }
+          );
+          console.log("Profile upsert result:", updatedProfile);
+          if (updatedProfile) {
+            setProfile(updatedProfile);
+          }
         }
 
-        console.log("Cleeng customer linked successfully");
+        console.log("Cleeng customer linked successfully with ID:", cleengId);
       } else if (response.errors) {
         console.error("Cleeng SSO error:", response.errors);
       }

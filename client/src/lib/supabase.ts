@@ -61,3 +61,32 @@ export async function updateProfile(
 
   return data;
 }
+
+export async function upsertProfile(
+  userId: string,
+  email: string,
+  updates: Partial<Profile>
+): Promise<Profile | null> {
+  // Try to upsert (insert or update) the profile
+  const { data, error } = await supabase
+    .from("profiles")
+    .upsert({
+      id: userId,
+      email: email,
+      ...updates,
+      updated_at: new Date().toISOString(),
+    }, { 
+      onConflict: 'id',
+      ignoreDuplicates: false 
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error upserting profile:", error);
+    // Try a simple update as fallback
+    return updateProfile(userId, updates);
+  }
+
+  return data;
+}
