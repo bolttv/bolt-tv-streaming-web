@@ -5,38 +5,20 @@ import { ssoLogin, saveCleengCustomer, getCleengCustomer, clearCleengCustomer, C
 
 type AuthStep = "email" | "verification_sent" | "create_password" | "authenticated";
 
-// Subscription tier type
-type SubscriptionTier = "free" | "basic" | "premium" | null;
-
-// Subscription object for context
-interface Subscription {
-  status: "active" | "inactive" | "none";
-  tier: SubscriptionTier;
-  billingPeriod: "monthly" | "annual" | "none" | null;
-}
-
 interface AuthContextType {
   session: Session | null;
   user: User | null;
   profile: Profile | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  // New computed values for route protection
-  hasActiveSubscription: boolean;
-  subscriptionTier: SubscriptionTier;
-  subscription: Subscription | null;
-  // Existing properties
   authStep: AuthStep;
   pendingEmail: string | null;
   cleengCustomer: CleengCustomer | null;
   isLinking: boolean;
-  // Methods
   signUp: (email: string) => Promise<{ success: boolean; error?: string; existingUser?: boolean }>;
   signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>; // Alias for signIn
   completeAccountSetup: (password: string, firstName: string, lastName: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
-  checkAuthStatus: () => Promise<void>; // Manual auth check
   setAuthStep: (step: AuthStep) => void;
   setPendingEmail: (email: string | null) => void;
 }
@@ -55,18 +37,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [linkAttempted, setLinkAttempted] = useState(false);
 
   const isAuthenticated = !!session && !!user;
-
-  // Computed subscription values from profile
-  const subscriptionTier: SubscriptionTier = profile?.subscription_tier || null;
-  
-  const hasActiveSubscription = 
-    subscriptionTier === "basic" || subscriptionTier === "premium";
-
-  const subscription: Subscription | null = profile ? {
-    status: hasActiveSubscription ? "active" : (subscriptionTier === "free" ? "inactive" : "none"),
-    tier: subscriptionTier,
-    billingPeriod: profile.billing_period || null,
-  } : null;
 
   const linkToCleeng = useCallback(async (currentUser: User) => {
     if (!currentUser.email) return;
@@ -369,30 +339,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setLinkAttempted(false);
   };
 
-  // Manual auth status check - useful for refreshing auth state
-  const checkAuthStatus = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        const setupComplete = checkAccountSetupComplete(session.user);
-        if (!setupComplete && session.user.email_confirmed_at) {
-          setAuthStep("create_password");
-        } else if (setupComplete) {
-          setAuthStep("authenticated");
-        }
-        const userProfile = await getProfile(session.user.id);
-        setProfile(userProfile);
-      }
-    } catch (error) {
-      console.error("Error checking auth status:", error);
-    }
-  };
-
-  // Alias for signIn to match simpler interface
-  const login = signIn;
-
   return (
     <AuthContext.Provider
       value={{
@@ -401,22 +347,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         profile,
         isLoading,
         isAuthenticated,
-        // New computed values for route protection
-        hasActiveSubscription,
-        subscriptionTier,
-        subscription,
-        // Existing properties
         authStep,
         pendingEmail,
         cleengCustomer,
         isLinking,
-        // Methods
         signUp,
         signIn,
-        login,
         completeAccountSetup,
         logout,
-        checkAuthStatus,
         setAuthStep,
         setPendingEmail,
       }}
