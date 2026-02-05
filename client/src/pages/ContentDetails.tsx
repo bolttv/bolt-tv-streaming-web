@@ -213,33 +213,30 @@ export default function ContentDetails() {
               </p>
 
               {/* Watch Button - 60% width on mobile, auto on tablet+ */}
-              <div className="w-[60%] sm:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-2 md:gap-4">
+              <div className="w-[60%] sm:w-auto">
                 <Link href={`/watch/${watchMediaId}${category ? `?category=${category}` : ''}`} className="w-full sm:w-auto">
-                  <button className="flex items-center justify-center gap-2 sm:gap-2 bg-white text-black hover:bg-white/90 transition-colors h-11 sm:h-10 md:h-12 w-full sm:w-auto px-4 sm:px-16 md:px-20 rounded font-semibold tracking-wide text-sm sm:text-sm md:text-base cursor-pointer" data-testid="button-watch">
+                  <button className="flex items-center justify-center gap-2 sm:gap-2 bg-white text-black hover:bg-white/90 transition-colors h-11 sm:h-10 md:h-12 w-full sm:w-auto px-4 sm:px-10 md:px-12 rounded font-semibold tracking-wide text-sm sm:text-sm md:text-base cursor-pointer" data-testid="button-watch">
                     <Play className="w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5 fill-current" />
                     {watchButtonText}
                   </button>
                 </Link>
-                <button className="hidden sm:flex items-center justify-center bg-white/10 hover:bg-white/20 border border-white/10 text-white transition-colors h-10 w-10 md:h-12 md:w-12 rounded backdrop-blur-sm" data-testid="button-add-list">
-                  <Plus className="w-5 h-5 md:w-6 md:h-6" />
-                </button>
               </div>
 
-              {/* Mobile Action Icons - My List, Rate, Trailer */}
-              <div className="flex sm:hidden items-center gap-8 pt-2">
+              {/* Action Icons - My List, Rate, Trailer */}
+              <div className="flex items-center gap-8 sm:gap-10 pt-2 sm:pt-3">
                 <button className="flex flex-col items-center gap-1 text-gray-300 hover:text-white transition">
-                  <Plus className="w-5 h-5" />
-                  <span className="text-[9px] uppercase tracking-wider font-medium">My List</span>
+                  <Plus className="w-5 h-5 sm:w-6 sm:h-6" />
+                  <span className="text-[9px] sm:text-[10px] uppercase tracking-wider font-medium">My List</span>
                 </button>
                 <button className="flex flex-col items-center gap-1 text-gray-300 hover:text-white transition">
-                  <ThumbsUp className="w-5 h-5" />
-                  <span className="text-[9px] uppercase tracking-wider font-medium">Rate</span>
+                  <ThumbsUp className="w-5 h-5 sm:w-6 sm:h-6" />
+                  <span className="text-[9px] sm:text-[10px] uppercase tracking-wider font-medium">Rate</span>
                 </button>
                 {content.trailerId && (
                   <Link href={`/watch/${content.trailerId}${category ? `?category=${category}` : ''}`}>
                     <button className="flex flex-col items-center gap-1 text-gray-300 hover:text-white transition">
-                      <Film className="w-5 h-5" />
-                      <span className="text-[9px] uppercase tracking-wider font-medium">Trailer</span>
+                      <Film className="w-5 h-5 sm:w-6 sm:h-6" />
+                      <span className="text-[9px] sm:text-[10px] uppercase tracking-wider font-medium">Trailer</span>
                     </button>
                   </Link>
                 )}
