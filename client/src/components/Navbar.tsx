@@ -56,7 +56,7 @@ export default function Navbar() {
     <nav
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-500",
-        scrolled ? "bg-black/90 backdrop-blur-md" : "bg-gradient-to-b from-black/80 to-transparent"
+        scrolled ? "bg-black/80 backdrop-blur-md" : "bg-gradient-to-b from-black/80 to-transparent"
       )}
     >
       <div className="px-4 md:px-12 h-16 md:h-20 flex items-center justify-between relative">
