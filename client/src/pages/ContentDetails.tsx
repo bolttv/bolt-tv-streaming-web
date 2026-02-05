@@ -174,7 +174,7 @@ export default function ContentDetails() {
             <div className="absolute bottom-32 left-0 right-0 h-48 bg-gradient-to-t from-background to-transparent" />
           </div>
 
-          <div className="absolute inset-0 sm:bottom-[140px] md:bottom-[156px] sm:inset-auto sm:left-4 sm:right-auto md:left-12 left-4 right-4 max-w-xl z-20 flex flex-col justify-end sm:justify-start items-start text-left pb-4 sm:pb-0 space-y-2 sm:space-y-4 md:space-y-6">
+          <div className="absolute inset-0 sm:bottom-[140px] md:bottom-[156px] sm:inset-auto sm:left-4 sm:right-auto md:left-12 left-4 right-4 max-w-xl z-20 flex flex-col justify-end sm:justify-start items-start text-left pb-6 sm:pb-0 space-y-3 sm:space-y-4 md:space-y-6">
               {content.logoImage && !logoFailed ? (
                  <img 
                    src={content.logoImage} 
@@ -246,7 +246,7 @@ export default function ContentDetails() {
               </div>
 
               {/* Mobile Description */}
-              <p className="text-gray-300 sm:hidden text-xs leading-relaxed">
+              <p className="text-gray-300 sm:hidden text-xs leading-relaxed mt-1">
                 {displayDescription}
               </p>
           </div>
