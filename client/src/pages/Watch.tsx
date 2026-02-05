@@ -160,6 +160,17 @@ export default function Watch() {
         player.on("ready", () => {
           setPlayerReady(true);
           setPlayerError(null);
+          
+          const handleResize = () => {
+            if (playerInstanceRef.current) {
+              playerInstanceRef.current.resize("100%", "100%");
+            }
+          };
+          
+          window.addEventListener("resize", handleResize);
+          player.on("remove", () => {
+            window.removeEventListener("resize", handleResize);
+          });
         });
 
         player.on("play", () => {
