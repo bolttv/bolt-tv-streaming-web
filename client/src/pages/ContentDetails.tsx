@@ -1,7 +1,7 @@
 import { useParams, Link } from "wouter";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { Play, Plus, ThumbsUp, Film, ChevronDown } from "lucide-react";
+import { Play, Plus, ChevronDown } from "lucide-react";
 import PosterCard from "@/components/PosterCard";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
@@ -186,61 +186,36 @@ export default function ContentDetails() {
                  <h1 className="text-3xl sm:text-5xl md:text-7xl font-display font-black text-white leading-[0.9] tracking-tight uppercase drop-shadow-2xl">{content.title}</h1>
               )}
 
-              {/* Show season info only for Series/Episode content types */}
-              {(content.contentType === "Series" || content.contentType === "Episode") && (
-                <div className="flex items-center gap-3 text-sm font-medium text-gray-300">
-                  <span className="text-blue-400 font-bold">Season 1 Now Available</span>
-                </div>
-              )}
-              
-              <div className="flex items-center gap-3 text-sm font-medium text-gray-300">
-                <span className="bg-white/10 px-1.5 py-0.5 rounded text-white border border-white/20">{content.rating}</span>
+              {/* Metadata Line */}
+              <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm md:text-base font-medium text-gray-300">
+                <span className="bg-white/10 px-1 sm:px-1.5 py-0.5 rounded text-white border border-white/20">{content.rating}</span>
                 {(content.contentType === "Series" || content.contentType === "Episode") && (
                   <span>1 Season</span>
                 )}
                 {(content.contentType === "Movie" || content.contentType === "Documentary") && (
                   <span>{content.contentType}</span>
                 )}
-                {!content.contentType && (
-                  <span>Series</span>
+                <span className="w-1 h-1 bg-gray-400 rounded-full" />
+                <span>{displayGenres[0]}</span>
+                {(content.contentType === "Series" || content.contentType === "Episode") && (
+                  <span className="text-blue-400 font-bold uppercase tracking-wider hidden sm:inline">New Episode</span>
                 )}
-                <span className="border border-white/20 px-1 rounded text-[10px]">AD</span>
               </div>
 
-              <div className="flex flex-wrap items-center gap-3 sm:gap-4 pt-2">
+              <p className="text-gray-200 text-xs sm:text-sm md:text-lg line-clamp-2 md:line-clamp-3 leading-relaxed max-w-lg drop-shadow-md">
+                {displayDescription}
+              </p>
+
+              <div className="flex items-center gap-2 sm:gap-3 md:gap-4 pt-1 sm:pt-2">
                 <Link href={`/watch/${watchMediaId}${category ? `?category=${category}` : ''}`}>
                   <button className="flex items-center gap-2 bg-white text-black hover:bg-white/90 transition-colors h-10 sm:h-12 px-5 sm:px-8 rounded font-bold tracking-wide text-sm sm:text-base" data-testid="button-watch">
                     <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />
                     {watchButtonText}
                   </button>
                 </Link>
-                
-                <div className="flex items-center gap-4 sm:gap-6 px-2">
-                    <button className="flex flex-col items-center gap-1 group text-gray-300 hover:text-white transition">
-                        <Plus className="w-5 h-5 sm:w-6 sm:h-6" />
-                        <span className="text-[9px] sm:text-[10px] uppercase tracking-wider font-bold">My List</span>
-                    </button>
-                    <button className="flex flex-col items-center gap-1 group text-gray-300 hover:text-white transition">
-                        <ThumbsUp className="w-5 h-5 sm:w-6 sm:h-6" />
-                        <span className="text-[9px] sm:text-[10px] uppercase tracking-wider font-bold">Rate</span>
-                    </button>
-                    {content.trailerId && (
-                      <Link href={`/watch/${content.trailerId}${category ? `?category=${category}` : ''}`}>
-                        <button className="flex flex-col items-center gap-1 group text-gray-300 hover:text-white transition" data-testid="button-trailer">
-                            <Film className="w-5 h-5 sm:w-6 sm:h-6" />
-                            <span className="text-[9px] sm:text-[10px] uppercase tracking-wider font-bold">Trailer</span>
-                        </button>
-                      </Link>
-                    )}
-                </div>
-              </div>
-
-              <p className="text-gray-300 text-sm md:text-base leading-relaxed max-w-xl drop-shadow-md">
-                {displayDescription}
-              </p>
-              
-              <div className="flex gap-2 text-xs text-gray-400 font-medium">
-                 <span>{displayGenres.join(" • ")}</span>
+                <button className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-white/30 text-white hover:border-white hover:bg-white/10 transition-all" data-testid="button-add-list">
+                  <Plus className="w-5 h-5 sm:w-6 sm:h-6" />
+                </button>
               </div>
           </div>
         </div>
