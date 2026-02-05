@@ -72,7 +72,8 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
                 {/* Complex Gradient Overlays for Cinematic Feel */}
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-black/40" />
                 <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/40 to-transparent w-2/3 md:w-1/2" />
-                <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-t from-background to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 h-32 bg-background" />
+                <div className="absolute bottom-32 left-0 right-0 h-48 bg-gradient-to-t from-background to-transparent" />
               </div>
 
               {/* Content - Vertically centered, left justified */}
