@@ -146,7 +146,7 @@ export default function ContentDetails() {
 
       <main>
         {/* Hero Section */}
-        <div className="relative h-[70vh] sm:h-[75vh] md:h-[80vh] w-full">
+        <div className="relative h-[calc(70vh-30px)] sm:h-[calc(75vh-30px)] md:h-[calc(80vh-30px)] w-full">
           <div className="absolute inset-0">
             {content.motionThumbnail && !motionThumbnailFailed ? (
               <video
