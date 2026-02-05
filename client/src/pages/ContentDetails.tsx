@@ -167,23 +167,23 @@ export default function ContentDetails() {
                 className="w-full h-full object-cover"
               />
             )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-r from-black via-black/60 to-transparent w-full md:w-2/3" />
-            <div className="absolute bottom-0 left-0 right-0 h-24 bg-black" />
-            <div className="absolute bottom-24 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent" />
+            {/* Complex Gradient Overlays for Cinematic Feel */}
+            <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-black/40" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/40 to-transparent w-2/3 md:w-1/2" />
+            <div className="absolute bottom-0 left-0 right-0 h-32 bg-background" />
+            <div className="absolute bottom-32 left-0 right-0 h-48 bg-gradient-to-t from-background to-transparent" />
           </div>
 
-          <div className="absolute bottom-[92px] sm:bottom-[108px] md:bottom-[124px] left-0 right-0 px-4 md:px-12 z-10">
-            <div className="max-w-2xl space-y-6">
+          <div className="absolute bottom-[124px] sm:bottom-[140px] md:bottom-[156px] left-4 md:left-12 max-w-xl z-20 space-y-3 sm:space-y-4 md:space-y-6">
               {content.logoImage && !logoFailed ? (
                  <img 
                    src={content.logoImage} 
                    alt={content.title} 
-                   className="h-20 sm:h-28 md:h-48 object-contain" 
+                   className="h-24 sm:h-32 md:h-52 object-contain" 
                    onError={() => setLogoFailed(true)}
                  />
               ) : (
-                 <h1 className="text-3xl sm:text-4xl md:text-6xl font-display font-black uppercase leading-none drop-shadow-xl">{content.title}</h1>
+                 <h1 className="text-3xl sm:text-5xl md:text-7xl font-display font-black text-white leading-[0.9] tracking-tight uppercase drop-shadow-2xl">{content.title}</h1>
               )}
 
               {/* Show season info only for Series/Episode content types */}
@@ -242,7 +242,6 @@ export default function ContentDetails() {
               <div className="flex gap-2 text-xs text-gray-400 font-medium">
                  <span>{displayGenres.join(" • ")}</span>
               </div>
-            </div>
           </div>
         </div>
 
