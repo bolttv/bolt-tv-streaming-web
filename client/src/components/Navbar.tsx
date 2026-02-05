@@ -59,8 +59,8 @@ export default function Navbar() {
         scrolled ? "bg-black/90 backdrop-blur-md" : "bg-gradient-to-b from-black/80 to-transparent"
       )}
     >
-      <div className="px-4 md:px-12 h-16 md:h-20 flex items-center justify-between">
-        <Link href="/" className="flex-shrink-0">
+      <div className="px-4 md:px-12 h-16 md:h-20 flex items-center justify-between relative">
+        <Link href="/" className="flex-shrink-0 z-10">
           <img 
             src="/assets/bolt-logo-white.png" 
             alt="Bolt Logo" 
@@ -68,7 +68,7 @@ export default function Navbar() {
           />
         </Link>
 
-        <div className="hidden md:flex items-center justify-center flex-1 gap-6 lg:gap-8">
+        <div className="hidden md:flex items-center justify-center gap-6 lg:gap-8 absolute left-1/2 -translate-x-1/2">
           {navLinks.map((link) => (
             <Link key={link.name} href={link.href}>
               <span className="text-base font-bold text-white hover:text-white/80 transition-colors duration-200 cursor-pointer whitespace-nowrap">
@@ -78,7 +78,7 @@ export default function Navbar() {
           ))}
         </div>
 
-        <div className="flex items-center gap-4 md:gap-6 text-white/80 flex-shrink-0 ml-auto">
+        <div className="flex items-center gap-4 md:gap-6 text-white/80 flex-shrink-0 z-10">
           <div className="hidden lg:flex items-center">
             <div
               className={cn(
