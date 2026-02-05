@@ -60,24 +60,22 @@ export default function Navbar() {
       )}
     >
       <div className="px-4 md:px-12 h-16 md:h-20 flex items-center justify-between">
-        <div className="flex items-center gap-8 md:gap-12 flex-shrink-0">
-          <Link href="/">
-            <img 
-              src="/assets/bolt-logo-white.png" 
-              alt="Bolt Logo" 
-              className="h-[29px] md:h-9 w-auto hover:opacity-90 transition cursor-pointer flex-shrink-0" 
-            />
-          </Link>
+        <Link href="/" className="flex-shrink-0">
+          <img 
+            src="/assets/bolt-logo-white.png" 
+            alt="Bolt Logo" 
+            className="h-[29px] md:h-9 w-auto hover:opacity-90 transition cursor-pointer" 
+          />
+        </Link>
 
-          <div className="hidden md:flex items-center gap-6 lg:gap-8 pr-4 lg:pr-6">
-            {navLinks.map((link) => (
-              <Link key={link.name} href={link.href}>
-                <span className="text-sm font-medium text-white/70 hover:text-white transition-colors duration-200 cursor-pointer whitespace-nowrap">
-                  {link.name}
-                </span>
-              </Link>
-            ))}
-          </div>
+        <div className="hidden md:flex items-center justify-center flex-1 gap-6 lg:gap-8">
+          {navLinks.map((link) => (
+            <Link key={link.name} href={link.href}>
+              <span className="text-base font-medium text-white/70 hover:text-white transition-colors duration-200 cursor-pointer whitespace-nowrap">
+                {link.name}
+              </span>
+            </Link>
+          ))}
         </div>
 
         <div className="flex items-center gap-4 md:gap-6 text-white/80 flex-shrink-0 ml-auto">
