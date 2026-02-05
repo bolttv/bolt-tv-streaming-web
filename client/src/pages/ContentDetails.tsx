@@ -179,7 +179,7 @@ export default function ContentDetails() {
                  <img 
                    src={content.logoImage} 
                    alt={content.title} 
-                   className="h-20 sm:h-32 md:h-52 max-w-[280px] sm:max-w-none object-contain mx-auto sm:mx-0" 
+                   className="h-[88px] sm:h-36 md:h-[230px] max-w-[300px] sm:max-w-none object-contain mx-auto sm:mx-0" 
                    onError={() => setLogoFailed(true)}
                  />
               ) : (
