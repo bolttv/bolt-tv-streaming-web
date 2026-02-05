@@ -174,7 +174,7 @@ export default function ContentDetails() {
             <div className="absolute bottom-32 left-0 right-0 h-48 bg-gradient-to-t from-background to-transparent" />
           </div>
 
-          <div className="absolute top-0 bottom-0 left-4 right-4 sm:top-auto sm:right-auto sm:bottom-[100px] md:bottom-[120px] sm:left-4 md:left-12 max-w-xl z-20 flex flex-col justify-end sm:justify-end items-start text-left pb-[31px] sm:pb-0 space-y-2 sm:space-y-4 md:space-y-6">
+          <div className="absolute top-0 bottom-0 left-4 right-4 sm:top-auto sm:right-auto sm:bottom-[60px] md:bottom-[80px] sm:left-4 md:left-12 max-w-xl z-20 flex flex-col justify-end sm:justify-end items-start text-left pb-[31px] sm:pb-0 space-y-2 sm:space-y-4 md:space-y-6">
               {content.logoImage && !logoFailed ? (
                  <img 
                    src={content.logoImage} 
