@@ -208,13 +208,13 @@ export default function ContentDetails() {
 
               <div className="flex items-center gap-2 sm:gap-3 md:gap-4 pt-1 sm:pt-2">
                 <Link href={`/watch/${watchMediaId}${category ? `?category=${category}` : ''}`}>
-                  <button className="flex items-center gap-2 bg-white text-black hover:bg-white/90 transition-colors h-10 sm:h-12 px-5 sm:px-8 rounded font-bold tracking-wide text-sm sm:text-base" data-testid="button-watch">
-                    <Play className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />
+                  <button className="flex items-center justify-center gap-1.5 sm:gap-2 bg-white text-black hover:bg-white/90 transition-colors h-9 sm:h-10 md:h-12 px-4 sm:px-6 md:px-8 rounded font-semibold tracking-wide text-xs sm:text-sm md:text-base cursor-pointer" data-testid="button-watch">
+                    <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 fill-current" />
                     {watchButtonText}
                   </button>
                 </Link>
-                <button className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-white/30 text-white hover:border-white hover:bg-white/10 transition-all" data-testid="button-add-list">
-                  <Plus className="w-5 h-5 sm:w-6 sm:h-6" />
+                <button className="flex items-center justify-center bg-white/10 hover:bg-white/20 border border-white/10 text-white transition-colors h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 rounded backdrop-blur-sm" data-testid="button-add-list">
+                  <Plus className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
                 </button>
               </div>
           </div>
