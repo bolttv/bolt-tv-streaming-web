@@ -172,7 +172,7 @@ export default function ContentDetails() {
             <div className="absolute bottom-24 left-0 right-0 h-32 bg-gradient-to-t from-black to-transparent" />
           </div>
 
-          <div className="absolute bottom-28 sm:bottom-32 md:bottom-36 left-0 right-0 px-4 md:px-12 z-10">
+          <div className="absolute bottom-[92px] sm:bottom-[108px] md:bottom-[124px] left-0 right-0 px-4 md:px-12 z-10">
             <div className="max-w-2xl space-y-6">
               {content.logoImage && !logoFailed ? (
                  <img 

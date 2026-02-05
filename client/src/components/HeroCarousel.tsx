@@ -77,7 +77,7 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
               </div>
 
               {/* Content - Lower left positioned */}
-              <div className="absolute bottom-36 sm:bottom-40 md:bottom-44 left-4 md:left-12 max-w-xl z-20 space-y-3 sm:space-y-4 md:space-y-6 animate-in slide-in-from-left-4 fade-in duration-700 delay-300 fill-mode-both">
+              <div className="absolute bottom-[124px] sm:bottom-[140px] md:bottom-[156px] left-4 md:left-12 max-w-xl z-20 space-y-3 sm:space-y-4 md:space-y-6 animate-in slide-in-from-left-4 fade-in duration-700 delay-300 fill-mode-both">
                 {item.logoImage && !failedLogos.has(item.id) ? (
                   <img 
                     src={item.logoImage} 
