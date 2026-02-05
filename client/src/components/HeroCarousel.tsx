@@ -53,7 +53,7 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
   }, [emblaApi]);
 
   return (
-    <div className="relative w-full h-[calc(85vh-60px)] sm:h-[calc(75vh-90px)] md:h-[calc(80vh-90px)] lg:h-[calc(90vh-90px)] overflow-hidden group">
+    <div className="relative w-full h-[calc(75vh-60px)] sm:h-[calc(75vh-90px)] md:h-[calc(80vh-90px)] lg:h-[calc(90vh-90px)] overflow-hidden group">
       <div className="absolute inset-0 z-0" ref={emblaRef}>
         <div className="flex h-full">
           {items.map((item) => (
@@ -90,11 +90,11 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
                   <img 
                     src={item.logoImage} 
                     alt={item.title} 
-                    className="h-16 sm:h-32 md:h-52 object-contain mx-auto sm:mx-0" 
+                    className="h-20 sm:h-32 md:h-52 max-w-[280px] sm:max-w-none object-contain mx-auto sm:mx-0" 
                     onError={() => handleLogoError(item.id)}
                   />
                 ) : (
-                  <h1 className="text-2xl sm:text-5xl md:text-7xl font-display font-black text-white leading-[0.9] tracking-tight uppercase drop-shadow-2xl">
+                  <h1 className="text-3xl sm:text-5xl md:text-7xl font-display font-black text-white leading-[0.9] tracking-tight uppercase drop-shadow-2xl">
                     {item.title}
                   </h1>
                 )}
