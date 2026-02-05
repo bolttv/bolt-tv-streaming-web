@@ -207,11 +207,6 @@ export default function ContentDetails() {
                 )}
               </div>
 
-              {/* Description - hidden on mobile in hero, shown on tablet+ */}
-              <p className="text-gray-300 hidden sm:block text-sm md:text-lg line-clamp-2 md:line-clamp-3 leading-relaxed max-w-lg drop-shadow-md">
-                {displayDescription}
-              </p>
-
               {/* Watch Button - 60% width on mobile, auto on tablet+ */}
               <div className="w-[60%] sm:w-auto">
                 <Link href={`/watch/${watchMediaId}${category ? `?category=${category}` : ''}`} className="w-full sm:w-auto">
@@ -242,8 +237,8 @@ export default function ContentDetails() {
                 )}
               </div>
 
-              {/* Mobile Description */}
-              <p className="text-gray-300 sm:hidden text-xs leading-relaxed mt-1">
+              {/* Description */}
+              <p className="text-gray-300 text-xs sm:text-sm md:text-lg leading-relaxed mt-1 sm:mt-2 max-w-lg line-clamp-3 md:line-clamp-4">
                 {displayDescription}
               </p>
           </div>
