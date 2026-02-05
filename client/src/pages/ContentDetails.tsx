@@ -66,10 +66,11 @@ export default function ContentDetails() {
   const [logoFailed, setLogoFailed] = useState(false);
   const [motionThumbnailFailed, setMotionThumbnailFailed] = useState(false);
   
-  // Reset states when content changes
+  // Reset states and scroll to top when content changes
   useEffect(() => {
     setLogoFailed(false);
     setMotionThumbnailFailed(false);
+    window.scrollTo(0, 0);
   }, [id]);
   
   // Get category from URL params (when coming from sport page)
