@@ -53,7 +53,7 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
   }, [emblaApi]);
 
   return (
-    <div className="relative w-full h-[calc(70vh-90px)] sm:h-[calc(75vh-90px)] md:h-[calc(80vh-90px)] lg:h-[calc(90vh-90px)] overflow-hidden group">
+    <div className="relative w-full h-[calc(85vh-60px)] sm:h-[calc(75vh-90px)] md:h-[calc(80vh-90px)] lg:h-[calc(90vh-90px)] overflow-hidden group">
       <div className="absolute inset-0 z-0" ref={emblaRef}>
         <div className="flex h-full">
           {items.map((item) => (
@@ -84,23 +84,28 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
                 <div className="absolute bottom-32 left-0 right-0 h-48 bg-gradient-to-t from-background to-transparent" />
               </div>
 
-              {/* Content - Lower left positioned */}
-              <div className="absolute bottom-[124px] sm:bottom-[140px] md:bottom-[156px] left-4 md:left-12 max-w-xl z-20 space-y-3 sm:space-y-4 md:space-y-6 animate-in slide-in-from-left-4 fade-in duration-700 delay-300 fill-mode-both">
+              {/* Content - Centered on mobile, left-aligned on desktop */}
+              <div className="absolute bottom-[100px] sm:bottom-[140px] md:bottom-[156px] left-0 right-0 sm:left-4 sm:right-auto md:left-12 px-4 sm:px-0 max-w-xl z-20 space-y-2 sm:space-y-4 md:space-y-6 animate-in fade-in duration-700 delay-300 fill-mode-both flex flex-col items-center sm:items-start text-center sm:text-left">
                 {item.logoImage && !failedLogos.has(item.id) ? (
                   <img 
                     src={item.logoImage} 
                     alt={item.title} 
-                    className="h-24 sm:h-32 md:h-52 object-contain" 
+                    className="h-16 sm:h-32 md:h-52 object-contain mx-auto sm:mx-0" 
                     onError={() => handleLogoError(item.id)}
                   />
                 ) : (
-                  <h1 className="text-3xl sm:text-5xl md:text-7xl font-display font-black text-white leading-[0.9] tracking-tight uppercase drop-shadow-2xl">
+                  <h1 className="text-2xl sm:text-5xl md:text-7xl font-display font-black text-white leading-[0.9] tracking-tight uppercase drop-shadow-2xl">
                     {item.title}
                   </h1>
                 )}
 
+                {/* New Episode Banner - Mobile */}
+                {item.isNew && (
+                  <span className="text-blue-400 font-bold text-xs uppercase tracking-wider sm:hidden">New Episode Available</span>
+                )}
+
                 {/* Metadata Line */}
-                <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm md:text-base font-medium text-gray-300">
+                <div className="flex items-center justify-center sm:justify-start gap-2 sm:gap-3 text-[10px] sm:text-sm md:text-base font-medium text-gray-300">
                   <span className="bg-white/10 px-1 sm:px-1.5 py-0.5 rounded text-white border border-white/20">{item.rating}</span>
                   {item.seasonCount && <span>{item.seasonCount} Seasons</span>}
                   <span className="w-1 h-1 bg-gray-400 rounded-full" />
@@ -108,11 +113,11 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
                   {item.isNew && <span className="text-blue-400 font-bold uppercase tracking-wider hidden sm:inline">New Episode</span>}
                 </div>
 
-                <p className="text-gray-200 text-xs sm:text-sm md:text-lg line-clamp-2 md:line-clamp-3 leading-relaxed max-w-lg drop-shadow-md">
+                <p className="text-gray-300 text-xs sm:text-sm md:text-lg line-clamp-2 leading-relaxed max-w-xs sm:max-w-lg drop-shadow-md px-4 sm:px-0">
                   {item.description}
                 </p>
 
-                <div className="flex items-center gap-2 sm:gap-3 md:gap-4 pt-1 sm:pt-2">
+                <div className="flex items-center justify-center sm:justify-start gap-2 sm:gap-3 md:gap-4 pt-1 sm:pt-2">
                   {(() => {
                     const isSeries = item.contentType === "Series";
                     const isSingleContent = item.contentType === "Movie" || item.contentType === "Documentary" || item.contentType === "Episode";
@@ -165,7 +170,7 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
       </button>
 
       {/* Dots Indicator */}
-      <div className="absolute bottom-[48px] md:bottom-[64px] left-0 right-0 flex justify-center gap-2 md:gap-3 z-30">
+      <div className="absolute bottom-[56px] sm:bottom-[48px] md:bottom-[64px] left-0 right-0 flex justify-center gap-2 md:gap-3 z-30">
         {items.map((_, index) => (
           <button
             key={index}

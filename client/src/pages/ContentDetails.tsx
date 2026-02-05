@@ -147,7 +147,7 @@ export default function ContentDetails() {
 
       <main>
         {/* Hero Section */}
-        <div className="relative w-full h-[calc(70vh-90px)] sm:h-[calc(75vh-90px)] md:h-[calc(80vh-90px)] lg:h-[calc(90vh-90px)]">
+        <div className="relative w-full h-[calc(85vh-60px)] sm:h-[calc(75vh-90px)] md:h-[calc(80vh-90px)] lg:h-[calc(90vh-90px)]">
           <div className="absolute inset-0">
             {content.motionThumbnail && !motionThumbnailFailed ? (
               <video
@@ -174,20 +174,25 @@ export default function ContentDetails() {
             <div className="absolute bottom-32 left-0 right-0 h-48 bg-gradient-to-t from-background to-transparent" />
           </div>
 
-          <div className="absolute bottom-[124px] sm:bottom-[140px] md:bottom-[156px] left-4 md:left-12 max-w-xl z-20 space-y-3 sm:space-y-4 md:space-y-6">
+          <div className="absolute bottom-[100px] sm:bottom-[140px] md:bottom-[156px] left-0 right-0 sm:left-4 sm:right-auto md:left-12 px-4 sm:px-0 max-w-xl z-20 space-y-2 sm:space-y-4 md:space-y-6 flex flex-col items-center sm:items-start text-center sm:text-left">
               {content.logoImage && !logoFailed ? (
                  <img 
                    src={content.logoImage} 
                    alt={content.title} 
-                   className="h-24 sm:h-32 md:h-52 object-contain" 
+                   className="h-16 sm:h-32 md:h-52 object-contain mx-auto sm:mx-0" 
                    onError={() => setLogoFailed(true)}
                  />
               ) : (
-                 <h1 className="text-3xl sm:text-5xl md:text-7xl font-display font-black text-white leading-[0.9] tracking-tight uppercase drop-shadow-2xl">{content.title}</h1>
+                 <h1 className="text-2xl sm:text-5xl md:text-7xl font-display font-black text-white leading-[0.9] tracking-tight uppercase drop-shadow-2xl">{content.title}</h1>
+              )}
+
+              {/* New Episode Banner - Mobile */}
+              {(content.contentType === "Series" || content.contentType === "Episode") && (
+                <span className="text-blue-400 font-bold text-xs uppercase tracking-wider sm:hidden">New Episode Available</span>
               )}
 
               {/* Metadata Line */}
-              <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm md:text-base font-medium text-gray-300">
+              <div className="flex items-center justify-center sm:justify-start gap-2 sm:gap-3 text-[10px] sm:text-sm md:text-base font-medium text-gray-300">
                 <span className="bg-white/10 px-1 sm:px-1.5 py-0.5 rounded text-white border border-white/20">{content.rating}</span>
                 {(content.contentType === "Series" || content.contentType === "Episode") && (
                   <span>1 Season</span>
@@ -202,11 +207,11 @@ export default function ContentDetails() {
                 )}
               </div>
 
-              <p className="text-gray-200 text-xs sm:text-sm md:text-lg line-clamp-2 md:line-clamp-3 leading-relaxed max-w-lg drop-shadow-md">
+              <p className="text-gray-300 text-xs sm:text-sm md:text-lg line-clamp-2 leading-relaxed max-w-xs sm:max-w-lg drop-shadow-md px-4 sm:px-0">
                 {displayDescription}
               </p>
 
-              <div className="flex items-center gap-2 sm:gap-3 md:gap-4 pt-1 sm:pt-2">
+              <div className="flex items-center justify-center sm:justify-start gap-2 sm:gap-3 md:gap-4 pt-1 sm:pt-2">
                 <Link href={`/watch/${watchMediaId}${category ? `?category=${category}` : ''}`}>
                   <button className="flex items-center justify-center gap-1.5 sm:gap-2 bg-white text-black hover:bg-white/90 transition-colors h-9 sm:h-10 md:h-12 px-4 sm:px-6 md:px-8 rounded font-semibold tracking-wide text-xs sm:text-sm md:text-base cursor-pointer" data-testid="button-watch">
                     <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 fill-current" />
