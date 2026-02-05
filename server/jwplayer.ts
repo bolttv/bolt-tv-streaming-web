@@ -408,7 +408,8 @@ export function getJWPlayerHeroBannerLogo(mediaId: string): string {
   return `https://cdn.jwplayer.com/v2/media/${mediaId}/images/hero-banner-logo.png`;
 }
 
-export function getJWPlayerMotionThumbnail(mediaId: string, width: number = 1920): string {
+export function getJWPlayerMotionThumbnail(mediaId: string, width: number = 640): string {
+  // JW Player only supports 320 and 640 for motion thumbnails - using max available
   return `https://cdn.jwplayer.com/v2/media/${mediaId}/poster.mp4?width=${width}`;
 }
 
@@ -421,7 +422,7 @@ export function extractMotionThumbnailFromImages(images?: JWPlayerImage[]): stri
 }
 
 export async function checkMotionThumbnailExists(mediaId: string): Promise<string | null> {
-  const url = getJWPlayerMotionThumbnail(mediaId, 1920);
+  const url = getJWPlayerMotionThumbnail(mediaId, 640);
   try {
     const response = await fetch(url, { method: 'GET', redirect: 'manual' });
     if (response.status === 302 || response.ok) {
