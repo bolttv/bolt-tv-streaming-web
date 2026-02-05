@@ -220,9 +220,12 @@ export default function ContentDetails() {
           </div>
         </div>
 
+        {/* Content Sections - pulled up to match home page */}
+        <div className="relative z-10 -mt-10 md:-mt-14 pb-20 bg-gradient-to-b from-transparent via-background/60 to-background">
+        
         {/* Episodes Section - Only show for Series or Episode content types with episodes available */}
         {(content.contentType === "Series" || content.contentType === "Episode") && episodes.length > 0 && (
-          <div className="px-4 md:px-12 py-8 space-y-6">
+          <div className="px-4 md:px-12 pt-4 pb-8 space-y-6">
               <div className="flex items-center justify-between border-b border-white/10 pb-4">
                   <h2 className="text-xl font-bold">Episodes</h2>
                   <button className="flex items-center gap-2 text-sm font-bold hover:bg-white/10 px-3 py-1.5 rounded transition">
@@ -255,13 +258,14 @@ export default function ContentDetails() {
         )}
 
         {/* You May Also Like */}
-        <div className="px-4 md:px-12 py-12 space-y-6">
+        <div className="px-4 md:px-12 pt-8 pb-4 space-y-6">
             <h2 className="text-xl font-bold">You May Also Like</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
                 {rows[1]?.items?.slice(0, 5).map((item: any) => (
                     <PosterCard key={item.id} item={item} width="w-full" />
                 ))}
             </div>
+        </div>
         </div>
       </main>
 
