@@ -1,7 +1,7 @@
 import { HeroItem } from "@/lib/mockData";
 import { useState, useEffect, useCallback } from "react";
 import useEmblaCarousel from "embla-carousel-react";
-import { Play, Plus, Info } from "lucide-react";
+import { Play, Plus, Info, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link } from "wouter";
 
@@ -43,6 +43,14 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
   const scrollTo = (index: number) => {
     if (emblaApi) emblaApi.scrollTo(index);
   };
+
+  const scrollPrev = useCallback(() => {
+    if (emblaApi) emblaApi.scrollPrev();
+  }, [emblaApi]);
+
+  const scrollNext = useCallback(() => {
+    if (emblaApi) emblaApi.scrollNext();
+  }, [emblaApi]);
 
   return (
     <div className="relative w-full h-[calc(70vh-90px)] sm:h-[calc(75vh-90px)] md:h-[calc(80vh-90px)] lg:h-[calc(90vh-90px)] overflow-hidden group">
@@ -137,6 +145,24 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
           ))}
         </div>
       </div>
+
+      {/* Navigation Arrows */}
+      <button
+        onClick={scrollPrev}
+        className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:scale-110"
+        aria-label="Previous slide"
+        data-testid="hero-arrow-prev"
+      >
+        <ChevronLeft className="w-10 h-10 md:w-12 md:h-12 text-white/70 hover:text-white transition-colors" strokeWidth={1.5} />
+      </button>
+      <button
+        onClick={scrollNext}
+        className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:scale-110"
+        aria-label="Next slide"
+        data-testid="hero-arrow-next"
+      >
+        <ChevronRight className="w-10 h-10 md:w-12 md:h-12 text-white/70 hover:text-white transition-colors" strokeWidth={1.5} />
+      </button>
 
       {/* Dots Indicator */}
       <div className="absolute bottom-[48px] md:bottom-[64px] left-0 right-0 flex justify-center gap-2 md:gap-3 z-30">
