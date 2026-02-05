@@ -253,8 +253,8 @@ export default function ContentDetails() {
           <div className="px-4 md:px-12 pt-4 pb-8 space-y-6">
               <div className="flex items-center justify-between border-b border-white/10 pb-4">
                   <h2 className="text-lg md:text-xl font-semibold text-white">Episodes</h2>
-                  <button className="flex items-center gap-2 text-sm font-bold hover:bg-white/10 px-3 py-1.5 rounded transition">
-                      Season 1 <ChevronDown className="w-4 h-4" />
+                  <button className="flex items-center gap-2 text-lg md:text-xl font-semibold text-white hover:bg-white/10 px-3 py-1.5 rounded transition">
+                      Season 1 <ChevronDown className="w-5 h-5" />
                   </button>
               </div>
 
