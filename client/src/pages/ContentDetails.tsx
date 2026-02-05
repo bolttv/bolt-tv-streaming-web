@@ -227,7 +227,7 @@ export default function ContentDetails() {
         {(content.contentType === "Series" || content.contentType === "Episode") && episodes.length > 0 && (
           <div className="px-4 md:px-12 pt-4 pb-8 space-y-6">
               <div className="flex items-center justify-between border-b border-white/10 pb-4">
-                  <h2 className="text-xl font-bold">Episodes</h2>
+                  <h2 className="text-lg md:text-xl font-semibold text-white">Episodes</h2>
                   <button className="flex items-center gap-2 text-sm font-bold hover:bg-white/10 px-3 py-1.5 rounded transition">
                       Season 1 <ChevronDown className="w-4 h-4" />
                   </button>
@@ -259,7 +259,7 @@ export default function ContentDetails() {
 
         {/* You May Also Like */}
         <div className="px-4 md:px-12 pt-8 pb-4 space-y-6">
-            <h2 className="text-xl font-bold">You May Also Like</h2>
+            <h2 className="text-lg md:text-xl font-semibold text-white">You May Also Like</h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
                 {rows[1]?.items?.slice(0, 5).map((item: any) => (
                     <PosterCard key={item.id} item={item} width="w-full" />
