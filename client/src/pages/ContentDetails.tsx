@@ -170,7 +170,7 @@ export default function ContentDetails() {
             <div className="absolute inset-0 bg-gradient-to-r from-black via-black/60 to-transparent w-full md:w-2/3" />
           </div>
 
-          <div className="absolute bottom-0 left-0 right-0 px-4 md:px-12 pb-12 z-10">
+          <div className="absolute inset-0 flex items-center px-4 md:px-12 z-10">
             <div className="max-w-2xl space-y-6">
               {content.logoImage && !logoFailed ? (
                  <img 
