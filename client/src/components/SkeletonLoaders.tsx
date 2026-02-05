@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 
 export function HeroSkeleton() {
   return (
-    <div className="relative h-[calc(70vh-30px)] md:h-[calc(85vh-30px)] w-full overflow-hidden bg-zinc-900">
+    <div className="relative h-[calc(70vh-90px)] md:h-[calc(85vh-90px)] w-full overflow-hidden bg-zinc-900">
       <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
       <div className="absolute inset-0 bg-gradient-to-r from-background via-transparent to-transparent" />
       

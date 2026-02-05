@@ -45,7 +45,7 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
   };
 
   return (
-    <div className="relative w-full h-[calc(70vh-30px)] sm:h-[calc(75vh-30px)] md:h-[calc(80vh-30px)] lg:h-[calc(90vh-30px)] overflow-hidden group">
+    <div className="relative w-full h-[calc(70vh-90px)] sm:h-[calc(75vh-90px)] md:h-[calc(80vh-90px)] lg:h-[calc(90vh-90px)] overflow-hidden group">
       <div className="absolute inset-0 z-0" ref={emblaRef}>
         <div className="flex h-full">
           {items.map((item) => (
