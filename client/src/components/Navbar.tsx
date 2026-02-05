@@ -71,7 +71,7 @@ export default function Navbar() {
         <div className="hidden md:flex items-center justify-center flex-1 gap-6 lg:gap-8">
           {navLinks.map((link) => (
             <Link key={link.name} href={link.href}>
-              <span className="text-base font-bold text-white/70 hover:text-white transition-colors duration-200 cursor-pointer whitespace-nowrap">
+              <span className="text-base font-bold text-white hover:text-white/80 transition-colors duration-200 cursor-pointer whitespace-nowrap">
                 {link.name}
               </span>
             </Link>
