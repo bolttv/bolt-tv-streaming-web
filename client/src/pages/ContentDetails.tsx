@@ -1,7 +1,7 @@
 import { useParams, Link } from "wouter";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { Play, Plus, ChevronDown } from "lucide-react";
+import { Play, Plus, ChevronDown, ThumbsUp, Film } from "lucide-react";
 import PosterCard from "@/components/PosterCard";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
@@ -207,13 +207,13 @@ export default function ContentDetails() {
                 )}
               </div>
 
-              {/* Description - hidden on mobile, shown on tablet+ */}
+              {/* Description - hidden on mobile in hero, shown on tablet+ */}
               <p className="text-gray-300 hidden sm:block text-sm md:text-lg line-clamp-2 md:line-clamp-3 leading-relaxed max-w-lg drop-shadow-md">
                 {displayDescription}
               </p>
 
-              {/* Wide Watch Button on Mobile */}
-              <div className="w-full sm:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-3 md:gap-4 pt-1 sm:pt-2">
+              {/* Watch Button - 60% width on mobile, auto on tablet+ */}
+              <div className="w-[60%] sm:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-3 md:gap-4 pt-1 sm:pt-2">
                 <Link href={`/watch/${watchMediaId}${category ? `?category=${category}` : ''}`} className="w-full sm:w-auto">
                   <button className="flex items-center justify-center gap-2 bg-white text-black hover:bg-white/90 transition-colors h-11 sm:h-10 md:h-12 w-full sm:w-auto px-4 sm:px-6 md:px-8 rounded font-semibold tracking-wide text-sm sm:text-sm md:text-base cursor-pointer" data-testid="button-watch">
                     <Play className="w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5 fill-current" />
@@ -224,6 +224,31 @@ export default function ContentDetails() {
                   <Plus className="w-5 h-5 md:w-6 md:h-6" />
                 </button>
               </div>
+
+              {/* Mobile Action Icons - My List, Rate, Trailer */}
+              <div className="flex sm:hidden items-center gap-8 pt-2">
+                <button className="flex flex-col items-center gap-1 text-gray-300 hover:text-white transition">
+                  <Plus className="w-5 h-5" />
+                  <span className="text-[9px] uppercase tracking-wider font-medium">My List</span>
+                </button>
+                <button className="flex flex-col items-center gap-1 text-gray-300 hover:text-white transition">
+                  <ThumbsUp className="w-5 h-5" />
+                  <span className="text-[9px] uppercase tracking-wider font-medium">Rate</span>
+                </button>
+                {content.trailerId && (
+                  <Link href={`/watch/${content.trailerId}${category ? `?category=${category}` : ''}`}>
+                    <button className="flex flex-col items-center gap-1 text-gray-300 hover:text-white transition">
+                      <Film className="w-5 h-5" />
+                      <span className="text-[9px] uppercase tracking-wider font-medium">Trailer</span>
+                    </button>
+                  </Link>
+                )}
+              </div>
+
+              {/* Mobile Description */}
+              <p className="text-gray-300 sm:hidden text-xs leading-relaxed">
+                {displayDescription}
+              </p>
           </div>
         </div>
 
