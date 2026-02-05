@@ -149,19 +149,19 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
       {/* Navigation Arrows */}
       <button
         onClick={scrollPrev}
-        className="absolute left-0 md:left-2 top-1/2 -translate-y-1/2 z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:scale-110"
+        className="absolute left-0 w-4 md:w-12 top-1/2 -translate-y-1/2 z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:scale-110 flex items-center justify-center"
         aria-label="Previous slide"
         data-testid="hero-arrow-prev"
       >
-        <ChevronLeft className="w-10 h-10 md:w-12 md:h-12 text-white/70 hover:text-white transition-colors" strokeWidth={1.5} />
+        <ChevronLeft className="w-8 h-8 md:w-10 md:h-10 text-white/70 hover:text-white transition-colors" strokeWidth={1.5} />
       </button>
       <button
         onClick={scrollNext}
-        className="absolute right-0 md:right-2 top-1/2 -translate-y-1/2 z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:scale-110"
+        className="absolute right-0 w-4 md:w-12 top-1/2 -translate-y-1/2 z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:scale-110 flex items-center justify-center"
         aria-label="Next slide"
         data-testid="hero-arrow-next"
       >
-        <ChevronRight className="w-10 h-10 md:w-12 md:h-12 text-white/70 hover:text-white transition-colors" strokeWidth={1.5} />
+        <ChevronRight className="w-8 h-8 md:w-10 md:h-10 text-white/70 hover:text-white transition-colors" strokeWidth={1.5} />
       </button>
 
       {/* Dots Indicator */}
