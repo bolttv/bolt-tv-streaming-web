@@ -3,6 +3,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Play, Plus, ChevronDown, ThumbsUp, Film } from "lucide-react";
 import PosterCard from "@/components/PosterCard";
+import LoadingSpinner from "@/components/LoadingSpinner";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 
@@ -124,7 +125,7 @@ export default function ContentDetails() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <div className="text-xl">Loading...</div>
+        <LoadingSpinner size="lg" />
       </div>
     );
   }

@@ -3,6 +3,7 @@ import { Link, useLocation } from "wouter";
 import { ArrowLeft, Check, CreditCard, Loader2, AlertCircle, Lock } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import { getOffers, CleengOffer, formatPrice } from "@/lib/cleeng";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default function Checkout() {
   const [, setLocation] = useLocation();
@@ -116,10 +117,7 @@ export default function Checkout() {
   if (loading || isLinking || authLoading) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-4" />
-          <p className="text-gray-400">{isLinking ? "Setting up your account..." : "Loading..."}</p>
-        </div>
+        <LoadingSpinner size="lg" />
       </div>
     );
   }

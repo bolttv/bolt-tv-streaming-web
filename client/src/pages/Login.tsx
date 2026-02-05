@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { ArrowLeft, Mail, Loader2, AlertCircle, Lock, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default function Login() {
   const [, setLocation] = useLocation();
@@ -53,7 +54,7 @@ export default function Login() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+        <LoadingSpinner size="lg" />
       </div>
     );
   }

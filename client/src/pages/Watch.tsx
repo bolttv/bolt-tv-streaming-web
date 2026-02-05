@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { ArrowLeft, X } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getSessionId } from "@/lib/session";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 declare global {
   interface Window {
@@ -291,7 +292,7 @@ export default function Watch() {
           )}
           {!contentNotFound && (isLoading || !playerReady) && !playerError && (
             <div className="absolute inset-0 flex items-center justify-center bg-black z-10 pointer-events-none">
-              <div className="text-xl text-gray-400">Loading player...</div>
+              <LoadingSpinner size="lg" />
             </div>
           )}
           {!contentNotFound && playerError && (

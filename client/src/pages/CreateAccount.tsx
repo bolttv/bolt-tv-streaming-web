@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { ArrowLeft, Loader2, AlertCircle, Lock, Eye, EyeOff, User } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default function CreateAccount() {
   const [, setLocation] = useLocation();
@@ -97,9 +98,8 @@ export default function CreateAccount() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center">
-        <Loader2 className="w-12 h-12 animate-spin text-purple-500 mb-4" />
-        <p className="text-gray-400">Loading...</p>
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <LoadingSpinner size="lg" />
       </div>
     );
   }
@@ -107,9 +107,8 @@ export default function CreateAccount() {
   // Show loading if auth step isn't determined yet
   if (authStep !== "create_password" && !isAuthenticated) {
     return (
-      <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center">
-        <Loader2 className="w-12 h-12 animate-spin text-purple-500 mb-4" />
-        <p className="text-gray-400">Setting up your account...</p>
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <LoadingSpinner size="lg" />
       </div>
     );
   }

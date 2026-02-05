@@ -2,6 +2,7 @@ import { useParams, Link } from "wouter";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PosterCard from "@/components/PosterCard";
+import LoadingSpinner from "@/components/LoadingSpinner";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 
@@ -64,7 +65,7 @@ export default function SportCategory() {
 
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
-            <div className="text-xl text-gray-400">Loading...</div>
+            <LoadingSpinner size="lg" />
           </div>
         ) : content.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20">
