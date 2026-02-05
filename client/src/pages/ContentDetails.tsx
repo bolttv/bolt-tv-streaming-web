@@ -174,12 +174,12 @@ export default function ContentDetails() {
             <div className="absolute bottom-32 left-0 right-0 h-48 bg-gradient-to-t from-background to-transparent" />
           </div>
 
-          <div className="absolute bottom-[100px] sm:bottom-[140px] md:bottom-[156px] left-0 right-0 sm:left-4 sm:right-auto md:left-12 px-4 sm:px-0 max-w-xl z-20 space-y-2 sm:space-y-4 md:space-y-6 flex flex-col items-center sm:items-start text-center sm:text-left">
+          <div className="absolute bottom-[100px] sm:bottom-[140px] md:bottom-[156px] left-4 right-4 sm:right-auto md:left-12 max-w-xl z-20 space-y-2 sm:space-y-4 md:space-y-6 flex flex-col items-start text-left">
               {content.logoImage && !logoFailed ? (
                  <img 
                    src={content.logoImage} 
                    alt={content.title} 
-                   className="h-[97px] sm:h-32 md:h-52 max-w-[320px] sm:max-w-none object-contain mx-auto sm:mx-0" 
+                   className="h-[97px] sm:h-32 md:h-52 max-w-[280px] sm:max-w-none object-contain" 
                    onError={() => setLogoFailed(true)}
                  />
               ) : (
@@ -192,7 +192,7 @@ export default function ContentDetails() {
               )}
 
               {/* Metadata Line */}
-              <div className="flex items-center justify-center sm:justify-start gap-2 sm:gap-3 text-[10px] sm:text-sm md:text-base font-medium text-gray-300">
+              <div className="flex items-center gap-2 sm:gap-3 text-[10px] sm:text-sm md:text-base font-medium text-gray-300 flex-wrap">
                 <span className="bg-white/10 px-1 sm:px-1.5 py-0.5 rounded text-white border border-white/20">{content.rating}</span>
                 {(content.contentType === "Series" || content.contentType === "Episode") && (
                   <span>1 Season</span>
@@ -207,19 +207,21 @@ export default function ContentDetails() {
                 )}
               </div>
 
-              <p className="text-gray-300 text-xs sm:text-sm md:text-lg line-clamp-2 leading-relaxed max-w-xs sm:max-w-lg drop-shadow-md px-4 sm:px-0">
+              {/* Description - hidden on mobile, shown on tablet+ */}
+              <p className="text-gray-300 hidden sm:block text-sm md:text-lg line-clamp-2 md:line-clamp-3 leading-relaxed max-w-lg drop-shadow-md">
                 {displayDescription}
               </p>
 
-              <div className="flex items-center justify-center sm:justify-start gap-2 sm:gap-3 md:gap-4 pt-1 sm:pt-2">
-                <Link href={`/watch/${watchMediaId}${category ? `?category=${category}` : ''}`}>
-                  <button className="flex items-center justify-center gap-1.5 sm:gap-2 bg-white text-black hover:bg-white/90 transition-colors h-9 sm:h-10 md:h-12 px-4 sm:px-6 md:px-8 rounded font-semibold tracking-wide text-xs sm:text-sm md:text-base cursor-pointer" data-testid="button-watch">
-                    <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 fill-current" />
+              {/* Wide Watch Button on Mobile */}
+              <div className="w-full sm:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-3 md:gap-4 pt-1 sm:pt-2">
+                <Link href={`/watch/${watchMediaId}${category ? `?category=${category}` : ''}`} className="w-full sm:w-auto">
+                  <button className="flex items-center justify-center gap-2 bg-white text-black hover:bg-white/90 transition-colors h-11 sm:h-10 md:h-12 w-full sm:w-auto px-4 sm:px-6 md:px-8 rounded font-semibold tracking-wide text-sm sm:text-sm md:text-base cursor-pointer" data-testid="button-watch">
+                    <Play className="w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5 fill-current" />
                     {watchButtonText}
                   </button>
                 </Link>
-                <button className="flex items-center justify-center bg-white/10 hover:bg-white/20 border border-white/10 text-white transition-colors h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 rounded backdrop-blur-sm" data-testid="button-add-list">
-                  <Plus className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
+                <button className="hidden sm:flex items-center justify-center bg-white/10 hover:bg-white/20 border border-white/10 text-white transition-colors h-10 w-10 md:h-12 md:w-12 rounded backdrop-blur-sm" data-testid="button-add-list">
+                  <Plus className="w-5 h-5 md:w-6 md:h-6" />
                 </button>
               </div>
           </div>
