@@ -3,18 +3,8 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PosterCard from "@/components/PosterCard";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
-
-interface SportContent {
-  id: string;
-  title: string;
-  posterImage: string;
-  verticalPosterImage?: string;
-  rating: string;
-  isNew: boolean;
-  mediaId?: string;
-}
+import { useSportContent } from "@/hooks/useContent";
 
 const SPORT_NAMES: Record<string, string> = {
   "PFauvVKV": "College",
@@ -37,10 +27,7 @@ const SPORT_SLUGS: Record<string, string> = {
 export default function SportCategory() {
   const { playlistId } = useParams();
   
-  const { data: content = [], isLoading } = useQuery<SportContent[]>({
-    queryKey: [`/api/sports/${playlistId}/content`],
-    enabled: !!playlistId,
-  });
+  const { data: content = [], isLoading } = useSportContent(playlistId);
 
   const sportName = playlistId ? SPORT_NAMES[playlistId] || "Sport" : "Sport";
   const sportSlug = playlistId ? SPORT_SLUGS[playlistId] : undefined;
@@ -85,3 +72,4 @@ export default function SportCategory() {
     </div>
   );
 }
+

@@ -1,8 +1,10 @@
 import { useParams, Link, useLocation } from "wouter";
 import { useEffect, useRef, useState, useCallback } from "react";
-import { ArrowLeft, X } from "lucide-react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getSessionId } from "@/lib/session";
+import { ArrowLeft } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/lib/AuthContext";
+import { useContent } from "@/hooks/useContent";
+import { useSaveProgress, useInvalidateContinueWatching } from "@/hooks/useWatchProgress";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
 declare global {
@@ -11,22 +13,13 @@ declare global {
   }
 }
 
-interface Content {
-  id: string;
-  title: string;
-  mediaId?: string;
-  posterImage?: string;
-  duration?: number;
-  description?: string;
-  category?: string;
-}
-
 const JW_PLAYER_LIBRARY_URL = "https://cdn.jwplayer.com/libraries/EBg26wOK.js";
 
 export default function Watch() {
   const { id } = useParams();
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const [playerReady, setPlayerReady] = useState(false);
   const [playerError, setPlayerError] = useState<string | null>(null);
@@ -35,44 +28,32 @@ export default function Watch() {
   const lastProgressUpdateRef = useRef<number>(0);
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const { data: content, isLoading, error: contentError } = useQuery<Content>({
-    queryKey: [`/api/content/${id}`],
-    enabled: !!id,
-    retry: false,
-  });
+  const { data: content, isLoading, error: contentError } = useContent(id);
+  const saveProgressMutation = useSaveProgress();
+  const invalidateContinueWatching = useInvalidateContinueWatching();
 
   // Only use mediaId if we have content, otherwise we'll show content not found
-  const mediaId = content?.mediaId || (content ? id : undefined);
+  const mediaId = content?.id || (content ? id : undefined);
   
   // Handle content not found
   const contentNotFound = !isLoading && !content && id;
 
   const saveProgress = useCallback(async (watchedSeconds: number, duration: number) => {
-    if (!content || !mediaId || duration === 0) return;
+    if (!content || !mediaId || duration === 0 || !user) return;
     
-    // Get category from URL search params (when coming from sport page) or from content
+    // Get category from URL search params (when coming from sport page)
     const urlParams = new URLSearchParams(window.location.search);
-    const category = urlParams.get("category") || content.category;
+    const category = urlParams.get("category") || undefined;
     
-    try {
-      const sessionId = getSessionId();
-      await fetch("/api/watch-progress", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sessionId,
-          mediaId,
-          title: content.title,
-          posterImage: content.posterImage || "",
-          duration: Math.round(duration),
-          watchedSeconds: Math.round(watchedSeconds),
-          category,
-        }),
-      });
-    } catch (err) {
-      console.error("Failed to save watch progress:", err);
-    }
-  }, [content, mediaId]);
+    saveProgressMutation.mutate({
+      mediaId,
+      title: content.title,
+      posterImage: (content as any).posterImage || "",
+      duration: Math.round(duration),
+      watchedSeconds: Math.round(watchedSeconds),
+      category,
+    });
+  }, [content, mediaId, user, saveProgressMutation]);
 
   useEffect(() => {
     const checkAndLoadScript = () => {
@@ -249,12 +230,12 @@ export default function Watch() {
         }
         playerInstanceRef.current = null;
       }
-      queryClient.invalidateQueries({ queryKey: ["/api/continue-watching", getSessionId()] });
+      // Refresh continue watching when leaving player
+      invalidateContinueWatching();
     };
-  }, [scriptLoaded, mediaId, saveProgress, queryClient, contentNotFound]);
+  }, [scriptLoaded, mediaId, saveProgress, contentNotFound, invalidateContinueWatching]);
 
   const handleBack = () => {
-    // Go back to the previous page in history, or home if no history
     if (window.history.length > 1) {
       window.history.back();
     } else {
@@ -309,3 +290,4 @@ export default function Watch() {
     </div>
   );
 }
+

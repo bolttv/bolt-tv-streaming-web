@@ -1,19 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import { Loader2 } from "lucide-react";
-
-interface SearchResult {
-  id: string;
-  title: string;
-  posterImage: string;
-  verticalPosterImage?: string;
-  rating: string;
-  isNew: boolean;
-  mediaId?: string;
-  duration?: number;
-}
+import { useSearch } from "@/hooks/useContent";
 
 export default function Search() {
   const [query, setQuery] = useState("");
@@ -23,16 +12,7 @@ export default function Search() {
     setQuery(params.get("q") || "");
   }, []);
 
-  const { data: results, isLoading } = useQuery<SearchResult[]>({
-    queryKey: ["/api/search", query],
-    queryFn: async () => {
-      if (!query) return [];
-      const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
-      if (!res.ok) throw new Error("Search failed");
-      return res.json();
-    },
-    enabled: !!query,
-  });
+  const { data: results, isLoading } = useSearch(query);
 
   return (
     <div className="min-h-screen bg-black">
@@ -97,3 +77,4 @@ export default function Search() {
     </div>
   );
 }
+
