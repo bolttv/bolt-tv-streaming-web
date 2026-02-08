@@ -1,24 +1,16 @@
 import { useParams, Link, useLocation } from "wouter";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { ArrowLeft, X } from "lucide-react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { getSessionId } from "@/lib/session";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { useContentById } from "@/hooks/useJWPlayer";
+import { updateWatchProgress } from "@/lib/watchHistory";
 
 declare global {
   interface Window {
     jwplayer: any;
   }
-}
-
-interface Content {
-  id: string;
-  title: string;
-  mediaId?: string;
-  posterImage?: string;
-  duration?: number;
-  description?: string;
-  category?: string;
 }
 
 const JW_PLAYER_LIBRARY_URL = "https://cdn.jwplayer.com/libraries/EBg26wOK.js";
@@ -35,40 +27,32 @@ export default function Watch() {
   const lastProgressUpdateRef = useRef<number>(0);
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const { data: content, isLoading, error: contentError } = useQuery<Content>({
-    queryKey: [`/api/content/${id}`],
-    enabled: !!id,
-    retry: false,
-  });
+  const { data: content, isLoading, error: contentError } = useContentById(id);
 
   // Only use mediaId if we have content, otherwise we'll show content not found
   const mediaId = content?.mediaId || (content ? id : undefined);
-  
+
   // Handle content not found
   const contentNotFound = !isLoading && !content && id;
 
   const saveProgress = useCallback(async (watchedSeconds: number, duration: number) => {
     if (!content || !mediaId || duration === 0) return;
-    
+
     // Get category from URL search params (when coming from sport page) or from content
     const urlParams = new URLSearchParams(window.location.search);
-    const category = urlParams.get("category") || content.category;
-    
+    const category = urlParams.get("category") || undefined;
+
     try {
       const sessionId = getSessionId();
-      await fetch("/api/watch-progress", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sessionId,
-          mediaId,
-          title: content.title,
-          posterImage: content.posterImage || "",
-          duration: Math.round(duration),
-          watchedSeconds: Math.round(watchedSeconds),
-          category,
-        }),
-      });
+      await updateWatchProgress(
+        sessionId,
+        mediaId,
+        content.title,
+        content.posterImage || "",
+        Math.round(duration),
+        Math.round(watchedSeconds),
+        category
+      );
     } catch (err) {
       console.error("Failed to save watch progress:", err);
     }
@@ -82,7 +66,7 @@ export default function Watch() {
       }
 
       const existingScript = document.querySelector(`script[src="${JW_PLAYER_LIBRARY_URL}"]`);
-      
+
       if (existingScript) {
         const checkLoaded = setInterval(() => {
           if (window.jwplayer) {
@@ -90,7 +74,7 @@ export default function Watch() {
             setScriptLoaded(true);
           }
         }, 50);
-        
+
         setTimeout(() => clearInterval(checkLoaded), 10000);
         return;
       }
@@ -98,7 +82,7 @@ export default function Watch() {
       const script = document.createElement("script");
       script.src = JW_PLAYER_LIBRARY_URL;
       script.async = true;
-      
+
       script.onload = () => {
         const checkLoaded = setInterval(() => {
           if (window.jwplayer) {
@@ -106,7 +90,7 @@ export default function Watch() {
             setScriptLoaded(true);
           }
         }, 50);
-        
+
         setTimeout(() => {
           clearInterval(checkLoaded);
           if (!window.jwplayer) {
@@ -114,11 +98,11 @@ export default function Watch() {
           }
         }, 5000);
       };
-      
+
       script.onerror = () => {
         setPlayerError("Failed to load video player library.");
       };
-      
+
       document.head.appendChild(script);
     };
 
@@ -160,13 +144,13 @@ export default function Watch() {
         player.on("ready", () => {
           setPlayerReady(true);
           setPlayerError(null);
-          
+
           const handleResize = () => {
             if (playerInstanceRef.current) {
               playerInstanceRef.current.resize("100%", "100%");
             }
           };
-          
+
           window.addEventListener("resize", handleResize);
           player.on("remove", () => {
             window.removeEventListener("resize", handleResize);
@@ -181,7 +165,7 @@ export default function Watch() {
             if (playerInstanceRef.current) {
               const position = playerInstanceRef.current.getPosition() || 0;
               const duration = playerInstanceRef.current.getDuration() || 0;
-              
+
               if (position - lastProgressUpdateRef.current >= 5) {
                 lastProgressUpdateRef.current = position;
                 saveProgress(position, duration);
@@ -249,12 +233,11 @@ export default function Watch() {
         }
         playerInstanceRef.current = null;
       }
-      queryClient.invalidateQueries({ queryKey: ["/api/continue-watching", getSessionId()] });
+      queryClient.invalidateQueries({ queryKey: ["continue-watching", getSessionId()] });
     };
   }, [scriptLoaded, mediaId, saveProgress, queryClient, contentNotFound]);
 
   const handleBack = () => {
-    // Go back to the previous page in history, or home if no history
     if (window.history.length > 1) {
       window.history.back();
     } else {
