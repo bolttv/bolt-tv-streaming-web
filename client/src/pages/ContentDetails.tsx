@@ -4,11 +4,53 @@ import Footer from "@/components/Footer";
 import { Play, Plus, ChevronDown, ThumbsUp, Film } from "lucide-react";
 import PosterCard from "@/components/PosterCard";
 import LoadingSpinner from "@/components/LoadingSpinner";
-import { useState, useEffect, useMemo } from "react";
-import { useContent, useSeriesEpisodes, useContentRows } from "@/hooks/useContent";
-import { useContinueWatching } from "@/hooks/useWatchProgress";
+import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 
 type ContentType = "Trailer" | "Episode" | "Series" | "Movie" | "Documentary";
+
+interface Content {
+  id: string;
+  title: string;
+  heroImage?: string;
+  motionThumbnail?: string;
+  posterImage?: string;
+  logoImage?: string;
+  rating: string;
+  seasonCount?: number;
+  genres?: string[];
+  description?: string;
+  isNew?: boolean;
+  type?: "series" | "movie";
+  trailerId?: string;
+  contentType?: ContentType;
+}
+
+interface Episode {
+  id: string;
+  title: string;
+  description: string;
+  duration: number;
+  image: string;
+  episodeNumber?: number;
+  seasonNumber?: number;
+  mediaId: string;
+}
+
+interface NextEpisode {
+  seasonNumber: number;
+  episodeNumber: number;
+  mediaId: string;
+}
+
+function getSessionId(): string {
+  let sessionId = localStorage.getItem("session_id");
+  if (!sessionId) {
+    sessionId = crypto.randomUUID();
+    localStorage.setItem("session_id", sessionId);
+  }
+  return sessionId;
+}
 
 function formatDuration(seconds: number): string {
   const minutes = Math.floor(seconds / 60);
@@ -36,59 +78,38 @@ export default function ContentDetails() {
   const urlParams = new URLSearchParams(window.location.search);
   const category = urlParams.get("category");
   
-  // Fetch content via CDN
-  const { data: content, isLoading } = useContent(id);
+  const { data: content, isLoading } = useQuery<Content>({
+    queryKey: [`/api/content/${id}`],
+    enabled: !!id,
+  });
 
-  // Fetch content rows for "You May Also Like" section
-  const { data: rows = [] } = useContentRows();
+  const { data: rows = [] } = useQuery<any[]>({
+    queryKey: ["/api/content/rows"],
+  });
 
-  // Fetch episodes for series content type only
-  const isSeries = content?.contentType === "Series";
-  const { data: episodes = [] } = useSeriesEpisodes(id, isSeries);
+  // Fetch episodes for series content type only (not for individual episodes)
+  const { data: episodes = [] } = useQuery<Episode[]>({
+    queryKey: [`/api/series/${id}/episodes`],
+    enabled: !!id && content?.contentType === "Series",
+  });
 
-  // Get continue watching to determine next episode
-  const { data: continueWatching = [] } = useContinueWatching();
-
-  // Calculate next episode from watch history
-  const nextEpisode = useMemo(() => {
-    if (!isSeries || episodes.length === 0) return null;
-
-    // Find the last watched episode in this series
-    const episodeMediaIds = new Set(episodes.map(ep => ep.mediaId));
-    const watchedEpisodes = continueWatching.filter(item => episodeMediaIds.has(item.mediaId));
-
-    if (watchedEpisodes.length === 0) return null;
-
-    // Find the most recently watched episode
-    const lastWatched = watchedEpisodes[0]; // Already sorted by lastWatchedAt desc
-    const lastWatchedEp = episodes.find(ep => ep.mediaId === lastWatched.mediaId);
-
-    if (!lastWatchedEp) return null;
-
-    // If they finished it (>95%), suggest next episode
-    const progress = lastWatched.watchedSeconds / lastWatched.duration;
-    if (progress > 0.95) {
-      const currentIndex = episodes.indexOf(lastWatchedEp);
-      const nextEp = episodes[currentIndex + 1];
-      if (nextEp) {
-        return {
-          seasonNumber: nextEp.seasonNumber || 1,
-          episodeNumber: nextEp.episodeNumber || currentIndex + 2,
-          mediaId: nextEp.mediaId,
-        };
-      }
-      return null; // Finished last episode
-    }
-
-    // Still watching current episode — resume it
-    return {
-      seasonNumber: lastWatchedEp.seasonNumber || 1,
-      episodeNumber: lastWatchedEp.episodeNumber || 1,
-      mediaId: lastWatchedEp.mediaId,
-    };
-  }, [isSeries, episodes, continueWatching]);
+  // Fetch next episode to watch for series
+  const { data: nextEpisode } = useQuery<NextEpisode | null>({
+    queryKey: [`/api/series/${id}/next-episode`, getSessionId()],
+    queryFn: async () => {
+      const response = await fetch(`/api/series/${id}/next-episode`, {
+        headers: { "x-session-id": getSessionId() }
+      });
+      if (!response.ok) return null;
+      return response.json();
+    },
+    enabled: !!id && content?.contentType === "Series",
+  });
 
   // Determine watch button text and link
+  // Series = multiple episodes, so show dynamic episode button
+  // Episode/Movie/Documentary = single content, show "Watch Now"
+  const isSeries = content?.contentType === "Series";
   const isSingleContent = content?.contentType === "Movie" || content?.contentType === "Documentary" || content?.contentType === "Episode";
   
   const watchButtonText = isSingleContent 
@@ -117,7 +138,7 @@ export default function ContentDetails() {
     );
   }
 
-  const displayImage = (content as any).heroImage || (content as any).posterImage || "";
+  const displayImage = content.heroImage || content.posterImage || "";
   const displayGenres = content.genres || ["Drama", "Sports"];
   const displayDescription = content.description || "Experience the intensity and drama in this gripping series that takes you behind the scenes.";
 
@@ -129,9 +150,9 @@ export default function ContentDetails() {
         {/* Hero Section */}
         <div className="relative w-full h-[calc(75vh-60px)] sm:h-[calc(75vh-90px)] md:h-[calc(80vh-90px)] lg:h-[calc(90vh-90px)]">
           <div className="absolute inset-0">
-            {(content as any).motionThumbnail && !motionThumbnailFailed ? (
+            {content.motionThumbnail && !motionThumbnailFailed ? (
               <video
-                src={(content as any).motionThumbnail}
+                src={content.motionThumbnail}
                 autoPlay
                 loop
                 muted
@@ -155,9 +176,9 @@ export default function ContentDetails() {
           </div>
 
           <div className="absolute top-0 bottom-0 left-4 right-4 sm:top-auto sm:right-auto sm:bottom-[60px] md:bottom-[80px] sm:left-4 md:left-12 max-w-xl z-20 flex flex-col justify-end sm:justify-end items-start text-left pb-[31px] sm:pb-0 space-y-2 sm:space-y-4 md:space-y-6">
-              {(content as any).logoImage && !logoFailed ? (
+              {content.logoImage && !logoFailed ? (
                  <img 
-                   src={(content as any).logoImage} 
+                   src={content.logoImage} 
                    alt={content.title} 
                    className="h-[97px] sm:h-32 md:h-52 max-w-[280px] sm:max-w-none object-contain" 
                    onError={() => setLogoFailed(true)}
@@ -207,8 +228,8 @@ export default function ContentDetails() {
                   <ThumbsUp className="w-5 h-5 sm:w-6 sm:h-6" />
                   <span className="text-[9px] sm:text-[10px] uppercase tracking-wider font-medium">Rate</span>
                 </button>
-                {(content as any).trailerId && (
-                  <Link href={`/watch/${(content as any).trailerId}${category ? `?category=${category}` : ''}`}>
+                {content.trailerId && (
+                  <Link href={`/watch/${content.trailerId}${category ? `?category=${category}` : ''}`}>
                     <button className="flex flex-col items-center gap-1 text-gray-300 hover:text-white transition">
                       <Film className="w-5 h-5 sm:w-6 sm:h-6" />
                       <span className="text-[9px] sm:text-[10px] uppercase tracking-wider font-medium">Trailer</span>
@@ -277,4 +298,3 @@ export default function ContentDetails() {
     </div>
   );
 }
-

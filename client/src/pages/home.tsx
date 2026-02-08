@@ -5,20 +5,99 @@ import SportCategoryCard from "@/components/SportCategoryCard";
 import ContinueWatchingCard from "@/components/ContinueWatchingCard";
 import Footer from "@/components/Footer";
 import { HomePageSkeleton } from "@/components/SkeletonLoaders";
-import {
-  useHeroItems,
-  useContentRows,
-  useSportCategories,
-  useRecommendations,
-} from "@/hooks/useContent";
-import { useContinueWatching } from "@/hooks/useWatchProgress";
+import { useQuery } from "@tanstack/react-query";
+import { getSessionId } from "@/lib/session";
+
+interface HeroItem {
+  id: string;
+  title: string;
+  type: "series" | "movie";
+  heroImage: string;
+  logoImage?: string;
+  rating: string;
+  seasonCount?: number;
+  genres: string[];
+  description: string;
+  isNew: boolean;
+}
+
+interface RowItem {
+  id: string;
+  title: string;
+  posterImage: string;
+  rating: string;
+  seasonCount?: number;
+  isNew: boolean;
+  isNewEpisode?: boolean;
+  continueProgress?: number;
+  seasonEpisodeLabel?: string;
+}
+
+interface Row {
+  id: string;
+  title: string;
+  items: RowItem[];
+}
+
+interface SportCategory {
+  id: string;
+  name: string;
+  slug: string;
+  playlistId: string;
+  thumbnailImage: string;
+}
+
+interface ContinueWatchingItem {
+  id: string;
+  mediaId: string;
+  title: string;
+  posterImage: string;
+  duration: number;
+  watchedSeconds: number;
+  progress: number;
+}
 
 export default function Home() {
-  const { data: heroItems = [], isLoading: heroLoading } = useHeroItems();
-  const { data: rows = [], isLoading: rowsLoading } = useContentRows();
-  const { data: sportCategories = [] } = useSportCategories();
-  const { data: continueWatching = [] } = useContinueWatching();
-  const { data: personalizedRecs = [] } = useRecommendations(continueWatching.length > 0);
+  const sessionId = getSessionId();
+  
+  const { data: heroItems = [], isLoading: heroLoading } = useQuery<HeroItem[]>({
+    queryKey: ["/api/content/hero", sessionId],
+    queryFn: async () => {
+      const res = await fetch("/api/content/hero", {
+        headers: { "x-session-id": sessionId },
+      });
+      if (!res.ok) throw new Error("Failed to fetch hero items");
+      return res.json();
+    },
+  });
+
+  const { data: rows = [], isLoading: rowsLoading } = useQuery<Row[]>({
+    queryKey: ["/api/content/rows"],
+  });
+
+  const { data: sportCategories = [] } = useQuery<SportCategory[]>({
+    queryKey: ["/api/sports"],
+  });
+
+  const { data: continueWatching = [] } = useQuery<ContinueWatchingItem[]>({
+    queryKey: ["/api/continue-watching", sessionId],
+    queryFn: async () => {
+      const res = await fetch(`/api/continue-watching/${sessionId}`);
+      if (!res.ok) return [];
+      return res.json();
+    },
+    refetchOnWindowFocus: true,
+  });
+
+  const { data: personalizedRecs = [] } = useQuery<RowItem[]>({
+    queryKey: ["/api/recommendations", sessionId],
+    queryFn: async () => {
+      const res = await fetch(`/api/recommendations/${sessionId}`);
+      if (!res.ok) return [];
+      return res.json();
+    },
+    enabled: continueWatching.length > 0,
+  });
 
   if (heroLoading || rowsLoading) {
     return <HomePageSkeleton />;
@@ -77,4 +156,3 @@ export default function Home() {
     </div>
   );
 }
-
