@@ -1,23 +1,43 @@
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import { Loader2 } from "lucide-react";
-import { useSearch } from "@/hooks/useJWPlayer";
+
+interface SearchResult {
+  id: string;
+  title: string;
+  posterImage: string;
+  verticalPosterImage?: string;
+  rating: string;
+  isNew: boolean;
+  mediaId?: string;
+  duration?: number;
+}
 
 export default function Search() {
   const [query, setQuery] = useState("");
-
+  
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     setQuery(params.get("q") || "");
   }, []);
 
-  const { data: results, isLoading } = useSearch(query);
+  const { data: results, isLoading } = useQuery<SearchResult[]>({
+    queryKey: ["/api/search", query],
+    queryFn: async () => {
+      if (!query) return [];
+      const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+      if (!res.ok) throw new Error("Search failed");
+      return res.json();
+    },
+    enabled: !!query,
+  });
 
   return (
     <div className="min-h-screen bg-black">
       <Navbar />
-
+      
       <div className="pt-24 md:pt-28 px-4 md:px-12 pb-12">
         <div className="mb-8">
           <h1 className="text-2xl md:text-3xl font-bold text-white" data-testid="text-search-header">
@@ -28,6 +48,7 @@ export default function Search() {
             )}
           </h1>
         </div>
+
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="w-8 h-8 animate-spin text-white/60" />

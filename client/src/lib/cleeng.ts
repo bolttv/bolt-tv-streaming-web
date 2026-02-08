@@ -30,8 +30,6 @@ export interface CleengConfig {
   environment: "sandbox" | "production";
 }
 
-const EDGE_BASE = "https://kwbnjujvuloqrugsjiex.supabase.co/functions/v1";
-
 const CLEENG_CUSTOMER_KEY = "cleeng_customer";
 const AUTH_CHANGE_EVENT = "cleeng_auth_change";
 
@@ -61,17 +59,17 @@ export function onAuthChange(callback: () => void): () => void {
 }
 
 export async function getCleengConfig(): Promise<CleengConfig> {
-  const response = await fetch(`${EDGE_BASE}/cleeng-config`);
+  const response = await fetch("/api/cleeng/config");
   return response.json();
 }
 
 export async function getOffers(): Promise<CleengOffer[]> {
-  const response = await fetch(`${EDGE_BASE}/cleeng-offers`);
+  const response = await fetch("/api/cleeng/offers");
   if (!response.ok) {
     throw new Error("Failed to fetch offers");
   }
   const data = await response.json();
-
+  
   if (Array.isArray(data)) {
     return data as CleengOffer[];
   }
@@ -79,25 +77,25 @@ export async function getOffers(): Promise<CleengOffer[]> {
 }
 
 export async function registerCustomer(email: string, password: string) {
-  const response = await fetch(`${EDGE_BASE}/cleeng-sso`, {
+  const response = await fetch("/api/cleeng/register", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ action: "register", email, password }),
+    body: JSON.stringify({ email, password }),
   });
   return response.json();
 }
 
 export async function loginCustomer(email: string, password: string) {
-  const response = await fetch(`${EDGE_BASE}/cleeng-sso`, {
+  const response = await fetch("/api/cleeng/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ action: "login", email, password }),
+    body: JSON.stringify({ email, password }),
   });
   return response.json();
 }
 
 export async function ssoLogin(email: string, externalId?: string) {
-  const response = await fetch(`${EDGE_BASE}/cleeng-sso`, {
+  const response = await fetch("/api/cleeng/sso", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, externalId }),
@@ -106,22 +104,19 @@ export async function ssoLogin(email: string, externalId?: string) {
 }
 
 export async function getSubscriptions(customerId: string, jwt: string) {
-  const response = await fetch(
-    `${EDGE_BASE}/cleeng-subscriptions?customerId=${customerId}`,
-    {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${jwt}`,
-      },
+  const response = await fetch(`/api/cleeng/subscriptions/${customerId}`, {
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${jwt}`,
     },
-  );
+  });
   return response.json();
 }
 
 export function formatPrice(price: number, currency: string): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: currency || "USD",
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: currency || 'USD',
   }).format(price);
 }
 
@@ -132,32 +127,24 @@ export interface CheckoutResponse {
   environment: string;
 }
 
-export async function createCheckout(
-  offerId: string,
-  customerJwt: string,
-): Promise<CheckoutResponse> {
-  const response = await fetch(`${EDGE_BASE}/cleeng-checkout`, {
+export async function createCheckout(offerId: string, customerJwt: string): Promise<CheckoutResponse> {
+  const response = await fetch("/api/cleeng/checkout", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ offerId, customerJwt }),
   });
-
+  
   if (!response.ok) {
     const errorData = await response.json();
     throw new Error(errorData.error || "Failed to create checkout");
   }
-
+  
   return response.json();
 }
 
-export function getCleengCheckoutUrl(
-  orderId: string | number,
-  publisherId: string,
-  environment: string,
-): string {
-  const baseUrl =
-    environment === "sandbox"
-      ? "https://checkout.sandbox.cleeng.com"
-      : "https://checkout.cleeng.com";
+export function getCleengCheckoutUrl(orderId: string | number, publisherId: string, environment: string): string {
+  const baseUrl = environment === "sandbox" 
+    ? "https://checkout.sandbox.cleeng.com"
+    : "https://checkout.cleeng.com";
   return `${baseUrl}/?orderId=${orderId}&publisherId=${publisherId}`;
 }

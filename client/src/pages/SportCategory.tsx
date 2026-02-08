@@ -3,8 +3,18 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PosterCard from "@/components/PosterCard";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
-import { useSportContent } from "@/hooks/useJWPlayer";
+
+interface SportContent {
+  id: string;
+  title: string;
+  posterImage: string;
+  verticalPosterImage?: string;
+  rating: string;
+  isNew: boolean;
+  mediaId?: string;
+}
 
 const SPORT_NAMES: Record<string, string> = {
   "PFauvVKV": "College",
@@ -26,8 +36,11 @@ const SPORT_SLUGS: Record<string, string> = {
 
 export default function SportCategory() {
   const { playlistId } = useParams();
-
-  const { data: content = [], isLoading } = useSportContent(playlistId);
+  
+  const { data: content = [], isLoading } = useQuery<SportContent[]>({
+    queryKey: [`/api/sports/${playlistId}/content`],
+    enabled: !!playlistId,
+  });
 
   const sportName = playlistId ? SPORT_NAMES[playlistId] || "Sport" : "Sport";
   const sportSlug = playlistId ? SPORT_SLUGS[playlistId] : undefined;
@@ -35,6 +48,7 @@ export default function SportCategory() {
   return (
     <div className="min-h-screen bg-black text-white">
       <Navbar />
+
       <main className="pt-24 px-4 md:px-12 pb-12">
         <div className="mb-8">
           <Link href="/">
@@ -48,6 +62,7 @@ export default function SportCategory() {
           </h1>
           <p className="text-gray-400 mt-2">Browse all {sportName.toLowerCase()} content</p>
         </div>
+
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
             <LoadingSpinner size="lg" />
@@ -65,6 +80,7 @@ export default function SportCategory() {
           </div>
         )}
       </main>
+
       <Footer />
     </div>
   );
