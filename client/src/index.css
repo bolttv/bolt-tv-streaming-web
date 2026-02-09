@@ -78,6 +78,30 @@ body {
   z-index: 10;
 }
 
+/* JW Player fullscreen overrides for mobile */
+.jw-wrapper,
+.jw-aspect,
+.jw-media,
+.jw-preview {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.jwplayer {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.jwplayer .jw-aspect {
+  padding-top: 0 !important;
+}
+
 /* Scrollbar hiding for horizontal lists */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
