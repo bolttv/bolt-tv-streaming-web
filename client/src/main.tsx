@@ -4,6 +4,20 @@ import { supabase } from "./lib/supabase";
 import App from "./App";
 import "./index.css";
 
+window.addEventListener("error", (e) => {
+  if (e.message === "(unknown runtime error)" || !e.message) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+  }
+});
+
+window.addEventListener("unhandledrejection", (e) => {
+  if (!e.reason || (e.reason instanceof Error && !e.reason.message)) {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+  }
+});
+
 // Handle Supabase auth callback before React app initializes
 // This ensures tokens from email verification links are processed first
 async function handleAuthCallback() {
