@@ -302,7 +302,7 @@ export default function Watch() {
         )}
         <div 
           ref={playerContainerRef}
-          className="w-full h-full"
+          className="jw-player-container w-full h-full"
           data-testid="video-player"
         />
       </div>
