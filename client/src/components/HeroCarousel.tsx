@@ -1,16 +1,27 @@
 import { HeroItem } from "@/lib/mockData";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import { Play, Plus, Info, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Link } from "wouter";
+import { useLocation } from "wouter";
 
 interface HeroCarouselProps {
   items: HeroItem[];
 }
 
 export default function HeroCarousel({ items }: HeroCarouselProps) {
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, duration: 40 });
+  const [emblaRef, emblaApi] = useEmblaCarousel({ 
+    loop: true, 
+    duration: 40,
+    watchDrag: (_, event) => {
+      const target = event.target as HTMLElement;
+      if (target.closest('[data-testid="button-watch-now"]') || target.closest('button') || target.closest('a')) {
+        return false;
+      }
+      return true;
+    },
+  });
+  const [, setLocation] = useLocation();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [failedLogos, setFailedLogos] = useState<Set<string>>(new Set());
   const [failedMotionThumbnails, setFailedMotionThumbnails] = useState<Set<string>>(new Set());
@@ -130,15 +141,23 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
                           ? "Watch S1 E1"
                           : "Watch Now";
                     
+                    const hasPlayableMedia = !isSeries || (isSeries && item.nextEpisode?.mediaId);
                     const watchMediaId = isSeries && item.nextEpisode ? item.nextEpisode.mediaId : item.id;
+                    const watchHref = hasPlayableMedia ? `/watch/${watchMediaId}` : `/content/${item.id}`;
                     
                     return (
-                      <Link href={`/watch/${watchMediaId}`}>
-                        <button className="flex items-center justify-center gap-1.5 sm:gap-2 bg-white text-black hover:bg-white/90 transition-colors h-9 sm:h-10 md:h-12 px-4 sm:px-6 md:px-8 rounded font-semibold tracking-wide text-xs sm:text-sm md:text-base cursor-pointer">
-                          <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 fill-current" />
-                          {watchButtonText}
-                        </button>
-                      </Link>
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          setLocation(watchHref);
+                        }}
+                        className="flex items-center justify-center gap-1.5 sm:gap-2 bg-white text-black hover:bg-white/90 transition-colors h-9 sm:h-10 md:h-12 px-4 sm:px-6 md:px-8 rounded font-semibold tracking-wide text-xs sm:text-sm md:text-base cursor-pointer relative z-40 touch-manipulation"
+                        data-testid="button-watch-now"
+                      >
+                        <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 fill-current pointer-events-none" />
+                        <span className="pointer-events-none">{watchButtonText}</span>
+                      </button>
                     );
                   })()}
                   <button className="flex items-center justify-center bg-white/10 hover:bg-white/20 border border-white/10 text-white transition-colors h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12 rounded backdrop-blur-sm">

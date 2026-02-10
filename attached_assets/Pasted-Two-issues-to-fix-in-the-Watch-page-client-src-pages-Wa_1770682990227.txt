@@ -1,0 +1,20 @@
+Two issues to fix in the Watch page (client/src/pages/Watch.tsx) and Hero Banner (client/src/components/HeroCarousel.tsx):
+Bug: "Watch Now" button on the hero banner doesn't work on mobile
+The hero carousel has a "Watch Now" button that links to /watch/{mediaId}. When tapping it on mobile, the video either doesn't play or the tap is swallowed by the Embla carousel's touch/swipe gesture handler. The same content plays fine when accessed from the content details page (episode list).
+Please diagnose:
+
+Is the Embla carousel intercepting tap events on the button? If so, add proper pointer-events handling or use Embla's watchDrag option to exclude button taps from swipe detection.
+Check if the hero items from /api/content/hero are returning a valid nextEpisode.mediaId for Series content types. If nextEpisode is null and contentType is "Series", the Watch Now button links to /watch/{heroItemId} which is NOT a playable JW Player media ID — it's just the series ID. The fallback watchMediaId needs to resolve to an actual episode media ID.
+Check the Watch page — when it fetches /api/content/${id} and the ID is a series ID (not a media ID), does it return content with a valid mediaId field? If content.mediaId is undefined, the player tries to load https://cdn.jwplayer.com/v2/media/${id} using the series ID, which will fail.
+
+The fix should ensure that for Series content, the Watch Now button always resolves to a real JW Player episode media ID before navigating.
+Feature: Auto-enter fullscreen on mobile when video plays
+In client/src/pages/Watch.tsx, after the JW Player initializes and the "play" event fires, detect if the user is on a mobile device and automatically request fullscreen. This provides a native video experience and avoids layout issues with the player container on small screens.
+Implementation:
+
+After player.on("ready", ...), check if the device is mobile using window.matchMedia("(max-width: 768px)").matches or user agent detection
+On the "play" event (first play only), call player.setFullscreen(true) which is JW Player's built-in fullscreen API
+As a fallback, also try the native Fullscreen API on the player container element: playerContainerRef.current?.requestFullscreen() (with webkit/moz prefixes for Safari/Firefox)
+Make sure the player container has playsinline disabled for iOS so it uses native fullscreen rather than inline playback
+
+Do NOT change any backend routes, JW Player configuration, environment variables, or API endpoints. Only modify the frontend components.

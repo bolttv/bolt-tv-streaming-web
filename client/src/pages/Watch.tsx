@@ -19,6 +19,13 @@ interface Content {
   duration?: number;
   description?: string;
   category?: string;
+  contentType?: string;
+}
+
+interface NextEpisode {
+  seasonNumber: number;
+  episodeNumber: number;
+  mediaId: string;
 }
 
 const JW_PLAYER_LIBRARY_URL = "https://cdn.jwplayer.com/libraries/EBg26wOK.js";
@@ -34,6 +41,7 @@ export default function Watch() {
   const playerInstanceRef = useRef<any>(null);
   const lastProgressUpdateRef = useRef<number>(0);
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const hasTriggeredFullscreenRef = useRef(false);
 
   const { data: content, isLoading, error: contentError } = useQuery<Content>({
     queryKey: [`/api/content/${id}`],
@@ -41,29 +49,53 @@ export default function Watch() {
     retry: false,
   });
 
-  // Only use mediaId if we have content, otherwise we'll show content not found
-  const mediaId = content?.mediaId || (content ? id : undefined);
+  const isSeries = content?.contentType === "Series";
+  const contentLoaded = !isLoading && !!content;
+  const contentMissing = !isLoading && !content;
+  const mightBeSeries = isSeries || contentMissing;
+  const sessionId = getSessionId();
+
+  const { data: nextEpisode, isLoading: episodeLoading, isFetched: episodeFetched } = useQuery<NextEpisode | null>({
+    queryKey: [`/api/series/${id}/next-episode`, sessionId],
+    queryFn: async () => {
+      const res = await fetch(`/api/series/${id}/next-episode`, {
+        headers: { "x-session-id": sessionId },
+      });
+      if (!res.ok) return null;
+      return res.json();
+    },
+    enabled: !!id && !isLoading && mightBeSeries,
+    retry: false,
+  });
+
+  const resolvedMediaId = (() => {
+    if (isSeries) return nextEpisode?.mediaId || undefined;
+    if (contentMissing && nextEpisode?.mediaId) return nextEpisode.mediaId;
+    return content?.mediaId || (content ? id : undefined);
+  })();
   
-  // Handle content not found
-  const contentNotFound = !isLoading && !content && id;
+  const mediaId = resolvedMediaId;
+  const isResolvingMedia = isLoading || (mightBeSeries && episodeLoading);
+  
+  const contentNotFound = !isLoading && !content && (!mightBeSeries || (episodeFetched && !nextEpisode));
 
   const saveProgress = useCallback(async (watchedSeconds: number, duration: number) => {
-    if (!content || !mediaId || duration === 0) return;
+    if (!mediaId || duration === 0) return;
     
     // Get category from URL search params (when coming from sport page) or from content
     const urlParams = new URLSearchParams(window.location.search);
-    const category = urlParams.get("category") || content.category;
+    const category = urlParams.get("category") || content?.category;
     
     try {
-      const sessionId = getSessionId();
+      const sid = getSessionId();
       await fetch("/api/watch-progress", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          sessionId,
+          sessionId: sid,
           mediaId,
-          title: content.title,
-          posterImage: content.posterImage || "",
+          title: content?.title || "",
+          posterImage: content?.posterImage || "",
           duration: Math.round(duration),
           watchedSeconds: Math.round(watchedSeconds),
           category,
@@ -147,6 +179,9 @@ export default function Watch() {
         const player = window.jwplayer(container);
         playerInstanceRef.current = player;
 
+        const isMobileDevice = window.matchMedia("(max-width: 768px)").matches || 
+          /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
         player.setup({
           playlist: `https://cdn.jwplayer.com/v2/media/${mediaId}`,
           width: "100%",
@@ -155,6 +190,7 @@ export default function Watch() {
           mute: false,
           controls: true,
           stretching: "uniform",
+          playsinline: !isMobileDevice,
         });
 
         player.on("ready", () => {
@@ -174,6 +210,25 @@ export default function Watch() {
         });
 
         player.on("play", () => {
+          if (!hasTriggeredFullscreenRef.current) {
+            hasTriggeredFullscreenRef.current = true;
+            const isMobile = window.matchMedia("(max-width: 768px)").matches || 
+              /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+            if (isMobile) {
+              try {
+                if (player.setFullscreen) {
+                  player.setFullscreen(true);
+                } else if (playerContainerRef.current) {
+                  const el = playerContainerRef.current as any;
+                  const requestFs = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen;
+                  if (requestFs) requestFs.call(el);
+                }
+              } catch (e) {
+                // Fullscreen may be blocked by browser policy
+              }
+            }
+          }
+
           if (progressIntervalRef.current) {
             clearInterval(progressIntervalRef.current);
           }
@@ -284,7 +339,7 @@ export default function Watch() {
             </Link>
           </div>
         )}
-        {!contentNotFound && (isLoading || !playerReady) && !playerError && (
+        {!contentNotFound && (isResolvingMedia || !playerReady) && !playerError && (
           <div className="absolute inset-0 flex items-center justify-center bg-black z-10 pointer-events-none">
             <LoadingSpinner size="lg" />
           </div>
