@@ -12,6 +12,7 @@ export const users = pgTable("users", {
 export const watchHistory = pgTable("watch_history", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   sessionId: varchar("session_id").notNull(),
+  userId: varchar("user_id"),
   mediaId: varchar("media_id").notNull(),
   title: text("title").notNull(),
   posterImage: text("poster_image"),

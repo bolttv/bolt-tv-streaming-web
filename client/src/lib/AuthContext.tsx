@@ -1,7 +1,8 @@
-import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, useRef, ReactNode } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase, Profile, getProfile, updateProfile, upsertProfile } from "./supabase";
 import { ssoLogin, saveCleengCustomer, getCleengCustomer, clearCleengCustomer, CleengCustomer, getSubscriptions } from "./cleeng";
+import { getSessionId } from "./session";
 
 type AuthStep = "email" | "verification_sent" | "create_password" | "authenticated";
 
@@ -35,6 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [cleengCustomer, setCleengCustomer] = useState<CleengCustomer | null>(() => getCleengCustomer());
   const [isLinking, setIsLinking] = useState(false);
   const [linkAttempted, setLinkAttempted] = useState(false);
+  const migrationAttempted = useRef(false);
 
   const isAuthenticated = !!session && !!user;
 
@@ -200,9 +202,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [isAuthenticated, user, authStep, cleengCustomer, isLinking, linkAttempted, linkToCleeng]);
 
   useEffect(() => {
+    if (isAuthenticated && session?.access_token && !migrationAttempted.current) {
+      migrationAttempted.current = true;
+      fetch("/api/migrate-watch-history", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ sessionId: getSessionId() }),
+      }).catch(() => {});
+    }
+  }, [isAuthenticated, session]);
+
+  useEffect(() => {
     if (!isAuthenticated && cleengCustomer) {
       clearCleengCustomer();
       setCleengCustomer(null);
+    }
+    if (!isAuthenticated) {
+      migrationAttempted.current = false;
     }
   }, [isAuthenticated, cleengCustomer]);
 

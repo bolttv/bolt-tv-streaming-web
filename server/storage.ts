@@ -96,14 +96,15 @@ export interface IStorage {
   refreshJWPlayerContent(): Promise<void>;
   getSeriesEpisodes(seriesId: string): Promise<EpisodeItem[]>;
   
-  updateWatchProgress(sessionId: string, mediaId: string, title: string, posterImage: string, duration: number, watchedSeconds: number, category?: string): Promise<WatchHistory>;
-  getContinueWatching(sessionId: string): Promise<ContinueWatchingItem[]>;
-  removeFromContinueWatching(sessionId: string, mediaId: string): Promise<void>;
+  updateWatchProgress(sessionId: string, mediaId: string, title: string, posterImage: string, duration: number, watchedSeconds: number, category?: string, userId?: string): Promise<WatchHistory>;
+  getContinueWatching(sessionId: string, userId?: string): Promise<ContinueWatchingItem[]>;
+  removeFromContinueWatching(sessionId: string, mediaId: string, userId?: string): Promise<void>;
   searchContent(query: string): Promise<RowItem[]>;
   getPersonalizedRecommendations(sessionId: string): Promise<RowItem[]>;
   getCategoryForMedia(mediaId: string): string | undefined;
-  getNextEpisodeToWatch(sessionId: string, seriesId: string): Promise<{ seasonNumber: number; episodeNumber: number; mediaId: string } | null>;
+  getNextEpisodeToWatch(sessionId: string, seriesId: string, userId?: string): Promise<{ seasonNumber: number; episodeNumber: number; mediaId: string } | null>;
   getFirstEpisode(seriesId: string): Promise<{ seasonNumber: number; episodeNumber: number; mediaId: string } | null>;
+  migrateSessionToUser(sessionId: string, userId: string): Promise<void>;
 }
 
 const validatedLogos = new Map<string, boolean>();
@@ -833,20 +834,22 @@ export class MemStorage implements IStorage {
     posterImage: string,
     duration: number,
     watchedSeconds: number,
-    category?: string
+    category?: string,
+    userId?: string
   ): Promise<WatchHistory> {
     const progress = duration > 0 ? Math.min(watchedSeconds / duration, 1) : 0;
     
-    // Ensure category map is ready before lookup (await initial build if needed)
     await this.ensureCategoryMapReady();
-    
-    // Use provided category or look up from cached map (fast lookup)
     const resolvedCategory = category || this.mediaCategoryMap.get(mediaId);
+    
+    const whereCondition = userId
+      ? and(eq(watchHistory.userId, userId), eq(watchHistory.mediaId, mediaId))
+      : and(eq(watchHistory.sessionId, sessionId), eq(watchHistory.mediaId, mediaId));
     
     const existing = await db
       .select()
       .from(watchHistory)
-      .where(and(eq(watchHistory.sessionId, sessionId), eq(watchHistory.mediaId, mediaId)))
+      .where(whereCondition)
       .limit(1);
 
     if (existing.length > 0) {
@@ -859,6 +862,7 @@ export class MemStorage implements IStorage {
           title,
           posterImage,
           duration,
+          ...(userId && { userId }),
           ...(resolvedCategory && { category: resolvedCategory }),
         })
         .where(eq(watchHistory.id, existing[0].id))
@@ -876,18 +880,23 @@ export class MemStorage implements IStorage {
           watchedSeconds,
           progress,
           category: resolvedCategory,
+          ...(userId && { userId }),
         })
         .returning();
       return created;
     }
   }
 
-  async getContinueWatching(sessionId: string): Promise<ContinueWatchingItem[]> {
+  async getContinueWatching(sessionId: string, userId?: string): Promise<ContinueWatchingItem[]> {
+    const userCondition = userId
+      ? eq(watchHistory.userId, userId)
+      : eq(watchHistory.sessionId, sessionId);
+    
     const items = await db
       .select()
       .from(watchHistory)
       .where(and(
-        eq(watchHistory.sessionId, sessionId),
+        userCondition,
         sql`${watchHistory.progress} > 0.01`,
         sql`${watchHistory.progress} < 0.95`
       ))
@@ -913,10 +922,13 @@ export class MemStorage implements IStorage {
     }));
   }
 
-  async removeFromContinueWatching(sessionId: string, mediaId: string): Promise<void> {
+  async removeFromContinueWatching(sessionId: string, mediaId: string, userId?: string): Promise<void> {
+    const userCondition = userId
+      ? eq(watchHistory.userId, userId)
+      : eq(watchHistory.sessionId, sessionId);
     await db
       .delete(watchHistory)
-      .where(and(eq(watchHistory.sessionId, sessionId), eq(watchHistory.mediaId, mediaId)));
+      .where(and(userCondition, eq(watchHistory.mediaId, mediaId)));
   }
 
   async searchContent(query: string): Promise<RowItem[]> {
@@ -976,28 +988,28 @@ export class MemStorage implements IStorage {
     }
   }
 
-  async getNextEpisodeToWatch(sessionId: string, seriesId: string): Promise<{ seasonNumber: number; episodeNumber: number; mediaId: string } | null> {
-    // Get all episodes for this series
+  async getNextEpisodeToWatch(sessionId: string, seriesId: string, userId?: string): Promise<{ seasonNumber: number; episodeNumber: number; mediaId: string } | null> {
     const episodes = await this.getSeriesEpisodes(seriesId);
     if (episodes.length === 0) {
       return null;
     }
 
-    // Sort episodes by season and episode number
     const sortedEpisodes = [...episodes].sort((a, b) => {
       const seasonDiff = (a.seasonNumber || 1) - (b.seasonNumber || 1);
       if (seasonDiff !== 0) return seasonDiff;
       return (a.episodeNumber || 1) - (b.episodeNumber || 1);
     });
 
-    // Get user's watch history for this series' episodes
     const episodeMediaIds = sortedEpisodes.map(ep => ep.mediaId);
+    const userCondition = userId
+      ? eq(watchHistory.userId, userId)
+      : eq(watchHistory.sessionId, sessionId);
     const watchedItems = episodeMediaIds.length > 0 
       ? await db
           .select()
           .from(watchHistory)
           .where(and(
-            eq(watchHistory.sessionId, sessionId),
+            userCondition,
             inArray(watchHistory.mediaId, episodeMediaIds)
           ))
       : [];
@@ -1085,6 +1097,40 @@ export class MemStorage implements IStorage {
       episodeNumber: firstEpisode.episodeNumber || 1,
       mediaId: firstEpisode.mediaId
     };
+  }
+
+  async migrateSessionToUser(sessionId: string, userId: string): Promise<void> {
+    const sessionItems = await db
+      .select()
+      .from(watchHistory)
+      .where(and(eq(watchHistory.sessionId, sessionId), sql`${watchHistory.userId} IS NULL`));
+    
+    for (const item of sessionItems) {
+      const existing = await db
+        .select()
+        .from(watchHistory)
+        .where(and(eq(watchHistory.userId, userId), eq(watchHistory.mediaId, item.mediaId)))
+        .limit(1);
+      
+      if (existing.length > 0) {
+        if (item.lastWatchedAt > existing[0].lastWatchedAt) {
+          await db
+            .update(watchHistory)
+            .set({
+              watchedSeconds: item.watchedSeconds,
+              progress: item.progress,
+              lastWatchedAt: item.lastWatchedAt,
+            })
+            .where(eq(watchHistory.id, existing[0].id));
+        }
+        await db.delete(watchHistory).where(eq(watchHistory.id, item.id));
+      } else {
+        await db
+          .update(watchHistory)
+          .set({ userId })
+          .where(eq(watchHistory.id, item.id));
+      }
+    }
   }
 }
 

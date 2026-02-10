@@ -2,7 +2,7 @@ import { useParams, Link, useLocation } from "wouter";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { ArrowLeft, X } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getSessionId } from "@/lib/session";
+import { getSessionId, getAuthHeaders } from "@/lib/session";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
 declare global {
@@ -58,9 +58,8 @@ export default function Watch() {
   const { data: nextEpisode, isLoading: episodeLoading, isFetched: episodeFetched } = useQuery<NextEpisode | null>({
     queryKey: [`/api/series/${id}/next-episode`, sessionId],
     queryFn: async () => {
-      const res = await fetch(`/api/series/${id}/next-episode`, {
-        headers: { "x-session-id": sessionId },
-      });
+      const headers = await getAuthHeaders();
+      const res = await fetch(`/api/series/${id}/next-episode`, { headers });
       if (!res.ok) return null;
       return res.json();
     },
@@ -90,9 +89,10 @@ export default function Watch() {
     
     try {
       const sid = getSessionId();
+      const authHeaders = await getAuthHeaders();
       await fetch("/api/watch-progress", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...authHeaders },
         body: JSON.stringify({
           sessionId: sid,
           mediaId,

@@ -1,14 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { createClient } from "@supabase/supabase-js";
 import { storage } from "./storage";
-
-// Supabase Admin client for server-side operations
-const supabaseUrl = process.env.VITE_SUPABASE_URL || "";
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
-const supabaseAdmin = supabaseUrl && supabaseServiceKey 
-  ? createClient(supabaseUrl, supabaseServiceKey, { auth: { persistSession: false } })
-  : null;
+import { supabaseAdmin, getUserIdFromToken } from "./supabase";
 
 // Cleeng API configuration
 const CLEENG_SANDBOX = process.env.CLEENG_SANDBOX === "true";
@@ -615,15 +608,15 @@ export async function registerRoutes(
   app.get("/api/content/hero", async (req, res) => {
     try {
       const sessionId = req.headers["x-session-id"] as string;
+      const userId = await getUserIdFromToken(req.headers.authorization as string);
       const heroItems = await storage.getHeroItems();
       
-      // Prefetch next episode data for series items
       const heroItemsWithNextEpisode = await Promise.all(
         heroItems.map(async (item) => {
           if (item.contentType === "Series") {
             try {
-              const nextEpisode = sessionId 
-                ? await storage.getNextEpisodeToWatch(sessionId, item.id)
+              const nextEpisode = (sessionId || userId)
+                ? await storage.getNextEpisodeToWatch(sessionId || "", item.id, userId || undefined)
                 : await storage.getFirstEpisode(item.id);
               return { ...item, nextEpisode };
             } catch {
@@ -634,8 +627,7 @@ export async function registerRoutes(
         })
       );
       
-      // Cache for 60 seconds (content refreshes every 60s on server)
-      res.set("Cache-Control", "public, max-age=60");
+      res.set("Cache-Control", "private, max-age=30");
       res.json(heroItemsWithNextEpisode);
     } catch (error) {
       res.status(500).json({ error: "Failed to fetch hero items" });
@@ -678,9 +670,9 @@ export async function registerRoutes(
     try {
       const { seriesId } = req.params;
       const sessionId = req.headers["x-session-id"] as string;
+      const userId = await getUserIdFromToken(req.headers.authorization as string);
       
-      if (!sessionId) {
-        // If no session, return first episode
+      if (!sessionId && !userId) {
         const episodes = await storage.getSeriesEpisodes(seriesId);
         if (episodes.length > 0) {
           const firstEpisode = episodes.sort((a, b) => {
@@ -697,7 +689,7 @@ export async function registerRoutes(
         return res.json(null);
       }
       
-      const nextEpisode = await storage.getNextEpisodeToWatch(sessionId, seriesId);
+      const nextEpisode = await storage.getNextEpisodeToWatch(sessionId || "", seriesId, userId || undefined);
       res.json(nextEpisode);
     } catch (error) {
       console.error("Error fetching next episode:", error);
@@ -732,6 +724,7 @@ export async function registerRoutes(
   app.post("/api/watch-progress", async (req, res) => {
     try {
       const { sessionId, mediaId, title, posterImage, duration, watchedSeconds, category } = req.body;
+      const userId = await getUserIdFromToken(req.headers.authorization as string);
       
       if (!sessionId || !mediaId || !title || duration === undefined || watchedSeconds === undefined) {
         return res.status(400).json({ error: "Missing required fields" });
@@ -751,7 +744,8 @@ export async function registerRoutes(
         posterImage || "",
         validDuration,
         validWatchedSeconds,
-        category
+        category,
+        userId || undefined
       );
       
       res.json(result);
@@ -773,11 +767,11 @@ export async function registerRoutes(
     }
   });
 
-  // Get continue watching items
   app.get("/api/continue-watching/:sessionId", async (req, res) => {
     try {
       const { sessionId } = req.params;
-      const items = await storage.getContinueWatching(sessionId);
+      const userId = await getUserIdFromToken(req.headers.authorization as string);
+      const items = await storage.getContinueWatching(sessionId, userId || undefined);
       res.json(items);
     } catch (error) {
       console.error("Error fetching continue watching:", error);
@@ -785,11 +779,11 @@ export async function registerRoutes(
     }
   });
 
-  // Remove item from continue watching
   app.delete("/api/continue-watching/:sessionId/:mediaId", async (req, res) => {
     try {
       const { sessionId, mediaId } = req.params;
-      await storage.removeFromContinueWatching(sessionId, mediaId);
+      const userId = await getUserIdFromToken(req.headers.authorization as string);
+      await storage.removeFromContinueWatching(sessionId, mediaId, userId || undefined);
       res.json({ success: true });
     } catch (error) {
       console.error("Error removing from continue watching:", error);
@@ -812,7 +806,23 @@ export async function registerRoutes(
     }
   });
 
-  // Get episodes for a series
+  app.post("/api/migrate-watch-history", async (req, res) => {
+    try {
+      const userId = await getUserIdFromToken(req.headers.authorization as string);
+      const { sessionId } = req.body;
+      
+      if (!userId || !sessionId) {
+        return res.status(400).json({ error: "Missing auth or session" });
+      }
+      
+      await storage.migrateSessionToUser(sessionId, userId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error migrating watch history:", error);
+      res.status(500).json({ error: "Failed to migrate watch history" });
+    }
+  });
+
   app.get("/api/series/:seriesId/episodes", async (req, res) => {
     try {
       const { seriesId } = req.params;

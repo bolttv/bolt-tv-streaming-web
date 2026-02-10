@@ -6,7 +6,7 @@ import ContinueWatchingCard from "@/components/ContinueWatchingCard";
 import Footer from "@/components/Footer";
 import { HomePageSkeleton } from "@/components/SkeletonLoaders";
 import { useQuery } from "@tanstack/react-query";
-import { getSessionId } from "@/lib/session";
+import { getSessionId, getAuthHeaders } from "@/lib/session";
 
 interface HeroItem {
   id: string;
@@ -63,9 +63,8 @@ export default function Home() {
   const { data: heroItems = [], isLoading: heroLoading } = useQuery<HeroItem[]>({
     queryKey: ["/api/content/hero", sessionId],
     queryFn: async () => {
-      const res = await fetch("/api/content/hero", {
-        headers: { "x-session-id": sessionId },
-      });
+      const headers = await getAuthHeaders();
+      const res = await fetch("/api/content/hero", { headers });
       if (!res.ok) throw new Error("Failed to fetch hero items");
       return res.json();
     },
@@ -82,7 +81,8 @@ export default function Home() {
   const { data: continueWatching = [] } = useQuery<ContinueWatchingItem[]>({
     queryKey: ["/api/continue-watching", sessionId],
     queryFn: async () => {
-      const res = await fetch(`/api/continue-watching/${sessionId}`);
+      const headers = await getAuthHeaders();
+      const res = await fetch(`/api/continue-watching/${sessionId}`, { headers });
       if (!res.ok) return [];
       return res.json();
     },
@@ -92,7 +92,8 @@ export default function Home() {
   const { data: personalizedRecs = [] } = useQuery<RowItem[]>({
     queryKey: ["/api/recommendations", sessionId],
     queryFn: async () => {
-      const res = await fetch(`/api/recommendations/${sessionId}`);
+      const headers = await getAuthHeaders();
+      const res = await fetch(`/api/recommendations/${sessionId}`, { headers });
       if (!res.ok) return [];
       return res.json();
     },

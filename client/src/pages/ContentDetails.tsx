@@ -6,6 +6,7 @@ import PosterCard from "@/components/PosterCard";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
+import { getAuthHeaders } from "@/lib/session";
 
 type ContentType = "Trailer" | "Episode" | "Series" | "Movie" | "Documentary";
 
@@ -97,9 +98,8 @@ export default function ContentDetails() {
   const { data: nextEpisode, isFetched: episodeFetched } = useQuery<NextEpisode | null>({
     queryKey: [`/api/series/${id}/next-episode`, getSessionId()],
     queryFn: async () => {
-      const response = await fetch(`/api/series/${id}/next-episode`, {
-        headers: { "x-session-id": getSessionId() }
-      });
+      const headers = await getAuthHeaders();
+      const response = await fetch(`/api/series/${id}/next-episode`, { headers });
       if (!response.ok) return null;
       return response.json();
     },
@@ -108,17 +108,13 @@ export default function ContentDetails() {
 
   const isSeries = content?.contentType === "Series";
   const isSingleContent = content?.contentType === "Movie" || content?.contentType === "Documentary" || content?.contentType === "Episode";
-  const episodeUnavailable = isSeries && episodeFetched && !nextEpisode;
-  
   const watchButtonText = isSingleContent 
     ? "Watch Now" 
     : isSeries && nextEpisode 
       ? `Watch S${nextEpisode.seasonNumber} E${nextEpisode.episodeNumber}`
-      : episodeUnavailable
-        ? "Unavailable"
-        : isSeries 
-          ? "Watch S1 E1"
-          : "Watch Now";
+      : isSeries 
+        ? "Watch S1 E1"
+        : "Watch Now";
   
   const watchMediaId = isSeries && nextEpisode ? nextEpisode.mediaId : (isSeries ? null : id);
 
