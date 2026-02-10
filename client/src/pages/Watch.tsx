@@ -41,7 +41,6 @@ export default function Watch() {
   const playerInstanceRef = useRef<any>(null);
   const lastProgressUpdateRef = useRef<number>(0);
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const hasTriggeredFullscreenRef = useRef(false);
   const playerLibraryUrlRef = useRef<string>(DEFAULT_PLAYER_LIBRARY_URL);
 
   const { data: content, isLoading, error: contentError } = useQuery<Content>({
@@ -214,9 +213,6 @@ export default function Watch() {
         const player = window.jwplayer(container);
         playerInstanceRef.current = player;
 
-        const isMobileDevice = window.matchMedia("(max-width: 768px)").matches || 
-          /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
         player.setup({
           playlist: `https://cdn.jwplayer.com/v2/media/${mediaId}`,
           width: "100%",
@@ -225,7 +221,7 @@ export default function Watch() {
           mute: false,
           controls: true,
           stretching: "uniform",
-          playsinline: !isMobileDevice,
+          playsinline: true,
         });
 
         player.on("ready", () => {
@@ -245,25 +241,6 @@ export default function Watch() {
         });
 
         player.on("play", () => {
-          if (!hasTriggeredFullscreenRef.current) {
-            hasTriggeredFullscreenRef.current = true;
-            const isMobile = window.matchMedia("(max-width: 768px)").matches || 
-              /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-            if (isMobile) {
-              try {
-                if (player.setFullscreen) {
-                  player.setFullscreen(true);
-                } else if (playerContainerRef.current) {
-                  const el = playerContainerRef.current as any;
-                  const requestFs = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen;
-                  if (requestFs) requestFs.call(el);
-                }
-              } catch (e) {
-                // Fullscreen may be blocked by browser policy
-              }
-            }
-          }
-
           if (progressIntervalRef.current) {
             clearInterval(progressIntervalRef.current);
           }
