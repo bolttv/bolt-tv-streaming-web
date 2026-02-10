@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { useEffect, useState } from "react";
-import { Play, ChevronDown, Tv, Smartphone, Download, Users, Shield, Zap, Check } from "lucide-react";
+import { Play, ChevronDown, ChevronRight, Tv, Smartphone, Download, Users, Shield, Zap, Check } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import Footer from "@/components/Footer";
 
@@ -121,13 +121,13 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      <section className="relative min-h-[90vh] md:min-h-screen flex items-center justify-center overflow-hidden pt-20">
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute inset-0 flex items-start justify-center pt-8 md:pt-4">
-            <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2 md:gap-3 px-4 w-full max-w-[1600px] perspective-1000">
+          <div className="absolute inset-0">
+            <div className="grid grid-cols-5 md:grid-cols-7 lg:grid-cols-10 gap-1 md:gap-1.5 w-full h-full">
               {(() => {
                 const posterSources = allPosters.length > 0
-                  ? allPosters.slice(0, 16).map(p => ({
+                  ? [...allPosters.slice(0, 20), ...allPosters.slice(0, 10)].map(p => ({
                       img: p.verticalPosterImage || p.posterImage,
                       title: p.title
                     }))
@@ -148,54 +148,69 @@ export default function LandingPage() {
                       { img: "/assets/poster-comedy_2.jpg", title: "Comedy" },
                       { img: "/assets/poster-action_3.jpg", title: "Action" },
                       { img: "/assets/poster-doc_3.jpg", title: "Documentary" },
+                      { img: "/assets/poster-grit-bo.png", title: "Grit" },
+                      { img: "/assets/poster-life-on-ice.png", title: "Life on Ice" },
+                      { img: "/assets/poster-full-throttle.png", title: "Full Throttle" },
+                      { img: "/assets/poster-rookie.png", title: "Rookie" },
+                      { img: "/assets/poster-surfing.png", title: "Surfing" },
+                      { img: "/assets/poster-traviesa.png", title: "Traviesa" },
+                      { img: "/assets/poster-dtm.png", title: "DTM" },
+                      { img: "/assets/poster-grit-arch.png", title: "Grit" },
+                      { img: "/assets/poster-action_1.jpg", title: "Action" },
+                      { img: "/assets/poster-doc_1.jpg", title: "Documentary" },
+                      { img: "/assets/poster-comedy_1.jpg", title: "Comedy" },
+                      { img: "/assets/poster-action_2.jpg", title: "Action" },
+                      { img: "/assets/poster-doc_2.jpg", title: "Documentary" },
+                      { img: "/assets/poster-comedy_2.jpg", title: "Comedy" },
                     ];
-                return posterSources.map((poster, i) => {
-                  const rotation = (i % 3 === 0) ? "-3deg" : (i % 3 === 1) ? "2deg" : "-1deg";
-                  const yOffset = (i % 4) * 8;
-                  return (
-                    <div
-                      key={i}
-                      className="relative overflow-hidden rounded-lg md:rounded-xl shadow-2xl transition-transform duration-700"
-                      style={{
-                        transform: `rotate(${rotation}) translateY(${yOffset}px)`,
-                        aspectRatio: "2/3",
-                      }}
-                    >
-                      <img
-                        src={poster.img}
-                        alt={poster.title}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                    </div>
-                  );
-                });
+                return posterSources.map((poster, i) => (
+                  <div
+                    key={i}
+                    className="relative overflow-hidden rounded-md md:rounded-lg"
+                    style={{ aspectRatio: "2/3" }}
+                  >
+                    <img
+                      src={poster.img}
+                      alt={poster.title}
+                      className="w-full h-full object-cover"
+                      loading={i < 10 ? "eager" : "lazy"}
+                    />
+                  </div>
+                ));
               })()}
             </div>
           </div>
-          <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/70 to-black" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/75 to-black" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-black/30" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(124,58,237,0.15)_0%,transparent_70%)]" />
         </div>
 
-        <div className="relative z-10 text-center px-4 max-w-4xl mx-auto mt-16 md:mt-24">
-          <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-display font-black leading-tight tracking-tight mb-4 md:mb-6">
-            Hit Movies, Must-See TV, and Live Sports
+        <div className="relative z-10 text-center px-4 max-w-5xl mx-auto">
+          <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-display font-black leading-[0.95] tracking-tight mb-5 md:mb-8">
+            <span className="bg-gradient-to-r from-white via-white to-gray-200 bg-clip-text text-transparent drop-shadow-2xl">
+              Athlete Stories
+            </span>
+            <br />
+            <span className="bg-gradient-to-r from-purple-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
+              Live Here
+            </span>
           </h1>
-          <p className="text-gray-300 text-base md:text-xl max-w-2xl mx-auto mb-8 md:mb-10 leading-relaxed">
-            Choose a plan to start streaming your favorite shows, movies, and exclusive sports content.
+          <p className="text-gray-300 text-base md:text-xl max-w-2xl mx-auto mb-4 leading-relaxed">
+            Exclusive sports documentaries, original series, and live events. Stream anywhere, anytime.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/subscribe">
-              <button
-                className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white font-bold px-8 md:px-10 py-3.5 md:py-4 rounded text-base md:text-lg transition shadow-lg shadow-purple-500/25 cursor-pointer uppercase tracking-wide"
-                data-testid="button-hero-subscribe"
-              >
-                <Play className="w-5 h-5 fill-current" />
-                Get Started
-              </button>
-            </Link>
-          </div>
-          <p className="text-gray-500 text-xs md:text-sm mt-4">
+          <p className="text-gray-400 text-sm md:text-base mb-8 md:mb-10">
+            Starting at $7.99/mo. Cancel anytime.
+          </p>
+          <Link href="/subscribe">
+            <button
+              className="inline-flex items-center gap-2.5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold px-10 md:px-14 py-4 md:py-5 rounded-md text-base md:text-lg transition-all shadow-2xl shadow-purple-500/30 cursor-pointer uppercase tracking-wider"
+              data-testid="button-hero-subscribe"
+            >
+              Get Started
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </Link>
+          <p className="text-gray-500 text-xs md:text-sm mt-5">
             Already have an account?{" "}
             <Link href="/login">
               <span className="text-purple-400 hover:text-purple-300 cursor-pointer underline" data-testid="button-hero-signin">
