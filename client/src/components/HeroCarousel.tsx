@@ -112,7 +112,7 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
 
                 {/* New Episode Banner - Mobile */}
                 {item.isNew && (
-                  <span className="text-blue-400 font-bold text-xs uppercase tracking-wider sm:hidden">New Episode Available</span>
+                  <span className="text-[#A50104] font-bold text-xs uppercase tracking-wider sm:hidden">New Episode Available</span>
                 )}
 
                 {/* Metadata Line */}
@@ -121,7 +121,7 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
                   {item.seasonCount && <span>{item.seasonCount} Seasons</span>}
                   <span className="w-1 h-1 bg-gray-400 rounded-full" />
                   <span>{item.genres[0]}</span>
-                  {item.isNew && <span className="text-blue-400 font-bold uppercase tracking-wider hidden sm:inline">New Episode</span>}
+                  {item.isNew && <span className="text-[#A50104] font-bold uppercase tracking-wider hidden sm:inline">New Episode</span>}
                 </div>
 
                 <p className="text-gray-300 text-xs sm:text-sm md:text-lg line-clamp-2 leading-relaxed max-w-xs sm:max-w-lg drop-shadow-md px-4 sm:px-0">

@@ -40,8 +40,8 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between py-5 md:py-6 text-left cursor-pointer group"
       >
-        <span className="text-base md:text-lg font-semibold text-white pr-4 group-hover:text-purple-300 transition-colors">{question}</span>
-        <ChevronDown className={`w-5 h-5 text-purple-400 shrink-0 transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
+        <span className="text-base md:text-lg font-semibold text-white pr-4 group-hover:text-[#EAEAEA] transition-colors">{question}</span>
+        <ChevronDown className={`w-5 h-5 text-[#A50104] shrink-0 transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
       </button>
       <div className={`overflow-hidden transition-all duration-300 ${open ? "max-h-96 pb-5" : "max-h-0"}`}>
         <p className="text-gray-400 text-sm md:text-base leading-relaxed">{answer}</p>
@@ -111,7 +111,7 @@ export default function LandingPage() {
             </Link>
             <Link href="/subscribe">
               <button
-                className="bg-purple-600 hover:bg-purple-700 text-white font-bold px-5 md:px-6 py-2 rounded text-sm transition cursor-pointer uppercase tracking-wide"
+                className="bg-[#A50104] hover:bg-[#8a0103] text-white font-bold px-5 md:px-6 py-2 rounded text-sm transition cursor-pointer uppercase tracking-wide"
                 data-testid="button-landing-subscribe"
               >
                 Get Started
@@ -182,7 +182,7 @@ export default function LandingPage() {
           </div>
           <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/75 to-black" />
           <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-black/30" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(124,58,237,0.15)_0%,transparent_70%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(165,1,4,0.12)_0%,rgba(74,25,66,0.08)_40%,transparent_70%)]" />
         </div>
 
         <div className="relative z-10 text-center px-4 max-w-5xl mx-auto">
@@ -191,7 +191,7 @@ export default function LandingPage() {
               Athlete Stories
             </span>
             <br />
-            <span className="bg-gradient-to-r from-purple-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-[#A50104] via-[#d4232a] to-[#A50104] bg-clip-text text-transparent">
               Live Here
             </span>
           </h1>
@@ -203,7 +203,7 @@ export default function LandingPage() {
           </p>
           <Link href="/subscribe">
             <button
-              className="inline-flex items-center gap-2.5 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-bold px-10 md:px-14 py-4 md:py-5 rounded-md text-base md:text-lg transition-all shadow-2xl shadow-purple-500/30 cursor-pointer uppercase tracking-wider"
+              className="inline-flex items-center gap-2.5 bg-[#A50104] hover:bg-[#c41418] text-white font-bold px-10 md:px-14 py-4 md:py-5 rounded-md text-base md:text-lg transition-all shadow-2xl shadow-[#A50104]/30 cursor-pointer uppercase tracking-wider"
               data-testid="button-hero-subscribe"
             >
               Get Started
@@ -213,7 +213,7 @@ export default function LandingPage() {
           <p className="text-gray-500 text-xs md:text-sm mt-5">
             Already have an account?{" "}
             <Link href="/login">
-              <span className="text-purple-400 hover:text-purple-300 cursor-pointer underline" data-testid="button-hero-signin">
+              <span className="text-[#EAEAEA]/70 hover:text-[#EAEAEA] cursor-pointer underline" data-testid="button-hero-signin">
                 Sign In
               </span>
             </Link>
@@ -291,11 +291,11 @@ export default function LandingPage() {
             ].map((feature, i) => (
               <div
                 key={i}
-                className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6 md:p-8 hover:bg-white/[0.06] hover:border-purple-500/20 transition-all duration-300 group"
+                className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6 md:p-8 hover:bg-[#2E1C2B]/30 hover:border-[#A50104]/20 transition-all duration-300 group"
                 data-testid={`card-feature-${i}`}
               >
-                <div className="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 group-hover:bg-purple-500/20 transition-all">
-                  <feature.icon className="w-6 h-6 text-purple-400" />
+                <div className="w-12 h-12 bg-[#A50104]/10 rounded-xl flex items-center justify-center mb-5 group-hover:scale-110 group-hover:bg-[#A50104]/20 transition-all">
+                  <feature.icon className="w-6 h-6 text-[#A50104]" />
                 </div>
                 <h3 className="text-lg font-bold mb-2">{feature.title}</h3>
                 <p className="text-gray-400 text-sm leading-relaxed">{feature.desc}</p>
@@ -306,7 +306,7 @@ export default function LandingPage() {
       </section>
 
       <section className="relative py-20 md:py-28 px-4" data-testid="section-pricing">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/5 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#2E1C2B]/10 to-transparent" />
         <div className="relative max-w-5xl mx-auto">
           <h2 className="text-3xl md:text-5xl font-display font-black text-center mb-4">
             Pick a Plan. Cancel Anytime.
@@ -324,14 +324,14 @@ export default function LandingPage() {
                     key={offer.id}
                     className={`relative rounded-2xl p-6 md:p-8 transition-all duration-300 ${
                       isPopular
-                        ? "bg-white text-black border-2 border-purple-500 scale-[1.02] shadow-xl shadow-purple-500/10"
+                        ? "bg-white text-black border-2 border-[#A50104] scale-[1.02] shadow-xl shadow-[#A50104]/10"
                         : "bg-white/[0.04] border border-white/10 hover:border-white/20"
                     }`}
                     data-testid={`card-plan-${i}`}
                   >
                     {isPopular && (
                       <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                        <span className="bg-purple-600 text-white text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider">
+                        <span className="bg-[#A50104] text-white text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider">
                           Most Popular
                         </span>
                       </div>
@@ -359,7 +359,7 @@ export default function LandingPage() {
                       <button
                         className={`w-full py-3 rounded-lg font-bold text-sm uppercase tracking-wide transition cursor-pointer ${
                           isPopular
-                            ? "bg-purple-600 hover:bg-purple-700 text-white"
+                            ? "bg-[#A50104] hover:bg-[#c41418] text-white"
                             : "bg-white/10 hover:bg-white/20 text-white border border-white/20"
                         }`}
                         data-testid={`button-choose-plan-${i}`}
@@ -393,14 +393,14 @@ export default function LandingPage() {
                   key={i}
                   className={`relative rounded-2xl p-6 md:p-8 transition-all duration-300 ${
                     plan.popular
-                      ? "bg-white text-black border-2 border-purple-500 shadow-xl shadow-purple-500/10"
+                      ? "bg-white text-black border-2 border-[#A50104] shadow-xl shadow-[#A50104]/10"
                       : "bg-white/[0.04] border border-white/10 hover:border-white/20"
                   }`}
                   data-testid={`card-plan-${i}`}
                 >
                   {plan.popular && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <span className="bg-purple-600 text-white text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider">
+                      <span className="bg-[#A50104] text-white text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider">
                         Most Popular
                       </span>
                     </div>
@@ -414,7 +414,7 @@ export default function LandingPage() {
                   <div className="space-y-3 mb-6">
                     {plan.features.map((f, j) => (
                       <div key={j} className="flex items-start gap-2">
-                        <Check className={`w-4 h-4 mt-0.5 shrink-0 ${plan.popular ? "text-purple-600" : "text-purple-400"}`} />
+                        <Check className={`w-4 h-4 mt-0.5 shrink-0 ${plan.popular ? "text-[#A50104]" : "text-[#A50104]"}`} />
                         <span className={`text-sm ${plan.popular ? "text-gray-700" : "text-gray-300"}`}>{f}</span>
                       </div>
                     ))}
@@ -429,7 +429,7 @@ export default function LandingPage() {
                     <button
                       className={`w-full py-3 rounded-lg font-bold text-sm uppercase tracking-wide transition cursor-pointer ${
                         plan.popular
-                          ? "bg-purple-600 hover:bg-purple-700 text-white"
+                          ? "bg-[#A50104] hover:bg-[#c41418] text-white"
                           : "bg-white/10 hover:bg-white/20 text-white border border-white/20"
                       }`}
                       data-testid={`button-choose-plan-${i}`}
@@ -488,7 +488,7 @@ export default function LandingPage() {
           </p>
           <Link href="/subscribe">
             <button
-              className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white font-bold px-10 py-4 rounded text-lg transition shadow-lg shadow-purple-500/25 mx-auto cursor-pointer uppercase tracking-wide"
+              className="flex items-center gap-2 bg-[#A50104] hover:bg-[#c41418] text-white font-bold px-10 py-4 rounded text-lg transition shadow-lg shadow-[#A50104]/25 mx-auto cursor-pointer uppercase tracking-wide"
               data-testid="button-cta-subscribe"
             >
               <Play className="w-5 h-5 fill-current" />
@@ -514,7 +514,7 @@ function PlanFeatures({ isPopular, tier }: { isPopular: boolean; tier: number })
     <div className="space-y-3">
       {features.map((f, j) => (
         <div key={j} className="flex items-start gap-2">
-          <Check className={`w-4 h-4 mt-0.5 shrink-0 ${isPopular ? "text-purple-600" : "text-purple-400"}`} />
+          <Check className={`w-4 h-4 mt-0.5 shrink-0 ${isPopular ? "text-[#A50104]" : "text-[#A50104]"}`} />
           <span className={`text-sm ${isPopular ? "text-gray-700" : "text-gray-300"}`}>{f}</span>
         </div>
       ))}
@@ -551,7 +551,7 @@ function ShowcaseSection({
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
               <div className="absolute bottom-0 left-0 right-0 p-5 md:p-8">
-                <span className="text-purple-400 text-xs font-bold uppercase tracking-wider mb-2 block">
+                <span className="text-[#A50104] text-xs font-bold uppercase tracking-wider mb-2 block">
                   {heroItem.contentType || "Featured"}
                 </span>
                 <h3 className="text-xl md:text-3xl font-bold">{heroItem.title}</h3>
@@ -657,7 +657,7 @@ function ShowcaseSection({
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-5 md:p-8">
-              <span className="text-purple-400 text-xs font-bold uppercase tracking-wider mb-2 block">
+              <span className="text-[#A50104] text-xs font-bold uppercase tracking-wider mb-2 block">
                 {heroItem.contentType || "Featured"}
               </span>
               <h3 className="text-xl md:text-3xl font-bold">{heroItem.title}</h3>

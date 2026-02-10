@@ -195,7 +195,7 @@ export default function Subscribe() {
         </Link>
         
         {step !== "plan" && (
-          <Link href="/login" className="text-purple-400 hover:text-purple-300 font-medium">
+          <Link href="/login" className="text-[#A50104] hover:text-[#c41418] font-medium">
             Sign In
           </Link>
         )}
@@ -229,7 +229,7 @@ export default function Subscribe() {
 
             {loadingOffers ? (
               <div className="flex justify-center py-16">
-                <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+                <Loader2 className="w-8 h-8 animate-spin text-[#A50104]" />
               </div>
             ) : plans.length > 0 && (
               <>
@@ -239,7 +239,7 @@ export default function Subscribe() {
                       onClick={() => setBillingPeriod("month")}
                       className={`px-6 py-2 rounded-full text-sm font-medium transition ${
                         billingPeriod === "month" 
-                          ? "bg-purple-600 text-white" 
+                          ? "bg-[#A50104] text-white" 
                           : "text-gray-400 hover:text-white"
                       }`}
                       data-testid="button-monthly"
@@ -250,7 +250,7 @@ export default function Subscribe() {
                       onClick={() => setBillingPeriod("year")}
                       className={`px-6 py-2 rounded-full text-sm font-medium transition ${
                         billingPeriod === "year" 
-                          ? "bg-purple-600 text-white" 
+                          ? "bg-[#A50104] text-white" 
                           : "text-gray-400 hover:text-white"
                       }`}
                       data-testid="button-yearly"
@@ -271,14 +271,14 @@ export default function Subscribe() {
                       onClick={() => setSelectedPlan(plan.id)}
                       className={`relative p-6 rounded-2xl cursor-pointer transition-all ${
                         selectedPlan === plan.id
-                          ? "bg-gradient-to-br from-purple-900/60 to-blue-900/60 border-2 border-purple-500 scale-105"
+                          ? "bg-gradient-to-br from-[#2E1C2B]/80 to-[#050404]/80 border-2 border-[#A50104] scale-105"
                           : "bg-white/5 border border-white/10 hover:border-white/30"
                       }`}
                       data-testid={`card-plan-${plan.id}`}
                     >
                       {plan.badge && (
                         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                          <span className="bg-gradient-to-r from-purple-500 to-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                          <span className="bg-gradient-to-r from-[#A50104] to-[#4A1942] text-white text-xs font-bold px-3 py-1 rounded-full">
                             {plan.badge}
                           </span>
                         </div>
@@ -303,7 +303,7 @@ export default function Subscribe() {
 
                       <div className={`w-6 h-6 rounded-full border-2 mx-auto ${
                         selectedPlan === plan.id 
-                          ? "border-purple-500 bg-purple-500" 
+                          ? "border-[#A50104] bg-[#A50104]" 
                           : "border-white/30"
                       }`}>
                         {selectedPlan === plan.id && (
@@ -318,7 +318,7 @@ export default function Subscribe() {
                   <button
                     onClick={handleContinue}
                     disabled={!selectedPlan}
-                    className="px-12 py-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-600 disabled:to-gray-600 disabled:cursor-not-allowed text-white font-bold text-lg rounded-full transition"
+                    className="px-12 py-4 bg-gradient-to-r from-[#A50104] to-[#4A1942] hover:from-[#8a0103] hover:to-[#2E1C2B] disabled:from-[#A50104]/40 disabled:to-[#4A1942]/40 disabled:cursor-not-allowed text-white font-bold text-lg rounded-full transition"
                     data-testid="button-continue"
                   >
                     Continue
@@ -334,7 +334,7 @@ export default function Subscribe() {
           <div className="max-w-md mx-auto">
             <button
               onClick={handleBack}
-              className="flex items-center gap-2 text-purple-400 hover:text-purple-300 transition mb-8"
+              className="flex items-center gap-2 text-[#A50104] hover:text-[#c41418] transition mb-8"
               data-testid="button-back-step"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -353,7 +353,7 @@ export default function Subscribe() {
               </p>
             </div>
 
-            <div className="bg-gradient-to-br from-purple-900/40 to-blue-900/40 rounded-2xl p-8 backdrop-blur-sm border border-white/10">
+            <div className="bg-gradient-to-br from-[#2E1C2B]/60 to-[#050404]/60 rounded-2xl p-8 backdrop-blur-sm border border-white/10">
               <form onSubmit={handleSendVerification}>
                 {error && (
                   <div className="flex items-center gap-2 bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg mb-6" data-testid="error-message">
@@ -374,7 +374,7 @@ export default function Subscribe() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="you@example.com"
-                      className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#A50104] focus:border-transparent"
                       disabled={loading}
                       data-testid="input-email"
                     />
@@ -384,7 +384,7 @@ export default function Subscribe() {
                 <button
                   type="submit"
                   disabled={loading || !email.trim()}
-                  className="w-full py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-600 disabled:to-gray-600 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
+                  className="w-full py-3 bg-gradient-to-r from-[#A50104] to-[#4A1942] hover:from-[#8a0103] hover:to-[#2E1C2B] disabled:from-[#A50104]/40 disabled:to-[#4A1942]/40 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
                   data-testid="button-continue-email"
                 >
                   {loading ? (
@@ -401,7 +401,7 @@ export default function Subscribe() {
 
             <p className="text-center mt-6 text-gray-400 text-sm">
               Already have an account?{" "}
-              <Link href="/login" className="text-purple-400 hover:text-purple-300 font-medium">
+              <Link href="/login" className="text-[#A50104] hover:text-[#c41418] font-medium">
                 Sign In
               </Link>
             </p>
@@ -413,14 +413,14 @@ export default function Subscribe() {
           <div className="max-w-md mx-auto">
             <button
               onClick={handleBack}
-              className="flex items-center gap-2 text-purple-400 hover:text-purple-300 transition mb-8"
+              className="flex items-center gap-2 text-[#A50104] hover:text-[#c41418] transition mb-8"
               data-testid="button-back-step"
             >
               <ArrowLeft className="w-4 h-4" />
               Back
             </button>
 
-            <div className="bg-gradient-to-br from-purple-900/40 to-blue-900/40 rounded-2xl p-8 backdrop-blur-sm border border-white/10 text-center">
+            <div className="bg-gradient-to-br from-[#2E1C2B]/60 to-[#050404]/60 rounded-2xl p-8 backdrop-blur-sm border border-white/10 text-center">
               <div className="mb-6">
                 <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                   <CheckCircle2 className="w-8 h-8 text-green-400" />
@@ -455,7 +455,7 @@ export default function Subscribe() {
               <button
                 onClick={handleResend}
                 disabled={loading}
-                className="text-purple-400 hover:text-purple-300 font-medium transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mx-auto"
+                className="text-[#A50104] hover:text-[#c41418] font-medium transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mx-auto"
                 data-testid="button-resend"
               >
                 {loading ? (

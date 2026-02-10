@@ -63,7 +63,7 @@ export default function PosterCard({ item, width = "w-[160px] md:w-[220px]", isW
 
           {/* Labels */}
           {item.isNewEpisode && (
-            <div className="absolute top-2 left-2 bg-blue-600 text-white text-[9px] md:text-[10px] font-bold px-1.5 py-0.5 rounded-sm uppercase tracking-wider shadow-sm">
+            <div className="absolute top-2 left-2 bg-[#A50104] text-white text-[9px] md:text-[10px] font-bold px-1.5 py-0.5 rounded-sm uppercase tracking-wider shadow-sm">
               New Episode
             </div>
           )}
@@ -77,7 +77,7 @@ export default function PosterCard({ item, width = "w-[160px] md:w-[220px]", isW
           {item.continueProgress && (
             <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
               <div 
-                className="h-full bg-blue-500" 
+                className="h-full bg-[#A50104]" 
                 style={{ width: `${item.continueProgress * 100}%` }}
               />
             </div>

@@ -134,14 +134,14 @@ export default function CreateAccount() {
             </Link>
           </div>
 
-          <div className="bg-gradient-to-br from-purple-900/40 to-blue-900/40 rounded-2xl p-8 backdrop-blur-sm border border-white/10">
+          <div className="bg-gradient-to-br from-[#2E1C2B]/60 to-[#050404]/60 rounded-2xl p-8 backdrop-blur-sm border border-white/10">
             <form onSubmit={handleSubmit}>
               <h1 className="text-2xl font-bold text-center mb-2">Create Your Account</h1>
               <p className="text-gray-400 text-center mb-2">
                 You'll use this to watch on your favorite devices.
               </p>
               {user?.email && (
-                <p className="text-purple-400 text-center mb-6 text-sm">
+                <p className="text-[#A50104] text-center mb-6 text-sm">
                   {user.email}
                 </p>
               )}
@@ -166,7 +166,7 @@ export default function CreateAccount() {
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
                       placeholder="First"
-                      className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#A50104] focus:border-transparent"
                       disabled={submitting}
                       data-testid="input-firstname"
                     />
@@ -185,7 +185,7 @@ export default function CreateAccount() {
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
                       placeholder="Last"
-                      className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#A50104] focus:border-transparent"
                       disabled={submitting}
                       data-testid="input-lastname"
                     />
@@ -206,7 +206,7 @@ export default function CreateAccount() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter password"
-                    className="w-full pl-10 pr-12 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full pl-10 pr-12 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#A50104] focus:border-transparent"
                     disabled={submitting}
                     data-testid="input-password"
                   />
@@ -232,7 +232,7 @@ export default function CreateAccount() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Confirm password"
-                    className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#A50104] focus:border-transparent"
                     disabled={submitting}
                     data-testid="input-confirm-password"
                   />
@@ -242,7 +242,7 @@ export default function CreateAccount() {
               <button
                 type="submit"
                 disabled={submitting || !firstName.trim() || !lastName.trim() || !password || !confirmPassword}
-                className="w-full py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 disabled:from-gray-600 disabled:to-gray-600 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
+                className="w-full py-3 bg-gradient-to-r from-[#A50104] to-[#4A1942] hover:from-[#8a0103] hover:to-[#2E1C2B] disabled:from-[#A50104]/40 disabled:to-[#4A1942]/40 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
                 data-testid="button-create-account"
               >
                 {submitting ? (
@@ -257,16 +257,16 @@ export default function CreateAccount() {
 
               <p className="text-xs text-gray-500 text-center mt-6">
                 By selecting Create Account, you agree to our{" "}
-                <a href="#" className="text-purple-400 hover:underline">Terms of Use</a>
+                <a href="#" className="text-[#A50104] hover:underline">Terms of Use</a>
                 {" "}and acknowledge you have read our{" "}
-                <a href="#" className="text-purple-400 hover:underline">Privacy Policy</a>.
+                <a href="#" className="text-[#A50104] hover:underline">Privacy Policy</a>.
               </p>
             </form>
           </div>
 
           <p className="text-center mt-6 text-gray-400">
             Already have an account?{" "}
-            <Link href="/login" className="text-purple-400 hover:text-purple-300 font-medium">
+            <Link href="/login" className="text-[#A50104] hover:text-[#c41418] font-medium">
               Sign In
             </Link>
           </p>

@@ -7,33 +7,39 @@
   --font-sans: 'Inter', sans-serif;
   --font-display: 'Outfit', sans-serif;
 
-  --color-background: hsl(0 0% 0%);
-  --color-foreground: hsl(0 0% 98%);
+  --color-background: #050404;
+  --color-foreground: #EAEAEA;
 
-  --color-card: hsl(0 0% 0%);
-  --color-card-foreground: hsl(0 0% 98%);
+  --color-card: #050404;
+  --color-card-foreground: #EAEAEA;
 
-  --color-popover: hsl(0 0% 0%);
-  --color-popover-foreground: hsl(0 0% 98%);
+  --color-popover: #050404;
+  --color-popover-foreground: #EAEAEA;
 
-  --color-primary: hsl(0 0% 98%);
-  --color-primary-foreground: hsl(240 5.9% 10%);
+  --color-primary: #A50104;
+  --color-primary-foreground: #EAEAEA;
 
-  --color-secondary: hsl(240 3.7% 15.9%);
-  --color-secondary-foreground: hsl(0 0% 98%);
+  --color-secondary: #2E1C2B;
+  --color-secondary-foreground: #EAEAEA;
 
-  --color-muted: hsl(240 3.7% 15.9%);
-  --color-muted-foreground: hsl(240 5% 64.9%);
+  --color-muted: #2E1C2B;
+  --color-muted-foreground: #9a8a97;
 
-  --color-accent: hsl(240 3.7% 15.9%);
-  --color-accent-foreground: hsl(0 0% 98%);
+  --color-accent: #4A1942;
+  --color-accent-foreground: #EAEAEA;
 
-  --color-destructive: hsl(0 62.8% 30.6%);
-  --color-destructive-foreground: hsl(0 0% 98%);
+  --color-destructive: #A50104;
+  --color-destructive-foreground: #EAEAEA;
 
-  --color-border: hsl(240 3.7% 15.9%);
-  --color-input: hsl(240 3.7% 15.9%);
-  --color-ring: hsl(240 4.9% 83.9%);
+  --color-border: #2E1C2B;
+  --color-input: #2E1C2B;
+  --color-ring: #A50104;
+
+  --color-bolt-black: #050404;
+  --color-bolt-grey: #EAEAEA;
+  --color-bolt-purple: #4A1942;
+  --color-bolt-red: #A50104;
+  --color-bolt-violet: #2E1C2B;
 
   --radius: 0.5rem;
 }
@@ -44,7 +50,7 @@
 
 body {
   @apply bg-background text-foreground font-sans antialiased;
-  background-color: #000000; /* Pure OLED black */
+  background-color: #050404;
 }
 
 
