@@ -32,7 +32,7 @@ export default function CreateAccount() {
       if (pendingOfferId) {
         setLocation(`/checkout?offerId=${encodeURIComponent(pendingOfferId)}`);
       } else {
-        setLocation("/");
+        setLocation("/home");
       }
     }
   }, [isAuthenticated, authStep, isLoading, pendingOfferId, setLocation]);
@@ -91,7 +91,7 @@ export default function CreateAccount() {
       if (offer) {
         setLocation(`/checkout?offerId=${encodeURIComponent(offer)}`);
       } else {
-        setLocation("/");
+        setLocation("/home");
       }
     }
   };

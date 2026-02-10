@@ -191,7 +191,7 @@ export default function Subscribe() {
       <div className="p-4 md:p-8 flex justify-between items-center">
         <Link href="/" className="flex items-center gap-2 text-white/70 hover:text-white transition" data-testid="button-back">
           <ArrowLeft className="w-5 h-5" />
-          <span>Back</span>
+          <span>Back to Home</span>
         </Link>
         
         {step !== "plan" && (

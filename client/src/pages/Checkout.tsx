@@ -140,7 +140,7 @@ export default function Checkout() {
             }
           </p>
           <Link 
-            href="/"
+            href="/home"
             className="inline-flex items-center justify-center px-10 py-4 bg-purple-600 text-white rounded-lg font-semibold text-lg hover:bg-purple-700 transition-colors"
             data-testid="button-start-streaming"
           >

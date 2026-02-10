@@ -332,7 +332,7 @@ export default function Watch() {
     if (window.history.length > 1) {
       window.history.back();
     } else {
-      setLocation("/");
+      setLocation("/home");
     }
   };
 
@@ -350,7 +350,7 @@ export default function Watch() {
         <div className="fixed inset-0 flex flex-col items-center justify-center bg-black z-10">
           <div className="text-xl text-red-400 mb-4">Content not found</div>
           <p className="text-gray-400 mb-4">This video is no longer available.</p>
-          <Link href="/">
+          <Link href="/home">
             <button className="px-4 py-2 bg-white text-black rounded font-medium hover:bg-gray-200 transition">
               Go Home
             </button>

@@ -20,7 +20,7 @@ export default function Login() {
   const [submitting, setSubmitting] = useState(false);
   
   const searchParams = new URLSearchParams(window.location.search);
-  const returnTo = searchParams.get("returnTo") || "/";
+  const returnTo = searchParams.get("returnTo") || "/home";
 
   useEffect(() => {
     if (isAuthenticated && authStep === "authenticated" && !isLoading) {

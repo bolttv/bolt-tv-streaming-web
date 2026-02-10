@@ -41,15 +41,16 @@ export default function Navbar() {
 
   const handleSignOut = async () => {
     await logout();
+    setLocation("/");
   };
 
   
   const navLinks = [
-    { name: "Home", href: "/" },
-    { name: "Series", href: "/" },
-    { name: "Movies", href: "/" },
-    { name: "Docs", href: "/" },
-    { name: "Sports", href: "/" },
+    { name: "Home", href: "/home" },
+    { name: "Series", href: "/home" },
+    { name: "Movies", href: "/home" },
+    { name: "Docs", href: "/home" },
+    { name: "Sports", href: "/home" },
   ];
 
   return (
@@ -60,7 +61,7 @@ export default function Navbar() {
       )}
     >
       <div className="px-4 md:px-12 h-16 md:h-20 flex items-center justify-between relative">
-        <Link href="/" className="flex-shrink-0 z-10">
+        <Link href="/home" className="flex-shrink-0 z-10">
           <img 
             src="/assets/bolt-logo-white.png" 
             alt="Bolt Logo" 
@@ -139,11 +140,13 @@ export default function Navbar() {
             <Search className="w-5 h-5 md:w-6 md:h-6" />
           </button>
           
-          <Link href="/subscribe">
-            <button className="hidden md:block bg-white text-black font-bold px-4 py-1.5 rounded hover:bg-gray-200 transition text-sm whitespace-nowrap cursor-pointer" data-testid="button-nav-subscribe">
-              Subscribe
-            </button>
-          </Link>
+          {!isAuthenticated && (
+            <Link href="/subscribe">
+              <button className="hidden md:block bg-white text-black font-bold px-4 py-1.5 rounded hover:bg-gray-200 transition text-sm whitespace-nowrap cursor-pointer" data-testid="button-nav-subscribe">
+                Subscribe
+              </button>
+            </Link>
+          )}
           
           
           {isLoading ? (

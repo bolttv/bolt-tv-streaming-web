@@ -51,7 +51,7 @@ export default function SportCategory() {
 
       <main className="pt-24 px-4 md:px-12 pb-12">
         <div className="mb-8">
-          <Link href="/">
+          <Link href="/home">
             <button className="flex items-center gap-2 text-gray-400 hover:text-white transition mb-4" data-testid="button-back-home">
               <ArrowLeft className="w-5 h-5" />
               <span>Back to Home</span>
