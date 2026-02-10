@@ -78,7 +78,29 @@ body {
   z-index: 10;
 }
 
-/* JW Player fullscreen container overrides */
+/* Video player: YouTube-style responsive layout */
+.landscape-player {
+  aspect-ratio: 16 / 9;
+  max-height: 100vh;
+  max-width: 100vw;
+}
+
+@media (orientation: landscape) {
+  .landscape-player {
+    height: 100vh;
+    width: 100vw;
+    aspect-ratio: auto;
+  }
+}
+
+@media (min-width: 1024px) {
+  .landscape-player {
+    height: 100vh;
+    width: 100vw;
+    aspect-ratio: auto;
+  }
+}
+
 .jw-player-container .jwplayer {
   width: 100% !important;
   height: 100% !important;
