@@ -6,6 +6,16 @@ import { createServer } from "http";
 import { prewarmCache } from "./jwplayer";
 import { storage } from "./storage";
 
+const originalExit = process.exit.bind(process);
+let serverReady = false;
+process.exit = ((code?: number) => {
+  if (serverReady) {
+    console.error(`Prevented process.exit(${code}) after server started - keeping server alive`);
+    return undefined as never;
+  }
+  return originalExit(code);
+}) as typeof process.exit;
+
 process.on("unhandledRejection", (reason) => {
   console.error("Unhandled promise rejection:", reason);
 });
@@ -118,6 +128,7 @@ app.use((req, res, next) => {
       reusePort: true,
     },
     () => {
+      serverReady = true;
       log(`serving on port ${port}`);
     },
   );
