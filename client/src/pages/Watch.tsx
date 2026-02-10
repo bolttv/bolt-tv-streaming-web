@@ -28,7 +28,7 @@ interface NextEpisode {
   mediaId: string;
 }
 
-const JW_PLAYER_LIBRARY_URL = "https://cdn.jwplayer.com/libraries/EBg26wOK.js";
+const DEFAULT_PLAYER_LIBRARY_URL = "https://cdn.jwplayer.com/libraries/EBg26wOK.js";
 
 export default function Watch() {
   const { id } = useParams();
@@ -42,6 +42,7 @@ export default function Watch() {
   const lastProgressUpdateRef = useRef<number>(0);
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const hasTriggeredFullscreenRef = useRef(false);
+  const playerLibraryUrlRef = useRef<string>(DEFAULT_PLAYER_LIBRARY_URL);
 
   const { data: content, isLoading, error: contentError } = useQuery<Content>({
     queryKey: [`/api/content/${id}`],
@@ -107,54 +108,88 @@ export default function Watch() {
   }, [content, mediaId]);
 
   useEffect(() => {
-    const checkAndLoadScript = () => {
+    const loadPlayer = async () => {
       if (window.jwplayer) {
         setScriptLoaded(true);
         return;
       }
 
-      const existingScript = document.querySelector(`script[src="${JW_PLAYER_LIBRARY_URL}"]`);
-      
-      if (existingScript) {
-        const checkLoaded = setInterval(() => {
-          if (window.jwplayer) {
-            clearInterval(checkLoaded);
-            setScriptLoaded(true);
+      try {
+        const configRes = await fetch("/api/player-config");
+        if (configRes.ok) {
+          const config = await configRes.json();
+          if (config.libraryUrl) {
+            playerLibraryUrlRef.current = config.libraryUrl;
           }
-        }, 50);
-        
-        setTimeout(() => clearInterval(checkLoaded), 10000);
+        }
+      } catch {
+      }
+
+      const libraryUrl = playerLibraryUrlRef.current;
+
+      if (window.jwplayer) {
+        setScriptLoaded(true);
         return;
       }
 
-      const script = document.createElement("script");
-      script.src = JW_PLAYER_LIBRARY_URL;
-      script.async = true;
-      
-      script.onload = () => {
-        const checkLoaded = setInterval(() => {
-          if (window.jwplayer) {
-            clearInterval(checkLoaded);
-            setScriptLoaded(true);
-          }
-        }, 50);
+      const loadScript = (url: string) => {
+        const script = document.createElement("script");
+        script.src = url;
+        script.async = true;
         
-        setTimeout(() => {
-          clearInterval(checkLoaded);
-          if (!window.jwplayer) {
-            setPlayerError("Failed to initialize JW Player.");
-          }
-        }, 5000);
+        script.onload = () => {
+          const checkLoaded = setInterval(() => {
+            if (window.jwplayer) {
+              clearInterval(checkLoaded);
+              setScriptLoaded(true);
+            }
+          }, 50);
+          
+          setTimeout(() => {
+            clearInterval(checkLoaded);
+            if (!window.jwplayer) {
+              setPlayerError("Failed to initialize JW Player.");
+            }
+          }, 5000);
+        };
+        
+        script.onerror = () => {
+          setPlayerError("Failed to load video player library.");
+        };
+        
+        document.head.appendChild(script);
       };
+
+      const existingScript = document.querySelector(`script[src*="cdn.jwplayer.com/libraries"]`) as HTMLScriptElement | null;
       
-      script.onerror = () => {
-        setPlayerError("Failed to load video player library.");
-      };
-      
-      document.head.appendChild(script);
+      if (existingScript) {
+        const existingSrc = existingScript.getAttribute("src") || "";
+        if (existingSrc !== libraryUrl) {
+          existingScript.remove();
+          loadScript(libraryUrl);
+        } else {
+          const checkLoaded = setInterval(() => {
+            if (window.jwplayer) {
+              clearInterval(checkLoaded);
+              setScriptLoaded(true);
+            }
+          }, 50);
+          
+          setTimeout(() => {
+            clearInterval(checkLoaded);
+            if (!window.jwplayer) {
+              existingScript.remove();
+              loadScript(libraryUrl);
+            }
+          }, 3000);
+        }
+        return;
+      }
+
+      loadScript(libraryUrl);
     };
 
-    checkAndLoadScript();
+    loadPlayer();
   }, []);
 
   useEffect(() => {

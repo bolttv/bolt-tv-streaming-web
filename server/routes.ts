@@ -28,6 +28,19 @@ export async function registerRoutes(
   app: Express
 ): Promise<Server> {
 
+  app.get("/api/health", (_req, res) => {
+    res.json({ status: "ok" });
+  });
+
+  app.get("/api/player-config", (_req, res) => {
+    const siteId = process.env.JWPLAYER_SITE_ID || "";
+    const playerKey = process.env.JWPLAYER_PLAYER_KEY || "EBg26wOK";
+    res.json({
+      libraryUrl: `https://cdn.jwplayer.com/libraries/${playerKey}.js`,
+      siteId,
+    });
+  });
+
   // Cleeng configuration endpoint for frontend
   app.get("/api/cleeng/config", (req, res) => {
     res.json({

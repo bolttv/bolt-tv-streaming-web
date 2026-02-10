@@ -10,10 +10,19 @@ export function serveStatic(app: Express) {
     );
   }
 
-  app.use(express.static(distPath));
+  const indexPath = path.resolve(distPath, "index.html");
+  let indexHtml = fs.readFileSync(indexPath, "utf-8");
 
-  // fall through to index.html if the file doesn't exist
+  const playerKey = process.env.JWPLAYER_PLAYER_KEY || "EBg26wOK";
+  indexHtml = indexHtml.replace(
+    /https:\/\/cdn\.jwplayer\.com\/libraries\/[^"]+\.js/,
+    `https://cdn.jwplayer.com/libraries/${playerKey}.js`
+  );
+
+  app.use(express.static(distPath, { index: false }));
+
   app.use("/{*path}", (_req, res) => {
-    res.sendFile(path.resolve(distPath, "index.html"));
+    res.set("Content-Type", "text/html");
+    res.send(indexHtml);
   });
 }

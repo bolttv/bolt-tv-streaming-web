@@ -49,9 +49,19 @@ Preferred communication style: Simple, everyday language.
 
 ### Video Platform
 - **JWPlayer**: Video hosting and playback
-  - Library loaded via CDN in `index.html`
+  - Library loaded via CDN in `index.html` (injected at runtime in production via `server/static.ts`)
+  - Player library URL is configurable via `JWPLAYER_PLAYER_KEY` env var (defaults to `EBg26wOK`)
+  - Watch page fetches player config from `/api/player-config` for dynamic library loading
   - Playlists configured in `server/jwplayer.ts`
-  - Environment variables: `JWPLAYER_SITE_ID`, `JWPLAYER_API_SECRET`
+  - Environment variables: `JWPLAYER_SITE_ID`, `JWPLAYER_API_SECRET`, `JWPLAYER_PLAYER_KEY`
+
+### Railway Deployment
+- **Config**: `railway.toml` with build and start commands
+- **Build**: `npm install && npm run build`
+- **Start**: `npm run start` (serves from `dist/`)
+- **Health check**: `/api/health`
+- **Required env vars on Railway**: `DATABASE_URL`, `JWPLAYER_SITE_ID`, `JWPLAYER_API_SECRET`
+- **Optional**: `JWPLAYER_PLAYER_KEY` (if different from default), `PORT` (Railway sets automatically)
 
 ### Database
 - **PostgreSQL**: Primary data store
