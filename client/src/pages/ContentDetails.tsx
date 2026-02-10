@@ -116,7 +116,17 @@ export default function ContentDetails() {
         ? "Watch S1 E1"
         : "Watch Now";
   
-  const watchMediaId = isSeries && nextEpisode ? nextEpisode.mediaId : (isSeries ? null : id);
+  const firstEpisodeMediaId = episodes.length > 0
+    ? [...episodes].sort((a, b) => {
+        const sd = (a.seasonNumber || 1) - (b.seasonNumber || 1);
+        return sd !== 0 ? sd : (a.episodeNumber || 1) - (b.episodeNumber || 1);
+      })[0]?.mediaId
+    : null;
+  const watchMediaId = isSeries && nextEpisode 
+    ? nextEpisode.mediaId 
+    : isSeries 
+      ? firstEpisodeMediaId 
+      : id;
 
   if (isLoading) {
     return (
