@@ -78,37 +78,42 @@ body {
   z-index: 10;
 }
 
-/* Video player: YouTube-style responsive layout */
+/* Video player: Netflix/HBO-style fullscreen layout */
 .landscape-player {
-  aspect-ratio: 16 / 9;
-  max-height: 100vh;
-  max-width: 100vw;
+  position: absolute;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
 }
 
-@media (orientation: landscape) {
-  .landscape-player {
-    height: 100vh;
-    width: 100vw;
-    aspect-ratio: auto;
-  }
-}
-
-@media (min-width: 1024px) {
-  .landscape-player {
-    height: 100vh;
-    width: 100vw;
-    aspect-ratio: auto;
-  }
+.jw-player-container {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
 }
 
 .jw-player-container .jwplayer {
+  position: absolute !important;
+  inset: 0 !important;
   width: 100% !important;
   height: 100% !important;
 }
 
 .jw-player-container .jwplayer .jw-aspect {
-  padding-top: 0 !important;
+  display: none !important;
+}
+
+.jw-player-container .jwplayer .jw-wrapper {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
   height: 100% !important;
+}
+
+.jw-player-container .jwplayer video {
+  object-fit: contain;
 }
 
 /* Scrollbar hiding for horizontal lists */

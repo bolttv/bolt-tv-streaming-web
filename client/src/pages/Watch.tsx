@@ -227,17 +227,6 @@ export default function Watch() {
         player.on("ready", () => {
           setPlayerReady(true);
           setPlayerError(null);
-          
-          const handleResize = () => {
-            if (playerInstanceRef.current) {
-              playerInstanceRef.current.resize("100%", "100%");
-            }
-          };
-          
-          window.addEventListener("resize", handleResize);
-          player.on("remove", () => {
-            window.removeEventListener("resize", handleResize);
-          });
         });
 
         player.on("play", () => {
@@ -330,7 +319,7 @@ export default function Watch() {
   };
 
   return (
-    <div className="fixed inset-0 bg-black text-white flex items-center justify-center">
+    <div className="fixed inset-0 bg-black text-white overflow-hidden">
       <button
         onClick={handleBack}
         className="fixed top-4 left-4 z-50 flex items-center gap-2 text-white hover:text-gray-300 transition bg-black/50 px-3 py-2 rounded-full"
@@ -339,7 +328,7 @@ export default function Watch() {
         <ArrowLeft className="w-5 h-5" />
       </button>
 
-      <div className="w-full landscape-player relative">
+      <div className="landscape-player">
         {contentNotFound && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-black z-10">
             <div className="text-xl text-red-400 mb-4">Content not found</div>
