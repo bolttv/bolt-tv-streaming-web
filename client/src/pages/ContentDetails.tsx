@@ -94,7 +94,7 @@ export default function ContentDetails() {
   });
 
   // Fetch next episode to watch for series
-  const { data: nextEpisode } = useQuery<NextEpisode | null>({
+  const { data: nextEpisode, isFetched: episodeFetched } = useQuery<NextEpisode | null>({
     queryKey: [`/api/series/${id}/next-episode`, getSessionId()],
     queryFn: async () => {
       const response = await fetch(`/api/series/${id}/next-episode`, {
@@ -106,21 +106,21 @@ export default function ContentDetails() {
     enabled: !!id && content?.contentType === "Series",
   });
 
-  // Determine watch button text and link
-  // Series = multiple episodes, so show dynamic episode button
-  // Episode/Movie/Documentary = single content, show "Watch Now"
   const isSeries = content?.contentType === "Series";
   const isSingleContent = content?.contentType === "Movie" || content?.contentType === "Documentary" || content?.contentType === "Episode";
+  const episodeUnavailable = isSeries && episodeFetched && !nextEpisode;
   
   const watchButtonText = isSingleContent 
     ? "Watch Now" 
     : isSeries && nextEpisode 
       ? `Watch S${nextEpisode.seasonNumber} E${nextEpisode.episodeNumber}`
-      : isSeries 
-        ? "Watch S1 E1"
-        : "Watch Now";
+      : episodeUnavailable
+        ? "Unavailable"
+        : isSeries 
+          ? "Watch S1 E1"
+          : "Watch Now";
   
-  const watchMediaId = isSeries && nextEpisode ? nextEpisode.mediaId : id;
+  const watchMediaId = isSeries && nextEpisode ? nextEpisode.mediaId : (isSeries ? null : id);
 
   if (isLoading) {
     return (
@@ -210,12 +210,19 @@ export default function ContentDetails() {
 
               {/* Watch Button - 60% width on mobile, auto on tablet+ */}
               <div className="w-[60%] sm:w-auto">
-                <Link href={`/watch/${watchMediaId}${category ? `?category=${category}` : ''}`} className="w-full sm:w-auto">
-                  <button className="flex items-center justify-center gap-2 sm:gap-2 bg-white text-black hover:bg-white/90 transition-colors h-11 sm:h-10 md:h-12 w-full sm:w-auto px-4 sm:px-28 md:px-36 rounded font-semibold tracking-wide text-sm sm:text-sm md:text-base cursor-pointer" data-testid="button-watch">
+                {watchMediaId ? (
+                  <Link href={`/watch/${watchMediaId}${category ? `?category=${category}` : ''}`} className="w-full sm:w-auto">
+                    <button className="flex items-center justify-center gap-2 sm:gap-2 bg-white text-black hover:bg-white/90 transition-colors h-11 sm:h-10 md:h-12 w-full sm:w-auto px-4 sm:px-28 md:px-36 rounded font-semibold tracking-wide text-sm sm:text-sm md:text-base cursor-pointer" data-testid="button-watch">
+                      <Play className="w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5 fill-current" />
+                      {watchButtonText}
+                    </button>
+                  </Link>
+                ) : (
+                  <button className="flex items-center justify-center gap-2 sm:gap-2 bg-white/70 text-black/70 h-11 sm:h-10 md:h-12 w-full sm:w-auto px-4 sm:px-28 md:px-36 rounded font-semibold tracking-wide text-sm sm:text-sm md:text-base cursor-wait" data-testid="button-watch" disabled>
                     <Play className="w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5 fill-current" />
                     {watchButtonText}
                   </button>
-                </Link>
+                )}
               </div>
 
               {/* Action Icons - My List, Rate, Trailer */}

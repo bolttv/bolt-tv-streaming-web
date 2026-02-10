@@ -77,7 +77,9 @@ export default function Watch() {
   const mediaId = resolvedMediaId;
   const isResolvingMedia = isLoading || (mightBeSeries && episodeLoading);
   
-  const contentNotFound = !isLoading && !content && (!mightBeSeries || (episodeFetched && !nextEpisode));
+  const seriesWithNoEpisode = isSeries && episodeFetched && !nextEpisode;
+  const contentWithNoMedia = contentLoaded && !isSeries && !content?.mediaId;
+  const contentNotFound = seriesWithNoEpisode || contentWithNoMedia || (!isLoading && !content && (!mightBeSeries || (episodeFetched && !nextEpisode)));
 
   const saveProgress = useCallback(async (watchedSeconds: number, duration: number) => {
     if (!mediaId || duration === 0) return;
