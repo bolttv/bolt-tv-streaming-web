@@ -604,6 +604,37 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/landing/content", async (req, res) => {
+    try {
+      const rows = await storage.getContentRows();
+      const heroItems = await storage.getHeroItems();
+      const limitedRows = rows.map(row => ({
+        id: row.id,
+        title: row.title,
+        items: row.items.slice(0, 8).map(item => ({
+          id: item.id,
+          title: item.title,
+          posterImage: item.posterImage,
+          verticalPosterImage: item.verticalPosterImage,
+          contentType: item.contentType,
+        }))
+      }));
+      const limitedHero = heroItems.slice(0, 6).map(item => ({
+        id: item.id,
+        title: item.title,
+        posterImage: item.posterImage,
+        heroImage: item.heroImage,
+        verticalPosterImage: item.verticalPosterImage,
+        description: item.description,
+        contentType: item.contentType,
+      }));
+      res.set("Cache-Control", "public, max-age=300");
+      res.json({ rows: limitedRows, hero: limitedHero });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch landing content" });
+    }
+  });
+
   // Get all hero items for the carousel (with prefetched next episode data)
   app.get("/api/content/hero", async (req, res) => {
     try {
