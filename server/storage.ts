@@ -1,6 +1,6 @@
 import { type User, type InsertUser, type WatchHistory, type InsertWatchHistory, watchHistory } from "@shared/schema";
 import { randomUUID } from "crypto";
-import { fetchJWPlayerPlaylist, fetchJWPlayerMedia, fetchSeriesEpisodes, fetchSeriesInfo, getJWPlayerThumbnail, getJWPlayerHeroImage, getJWPlayerVerticalPoster, getJWPlayerHorizontalPosterLogo, getJWPlayerHeroBannerLogo, getJWPlayerMotionThumbnail, extractMotionThumbnailFromImages, checkMotionThumbnailExists, extractTrailerId, JWPlayerPlaylistItem, PLAYLISTS, SPORT_PLAYLISTS } from "./jwplayer";
+import { fetchJWPlayerPlaylist, fetchJWPlayerMedia, fetchSeriesEpisodes, fetchSeriesInfo, getJWPlayerThumbnail, getJWPlayerHeroImage, getJWPlayerVerticalPoster, getJWPlayerHorizontalPosterLogo, getJWPlayerHeroBannerLogo, getJWPlayerMotionThumbnail, extractMotionThumbnailFromImages, checkMotionThumbnailExists, checkHeroBannerLogoExists, extractTrailerId, JWPlayerPlaylistItem, PLAYLISTS, SPORT_PLAYLISTS } from "./jwplayer";
 import { db } from "./db";
 import { eq, and, desc, sql, inArray } from "drizzle-orm";
 
@@ -106,6 +106,24 @@ export interface IStorage {
   getFirstEpisode(seriesId: string): Promise<{ seasonNumber: number; episodeNumber: number; mediaId: string } | null>;
 }
 
+const validatedLogos = new Map<string, boolean>();
+
+async function validateLogoUrl(mediaId: string): Promise<string | undefined> {
+  if (validatedLogos.has(mediaId)) {
+    return validatedLogos.get(mediaId) ? getJWPlayerHeroBannerLogo(mediaId) : undefined;
+  }
+  const exists = await checkHeroBannerLogoExists(mediaId);
+  validatedLogos.set(mediaId, exists);
+  return exists ? getJWPlayerHeroBannerLogo(mediaId) : undefined;
+}
+
+function getLogoIfValidated(mediaId: string): string | undefined {
+  if (validatedLogos.has(mediaId)) {
+    return validatedLogos.get(mediaId) ? getJWPlayerHeroBannerLogo(mediaId) : undefined;
+  }
+  return getJWPlayerHeroBannerLogo(mediaId);
+}
+
 function extractContentType(media: JWPlayerPlaylistItem): ContentType {
   // First check the direct contentType field from JW Player API
   if (media.contentType) {
@@ -185,7 +203,7 @@ function convertJWPlayerToRowItem(media: JWPlayerPlaylistItem): RowItem {
     verticalPosterImage: getJWPlayerVerticalPoster(media.mediaid),
     heroImage: getJWPlayerHeroImage(media.mediaid),
     motionThumbnail: extractMotionThumbnailFromImages(media.images) || undefined,
-    logoImage: getJWPlayerHeroBannerLogo(media.mediaid),
+    logoImage: getLogoIfValidated(media.mediaid),
     rating,
     genres: genreTags.length > 0 ? genreTags.slice(0, 2) : undefined,
     description: media.description || undefined,
@@ -218,8 +236,7 @@ function convertJWPlayerToHeroItem(media: JWPlayerPlaylistItem): HeroItem {
   // Get content type
   const contentType = extractContentType(media);
   
-  // Get hero banner logo URL (frontend will check if it exists)
-  const logoImage = getJWPlayerHeroBannerLogo(media.mediaid);
+  const logoImage = getLogoIfValidated(media.mediaid);
   
   return {
     id: media.mediaid,
@@ -384,6 +401,11 @@ export class MemStorage implements IStorage {
       
       const heroBannerFiltered = heroBanner.filter(isNotTrailer);
       const featuredFiltered = featured.filter(isGlobalContent);
+      
+      const allMediaIds = new Set<string>();
+      [...heroBannerFiltered, ...featuredFiltered, ...recommended, ...popular, ...newMovies, ...documentaries].forEach(m => allMediaIds.add(m.mediaid));
+      await Promise.all([...allMediaIds].map(id => validateLogoUrl(id)));
+      
       const heroItemsRaw = heroBannerFiltered.map(m => convertJWPlayerToHeroItem(m));
       this.heroItems = await enrichItemsWithMotionThumbnails(heroItemsRaw);
       
