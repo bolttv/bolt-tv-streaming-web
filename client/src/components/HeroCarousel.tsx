@@ -154,7 +154,7 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
       {/* Navigation Arrows */}
       <button
         onClick={scrollPrev}
-        className="absolute left-0 w-4 md:w-12 top-1/2 -translate-y-1/2 z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:scale-110 flex items-center justify-center"
+        className="absolute left-0 w-4 md:w-12 top-1/2 -translate-y-1/2 z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:scale-110 hidden md:flex items-center justify-center"
         aria-label="Previous slide"
         data-testid="hero-arrow-prev"
       >
@@ -162,7 +162,7 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
       </button>
       <button
         onClick={scrollNext}
-        className="absolute right-0 w-4 md:w-12 top-1/2 -translate-y-1/2 z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:scale-110 flex items-center justify-center"
+        className="absolute right-0 w-4 md:w-12 top-1/2 -translate-y-1/2 z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:scale-110 hidden md:flex items-center justify-center"
         aria-label="Next slide"
         data-testid="hero-arrow-next"
       >
