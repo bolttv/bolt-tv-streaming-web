@@ -6,6 +6,14 @@ import { createServer } from "http";
 import { prewarmCache } from "./jwplayer";
 import { storage } from "./storage";
 
+process.on("unhandledRejection", (reason) => {
+  console.error("Unhandled promise rejection:", reason);
+});
+
+process.on("uncaughtException", (err) => {
+  console.error("Uncaught exception:", err);
+});
+
 const app = express();
 const httpServer = createServer(app);
 
