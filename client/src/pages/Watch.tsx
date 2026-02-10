@@ -225,6 +225,22 @@ export default function Watch() {
         });
 
         player.on("ready", () => {
+          player.resize(window.innerWidth, window.innerHeight);
+          
+          setTimeout(() => {
+            player.resize(window.innerWidth, window.innerHeight);
+          }, 100);
+
+          const handleResize = () => {
+            if (playerInstanceRef.current) {
+              playerInstanceRef.current.resize(window.innerWidth, window.innerHeight);
+            }
+          };
+          window.addEventListener("resize", handleResize);
+          player.on("remove", () => {
+            window.removeEventListener("resize", handleResize);
+          });
+
           setPlayerReady(true);
           setPlayerError(null);
         });
@@ -319,7 +335,7 @@ export default function Watch() {
   };
 
   return (
-    <div className="fixed inset-0 bg-black text-white overflow-hidden">
+    <div className="watch-player-wrapper">
       <button
         onClick={handleBack}
         className="fixed top-4 left-4 z-50 flex items-center gap-2 text-white hover:text-gray-300 transition bg-black/50 px-3 py-2 rounded-full"
@@ -328,40 +344,38 @@ export default function Watch() {
         <ArrowLeft className="w-5 h-5" />
       </button>
 
-      <div className="landscape-player">
-        {contentNotFound && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black z-10">
-            <div className="text-xl text-red-400 mb-4">Content not found</div>
-            <p className="text-gray-400 mb-4">This video is no longer available.</p>
-            <Link href="/">
-              <button className="px-4 py-2 bg-white text-black rounded font-medium hover:bg-gray-200 transition">
-                Go Home
-              </button>
-            </Link>
-          </div>
-        )}
-        {!contentNotFound && (isResolvingMedia || !playerReady) && !playerError && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black z-10 pointer-events-none">
-            <LoadingSpinner size="lg" />
-          </div>
-        )}
-        {!contentNotFound && playerError && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black z-10">
-            <div className="text-xl text-red-400 mb-4">{playerError}</div>
-            <button
-              onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-white text-black rounded font-medium hover:bg-gray-200 transition"
-            >
-              Retry
+      {contentNotFound && (
+        <div className="fixed inset-0 flex flex-col items-center justify-center bg-black z-10">
+          <div className="text-xl text-red-400 mb-4">Content not found</div>
+          <p className="text-gray-400 mb-4">This video is no longer available.</p>
+          <Link href="/">
+            <button className="px-4 py-2 bg-white text-black rounded font-medium hover:bg-gray-200 transition">
+              Go Home
             </button>
-          </div>
-        )}
-        <div 
-          ref={playerContainerRef}
-          className="jw-player-container w-full h-full"
-          data-testid="video-player"
-        />
-      </div>
+          </Link>
+        </div>
+      )}
+      {!contentNotFound && (isResolvingMedia || !playerReady) && !playerError && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black z-10 pointer-events-none">
+          <LoadingSpinner size="lg" />
+        </div>
+      )}
+      {!contentNotFound && playerError && (
+        <div className="fixed inset-0 flex flex-col items-center justify-center bg-black z-10">
+          <div className="text-xl text-red-400 mb-4">{playerError}</div>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-white text-black rounded font-medium hover:bg-gray-200 transition"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+      <div 
+        ref={playerContainerRef}
+        className="jw-player-container"
+        data-testid="video-player"
+      />
     </div>
   );
 }
