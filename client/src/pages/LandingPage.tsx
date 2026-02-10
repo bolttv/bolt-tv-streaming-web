@@ -334,7 +334,7 @@ export default function LandingPage() {
                     </div>
                     <div className="flex items-baseline gap-1 mb-6">
                       <span className={`text-3xl md:text-4xl font-black ${isPopular ? "text-black" : "text-white"}`}>
-                        {offer.currency === "USD" ? "$" : offer.currency}{offer.price.toFixed(2)}
+                        {offer.currency === "USD" ? "$" : offer.currency}{Number(offer.price).toFixed(2)}
                       </span>
                       <span className={`text-sm ${isPopular ? "text-gray-500" : "text-gray-400"}`}>
                         /{offer.period === "month" ? "mo" : offer.period}
