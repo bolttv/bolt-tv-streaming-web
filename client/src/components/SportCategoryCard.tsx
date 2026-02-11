@@ -19,7 +19,7 @@ const SPORT_GRADIENTS: Record<string, string> = {
   "baseball": "from-red-900/80 to-red-700/40",
   "football": "from-[#050404]/80 to-[#2E1C2B]/40",
   "basketball": "from-orange-900/80 to-orange-700/40",
-  "action-sports": "from-[#2E1C2B]/80 to-[#8a0103]/40",
+  "action-sports": "from-[#2E1C2B]/80 to-[#9e3a00]/40",
 };
 
 const SPORT_ICONS: Record<string, string> = {

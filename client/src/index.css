@@ -16,7 +16,7 @@
   --color-popover: #050404;
   --color-popover-foreground: #EAEAEA;
 
-  --color-primary: #A50104;
+  --color-primary: #C14600;
   --color-primary-foreground: #EAEAEA;
 
   --color-secondary: #2E1C2B;
@@ -28,17 +28,17 @@
   --color-accent: #4A1942;
   --color-accent-foreground: #EAEAEA;
 
-  --color-destructive: #A50104;
+  --color-destructive: #C14600;
   --color-destructive-foreground: #EAEAEA;
 
   --color-border: #2E1C2B;
   --color-input: #2E1C2B;
-  --color-ring: #A50104;
+  --color-ring: #C14600;
 
   --color-bolt-black: #050404;
   --color-bolt-grey: #EAEAEA;
   --color-bolt-purple: #4A1942;
-  --color-bolt-red: #A50104;
+  --color-bolt-red: #C14600;
   --color-bolt-violet: #2E1C2B;
 
   --radius: 0.5rem;
