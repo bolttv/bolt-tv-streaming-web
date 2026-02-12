@@ -26,11 +26,11 @@ interface LandingRow {
 interface CleengOffer {
   id: string;
   title: string;
-  price: number;
-  currency: string;
-  period: string;
-  freePeriods?: number;
-  freeDays?: number;
+  price: { amount: number; currency: string; taxIncluded: boolean } | number;
+  currency?: string;
+  period?: string;
+  billingCycle?: { periodUnit: string; amount: number };
+  tags?: string[];
   description?: string;
   features?: string[];
 }
@@ -149,61 +149,85 @@ export default function LandingPage() {
     }
   };
 
-  const monthlyPlans = [
-    {
-      name: "Basic",
-      price: "$7.99",
-      yearlyPrice: "$79.99",
-      desc: "Great for casual fans",
-      popular: false,
-      features: {
-        "Full content library": true,
-        "Ad-supported": true,
-        "Simultaneous streams": "1",
-        "Video quality": "HD",
-        "Offline downloads": false,
-        "Live events": false,
-        "Early access": false,
-        "Priority support": false,
-      },
-    },
-    {
-      name: "Premium",
-      price: "$12.99",
-      yearlyPrice: "$129.99",
-      desc: "Best value for sports fans",
-      popular: true,
-      features: {
-        "Full content library": true,
-        "Ad-supported": false,
-        "Simultaneous streams": "3",
-        "Video quality": "4K Ultra HD",
-        "Offline downloads": true,
-        "Live events": true,
-        "Early access": false,
-        "Priority support": false,
-      },
-    },
-    {
-      name: "Ultimate",
-      price: "$19.99",
-      yearlyPrice: "$199.99",
-      desc: "The complete experience",
-      popular: false,
-      features: {
-        "Full content library": true,
-        "Ad-supported": false,
-        "Simultaneous streams": "5",
-        "Video quality": "4K Ultra HD + HDR",
-        "Offline downloads": true,
-        "Live events": true,
-        "Early access": true,
-        "Priority support": true,
-      },
-    },
-  ];
+  const getOfferPrice = (offer: CleengOffer): number => {
+    if (typeof offer.price === "object" && offer.price !== null) {
+      return offer.price.amount;
+    }
+    return Number(offer.price);
+  };
 
-  const useApiPlans = offers.length >= 2;
+  const getOfferCurrency = (offer: CleengOffer): string => {
+    if (typeof offer.price === "object" && offer.price !== null) {
+      return offer.price.currency;
+    }
+    return offer.currency || "USD";
+  };
+
+  const getOfferPeriod = (offer: CleengOffer): string => {
+    if (offer.billingCycle?.periodUnit) {
+      return offer.billingCycle.periodUnit;
+    }
+    return offer.period?.replace("/", "") || "month";
+  };
+
+  const isPopularOffer = (offer: CleengOffer): boolean => {
+    return (offer.tags || []).some(t => 
+      t.toLowerCase().includes("popular") || t.toLowerCase().includes("most value")
+    );
+  };
+
+  const planFeatureMap: Record<string, Record<string, boolean | string>> = {
+    "Basic": {
+      "Full content library": true,
+      "Ad-supported": true,
+      "Simultaneous streams": "1",
+      "Video quality": "HD",
+      "Offline downloads": false,
+      "Live events": false,
+    },
+    "Premium": {
+      "Full content library": true,
+      "Ad-supported": false,
+      "Simultaneous streams": "3",
+      "Video quality": "4K Ultra HD",
+      "Offline downloads": true,
+      "Live events": true,
+    },
+  };
+
+  const planDescMap: Record<string, string> = {
+    "Basic": "Great for casual fans",
+    "Premium": "Best value for sports fans",
+  };
+
+  const planNames = [...new Set(offers.map(o => o.title))];
+
+  const getOfferForPlan = (planName: string, period: string) => {
+    return offers.find(o => o.title === planName && getOfferPeriod(o) === period);
+  };
+
+  const lowestPrice = offers
+    .filter(o => getOfferPeriod(o) === "month")
+    .reduce((min, o) => Math.min(min, getOfferPrice(o)), Infinity);
+
+  const startingPrice = lowestPrice < Infinity ? `$${lowestPrice.toFixed(2)}` : "$5.99";
+
+  const savingsPercent = (() => {
+    if (planNames.length === 0) return 16;
+    const first = planNames[0];
+    const mo = getOfferForPlan(first, "month");
+    const yr = getOfferForPlan(first, "year");
+    if (mo && yr) {
+      const monthlyCost = getOfferPrice(mo) * 12;
+      const yearlyCost = getOfferPrice(yr);
+      return Math.round((1 - yearlyCost / monthlyCost) * 100);
+    }
+    return 16;
+  })();
+
+  const featureKeys = planNames.length > 0 
+    ? Object.keys(planFeatureMap[planNames[0]] || planFeatureMap["Basic"])
+    : Object.keys(planFeatureMap["Basic"]);
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -255,7 +279,7 @@ export default function LandingPage() {
             Exclusive sports documentaries, original series, and live events.
           </p>
           <p className="text-white/60 text-xs md:text-sm mb-6">
-            Starting at $7.99/mo. Cancel anytime.
+            Starting at {startingPrice}/mo. Cancel anytime.
           </p>
           
           <div className="flex items-center gap-2 max-w-md mx-auto" data-testid="hero-email-form">
@@ -344,60 +368,74 @@ export default function LandingPage() {
                 data-testid="toggle-yearly"
               >
                 Yearly
-                <span className={`text-xs px-1.5 py-0.5 rounded-full ${billingCycle === "yearly" ? "bg-white/20" : "bg-[#C14600]/20 text-[#C14600]"}`}>
-                  Save 16%
-                </span>
+                {savingsPercent > 0 && (
+                  <span className={`text-xs px-1.5 py-0.5 rounded-full ${billingCycle === "yearly" ? "bg-white/20" : "bg-[#C14600]/20 text-[#C14600]"}`}>
+                    Save {savingsPercent}%
+                  </span>
+                )}
               </button>
             </div>
           </div>
 
-          {/* Plan Cards */}
-          <div className="grid md:grid-cols-3 gap-5 mb-12">
-            {monthlyPlans.map((plan, i) => (
-              <div
-                key={i}
-                className={`relative rounded-2xl p-6 md:p-8 transition-all duration-300 ${
-                  plan.popular
-                    ? "bg-white text-black border-2 border-[#C14600] scale-[1.02] shadow-xl shadow-[#C14600]/10"
-                    : "bg-white/[0.04] border border-white/10 hover:border-white/20"
-                }`}
-                data-testid={`card-plan-${i}`}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="bg-[#C14600] text-white text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider">
-                      Most Popular
+          {/* Plan Cards from Cleeng */}
+          <div className={`grid gap-5 mb-12 ${planNames.length === 1 ? "max-w-md mx-auto" : planNames.length === 2 ? "md:grid-cols-2 max-w-3xl mx-auto" : "md:grid-cols-3"}`}>
+            {planNames.map((planName, i) => {
+              const period = billingCycle === "monthly" ? "month" : "year";
+              const offer = getOfferForPlan(planName, period);
+              if (!offer) return null;
+              const price = getOfferPrice(offer);
+              const currency = getOfferCurrency(offer);
+              const popular = isPopularOffer(offer);
+              const desc = planDescMap[planName] || offer.description || "";
+
+              return (
+                <div
+                  key={offer.id}
+                  className={`relative rounded-2xl p-6 md:p-8 transition-all duration-300 ${
+                    popular
+                      ? "bg-white text-black border-2 border-[#C14600] scale-[1.02] shadow-xl shadow-[#C14600]/10"
+                      : "bg-white/[0.04] border border-white/10 hover:border-white/20"
+                  }`}
+                  data-testid={`card-plan-${i}`}
+                >
+                  {popular && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                      <span className="bg-[#C14600] text-white text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider">
+                        Most Popular
+                      </span>
+                    </div>
+                  )}
+                  <h3 className={`text-xl font-bold mb-1 ${popular ? "text-black" : "text-white"}`}>
+                    {planName}
+                  </h3>
+                  {desc && (
+                    <p className={`text-sm mb-4 ${popular ? "text-gray-600" : "text-gray-400"}`}>
+                      {desc}
+                    </p>
+                  )}
+                  <div className="flex items-baseline gap-1 mb-6">
+                    <span className={`text-3xl md:text-4xl font-black ${popular ? "text-black" : "text-white"}`}>
+                      {currency === "USD" ? "$" : currency}{price.toFixed(2)}
+                    </span>
+                    <span className={`text-sm ${popular ? "text-gray-500" : "text-gray-400"}`}>
+                      /{billingCycle === "monthly" ? "mo" : "yr"}
                     </span>
                   </div>
-                )}
-                <h3 className={`text-xl font-bold mb-1 ${plan.popular ? "text-black" : "text-white"}`}>
-                  {plan.name}
-                </h3>
-                <p className={`text-sm mb-4 ${plan.popular ? "text-gray-600" : "text-gray-400"}`}>
-                  {plan.desc}
-                </p>
-                <div className="flex items-baseline gap-1 mb-6">
-                  <span className={`text-3xl md:text-4xl font-black ${plan.popular ? "text-black" : "text-white"}`}>
-                    {billingCycle === "monthly" ? plan.price : plan.yearlyPrice}
-                  </span>
-                  <span className={`text-sm ${plan.popular ? "text-gray-500" : "text-gray-400"}`}>
-                    /{billingCycle === "monthly" ? "mo" : "yr"}
-                  </span>
+                  <Link href="/subscribe">
+                    <button
+                      className={`w-full py-3 rounded-lg font-bold text-sm uppercase tracking-wide transition cursor-pointer ${
+                        popular
+                          ? "bg-[#C14600] hover:bg-[#d85200] text-white"
+                          : "bg-white/10 hover:bg-white/20 text-white border border-white/20"
+                      }`}
+                      data-testid={`button-choose-plan-${i}`}
+                    >
+                      Get Started
+                    </button>
+                  </Link>
                 </div>
-                <Link href={`/subscribe`}>
-                  <button
-                    className={`w-full py-3 rounded-lg font-bold text-sm uppercase tracking-wide transition cursor-pointer ${
-                      plan.popular
-                        ? "bg-[#C14600] hover:bg-[#d85200] text-white"
-                        : "bg-white/10 hover:bg-white/20 text-white border border-white/20"
-                    }`}
-                    data-testid={`button-choose-plan-${i}`}
-                  >
-                    Get Started
-                  </button>
-                </Link>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Comparison Table */}
@@ -406,21 +444,28 @@ export default function LandingPage() {
               <thead>
                 <tr className="border-b border-white/10">
                   <th className="text-left py-4 px-3 text-gray-400 font-medium">Features</th>
-                  {monthlyPlans.map((plan, i) => (
-                    <th key={i} className={`py-4 px-3 text-center font-bold ${plan.popular ? "text-[#C14600]" : "text-white"}`}>
-                      {plan.name}
-                    </th>
-                  ))}
+                  {planNames.map((planName, i) => {
+                    const offer = getOfferForPlan(planName, billingCycle === "monthly" ? "month" : "year");
+                    const popular = offer ? isPopularOffer(offer) : false;
+                    return (
+                      <th key={i} className={`py-4 px-3 text-center font-bold ${popular ? "text-[#C14600]" : "text-white"}`}>
+                        {planName}
+                      </th>
+                    );
+                  })}
                 </tr>
               </thead>
               <tbody>
-                {Object.keys(monthlyPlans[0].features).map((featureKey) => (
+                {featureKeys.map((featureKey) => (
                   <tr key={featureKey} className="border-b border-white/5">
-                    <td className="py-3 px-3 text-gray-300 capitalize">
-                      {featureKey.replace(/-/g, " ")}
+                    <td className="py-3 px-3 text-gray-300">
+                      {featureKey}
                     </td>
-                    {monthlyPlans.map((plan, i) => {
-                      const val = plan.features[featureKey as keyof typeof plan.features];
+                    {planNames.map((planName, i) => {
+                      const features = planFeatureMap[planName] || planFeatureMap["Basic"];
+                      const val = features[featureKey];
+                      const offer = getOfferForPlan(planName, billingCycle === "monthly" ? "month" : "year");
+                      const popular = offer ? isPopularOffer(offer) : false;
                       return (
                         <td key={i} className="py-3 px-3 text-center">
                           {val === true ? (
@@ -428,7 +473,7 @@ export default function LandingPage() {
                           ) : val === false ? (
                             <X className="w-5 h-5 text-gray-600 mx-auto" />
                           ) : (
-                            <span className={plan.popular ? "text-black font-medium" : "text-gray-300"}>{val}</span>
+                            <span className={popular ? "text-black font-medium" : "text-gray-300"}>{String(val)}</span>
                           )}
                         </td>
                       );
@@ -600,7 +645,7 @@ export default function LandingPage() {
             />
             <FAQItem
               question="How much does Bolt TV cost?"
-              answer="Bolt TV offers flexible plans starting at $7.99/month. Choose from Basic, Premium, or Ultimate plans. Save up to 16% with annual billing. Cancel anytime with no hidden fees."
+              answer={`Bolt TV offers flexible plans starting at ${startingPrice}/month. Save up to ${savingsPercent}% with annual billing. Cancel anytime with no hidden fees.`}
             />
             <FAQItem
               question="What devices can I watch on?"
