@@ -122,21 +122,21 @@ const originalPosters = [
 function OriginalsBanner() {
   return (
     <section className="relative overflow-hidden" data-testid="section-originals-banner">
-      <div className="relative h-[500px] md:h-[600px]">
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover"
-        >
-          <source src="/assets/originals-banner.mov" type="video/quicktime" />
-          <source src="/assets/originals-banner.mov" type="video/mp4" />
-        </video>
-        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent" />
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover"
+      >
+        <source src="/assets/originals-banner.mov" type="video/quicktime" />
+        <source src="/assets/originals-banner.mov" type="video/mp4" />
+      </video>
+      <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
 
-        <div className="relative z-10 h-full flex flex-col justify-center px-6 md:px-16 max-w-2xl">
+      <div className="relative z-10 pt-16 md:pt-24 px-6 md:px-16">
+        <div className="max-w-2xl mb-12 md:mb-16">
           <h2 className="text-4xl md:text-6xl font-display font-black text-white uppercase leading-tight mb-4">
             Exclusive<br />Originals
           </h2>
@@ -149,23 +149,23 @@ function OriginalsBanner() {
             </button>
           </Link>
         </div>
-      </div>
 
-      <div className="relative z-20 -mt-24 md:-mt-32 px-4 md:px-16 pb-10">
-        <div className="flex gap-3 md:gap-4 overflow-x-auto scrollbar-hide pb-2">
-          {originalPosters.map((poster, i) => (
-            <div
-              key={i}
-              className="flex-shrink-0 w-[140px] md:w-[180px] rounded-xl overflow-hidden group cursor-pointer hover:scale-105 transition-transform duration-300"
-              data-testid={`originals-poster-${i}`}
-            >
-              <img
-                src={poster.img}
-                alt={poster.title}
-                className="w-full h-auto object-contain"
-              />
-            </div>
-          ))}
+        <div className="pb-10">
+          <div className="flex gap-3 md:gap-4 overflow-x-auto scrollbar-hide pb-2">
+            {originalPosters.map((poster, i) => (
+              <div
+                key={i}
+                className="flex-shrink-0 w-[140px] md:w-[180px] rounded-xl overflow-hidden group cursor-pointer hover:scale-105 transition-transform duration-300"
+                data-testid={`originals-poster-${i}`}
+              >
+                <img
+                  src={poster.img}
+                  alt={poster.title}
+                  className="w-full h-auto object-contain"
+                />
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>
