@@ -1,11 +1,16 @@
 import { Link, useLocation } from "wouter";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { 
-  ChevronDown, ChevronRight, Smartphone, Download, Zap, Check, 
+  ChevronDown, ChevronRight, ChevronLeft, Smartphone, Download, Zap, Check, 
   Globe, Trophy, Film, MonitorPlay, Tablet, Laptop, X, Star
 } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import Footer from "@/components/Footer";
+import posterGritGlory from "@assets/Grit-Glory-Poster-Web_1770942256469.png";
+import posterRookie from "@assets/rookie-web_1770942256470.png";
+import posterTraviesa from "@assets/traviesa-web_1770942256471.png";
+import posterSurfing from "@assets/ChatGPT_Image_Oct_1,_2025_at_01_26_07_PM_1770942322327.png";
+import posterLifeOnIce from "@assets/ChatGPT_Image_Oct_3,_2025,_11_50_56_AM_1770942322329.png";
 
 interface LandingItem {
   id: string;
@@ -93,6 +98,134 @@ function ScrollingPosterBackground({ posters }: { posters: { img: string; title:
       <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/80 to-black" />
       <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-black/50" />
     </div>
+  );
+}
+
+const originalPosters = [
+  { img: posterGritGlory, title: "Grit & Glory" },
+  { img: posterRookie, title: "Rookie" },
+  { img: posterTraviesa, title: "Traviesa" },
+  { img: posterSurfing, title: "Surfing the Midnight Sun" },
+  { img: posterLifeOnIce, title: "Life on Ice" },
+];
+
+function OriginalsPosterCarousel() {
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const total = originalPosters.length;
+
+  useEffect(() => {
+    if (!isAutoPlaying) return;
+    const interval = setInterval(() => {
+      setActiveIndex(prev => (prev + 1) % total);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [isAutoPlaying, total]);
+
+  const goTo = useCallback((idx: number) => {
+    setActiveIndex(((idx % total) + total) % total);
+    setIsAutoPlaying(false);
+    setTimeout(() => setIsAutoPlaying(true), 8000);
+  }, [total]);
+
+  const prev = () => goTo(activeIndex - 1);
+  const next = () => goTo(activeIndex + 1);
+
+  return (
+    <section className="relative py-16 md:py-24 px-4 overflow-hidden bg-[#0a0a0a]" data-testid="section-originals-carousel">
+      <div className="max-w-6xl mx-auto">
+        <div className="text-center mb-10">
+          <span className="text-[#C14600] text-xs font-bold uppercase tracking-widest mb-3 block">Only on Bolt TV</span>
+          <h2 className="text-3xl md:text-5xl font-display font-black text-white">
+            Exclusive Originals
+          </h2>
+          <p className="text-gray-400 text-sm md:text-base mt-3 max-w-lg mx-auto">
+            Award-winning series and documentaries you won't find anywhere else
+          </p>
+        </div>
+
+        <div className="relative flex items-center justify-center h-[380px] md:h-[480px]">
+          {originalPosters.map((poster, i) => {
+            const offset = ((i - activeIndex + total) % total);
+            const normalizedOffset = offset > Math.floor(total / 2) ? offset - total : offset;
+            const isCenter = normalizedOffset === 0;
+            const absOffset = Math.abs(normalizedOffset);
+
+            if (absOffset > 2) return null;
+
+            const translateX = normalizedOffset * 220;
+            const scale = isCenter ? 1 : absOffset === 1 ? 0.82 : 0.68;
+            const zIndex = isCenter ? 30 : absOffset === 1 ? 20 : 10;
+            const opacity = isCenter ? 1 : absOffset === 1 ? 0.7 : 0.4;
+            const rotateY = normalizedOffset * -5;
+
+            return (
+              <div
+                key={i}
+                className="absolute transition-all duration-700 ease-out cursor-pointer"
+                style={{
+                  transform: `translateX(${translateX}px) scale(${scale}) perspective(1000px) rotateY(${rotateY}deg)`,
+                  zIndex,
+                  opacity,
+                  width: "240px",
+                }}
+                onClick={() => goTo(i)}
+                data-testid={`carousel-poster-${i}`}
+              >
+                <div className={`relative rounded-2xl overflow-hidden shadow-2xl transition-all duration-700 ${isCenter ? "ring-2 ring-[#C14600]/50 shadow-[#C14600]/20" : ""}`}>
+                  <div style={{ aspectRatio: "2/3" }}>
+                    <img
+                      src={poster.img}
+                      alt={poster.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className={`absolute inset-0 bg-black/40 transition-opacity duration-700 ${isCenter ? "opacity-0" : "opacity-100"}`} />
+                  <div className={`absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent transition-opacity duration-500 ${isCenter ? "opacity-100" : "opacity-0"}`}>
+                    <p className="text-white font-bold text-base">{poster.title}</p>
+                    <p className="text-[#C14600] text-xs font-semibold uppercase tracking-wider mt-1">Bolt TV Original</p>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="flex items-center justify-center gap-6 mt-6">
+          <div className="flex items-center gap-1 bg-white/10 rounded-full p-1">
+            <button
+              onClick={prev}
+              className="p-2 hover:bg-white/10 rounded-full transition cursor-pointer"
+              data-testid="carousel-prev"
+            >
+              <ChevronLeft className="w-5 h-5 text-white" />
+            </button>
+            <button
+              onClick={next}
+              className="p-2 hover:bg-white/10 rounded-full transition cursor-pointer"
+              data-testid="carousel-next"
+            >
+              <ChevronRight className="w-5 h-5 text-white" />
+            </button>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-center gap-2 mt-4">
+          {originalPosters.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => goTo(i)}
+              className={`transition-all duration-500 rounded-full cursor-pointer ${
+                i === activeIndex
+                  ? "w-8 h-2 bg-[#C14600]"
+                  : "w-2 h-2 bg-white/30 hover:bg-white/50"
+              }`}
+              data-testid={`carousel-dot-${i}`}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -488,48 +621,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Exclusive Originals */}
-      <section className="relative py-16 md:py-24 px-4" data-testid="section-originals">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-8 md:gap-16 items-center">
-            <div>
-              <span className="text-[#C14600] text-xs font-bold uppercase tracking-widest mb-3 block">Only on Bolt TV</span>
-              <h2 className="text-3xl md:text-5xl font-display font-black mb-4 text-white">
-                Exclusive Originals
-              </h2>
-              <p className="text-gray-400 text-base md:text-lg leading-relaxed mb-6">
-                From behind-the-scenes access to championship seasons to intimate portraits of legendary athletes, our original productions tell the stories that define sports culture.
-              </p>
-              <Link href="/subscribe">
-                <button className="bg-[#C14600] hover:bg-[#9e3a00] text-white font-bold px-8 py-3 rounded-lg text-sm transition cursor-pointer uppercase tracking-wide" data-testid="button-originals-cta">
-                  Start Watching
-                </button>
-              </Link>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              {(allPosters.slice(0, 4).length > 0 ? allPosters.slice(0, 4) : [
-                { verticalPosterImage: "/assets/poster-grit-bo.png", posterImage: "/assets/poster-grit-bo.png", title: "Grit" },
-                { verticalPosterImage: "/assets/poster-life-on-ice.png", posterImage: "/assets/poster-life-on-ice.png", title: "Life on Ice" },
-                { verticalPosterImage: "/assets/poster-full-throttle.png", posterImage: "/assets/poster-full-throttle.png", title: "Full Throttle" },
-                { verticalPosterImage: "/assets/poster-rookie.png", posterImage: "/assets/poster-rookie.png", title: "Rookie" },
-              ]).map((item, i) => (
-                <div key={i} className="relative rounded-xl overflow-hidden aspect-[2/3] group">
-                  <img
-                    src={item.verticalPosterImage || item.posterImage}
-                    alt={item.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-3">
-                    <p className="text-white font-semibold text-sm">{item.title}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+      <OriginalsPosterCarousel />
 
       {/* Global Home of Sports */}
       <section className="relative py-16 md:py-24 px-4 bg-[#0a0a0a]" data-testid="section-global-sports">
