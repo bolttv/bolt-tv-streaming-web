@@ -158,7 +158,7 @@ function OriginalsBanner() {
             Award-winning series and documentaries you won't find anywhere else. Only on Bolt TV.
           </p>
           <Link href="/subscribe">
-            <button className="btn-gradient-hover bg-white hover:bg-white/90 text-black font-bold px-8 py-3 rounded-lg text-sm transition cursor-pointer uppercase tracking-wide w-fit" data-testid="button-originals-cta">
+            <button className="btn-gradient-hover bg-white text-black font-bold px-8 py-3 rounded-lg text-sm cursor-pointer uppercase tracking-wide w-fit" data-testid="button-originals-cta">
               Get Started
             </button>
           </Link>
@@ -392,7 +392,7 @@ export default function LandingPage() {
               />
               <button
                 onClick={handleGetStarted}
-                className="btn-gradient-hover bg-white hover:bg-white/90 text-black font-bold px-6 py-3 rounded-lg text-sm transition whitespace-nowrap flex items-center gap-1.5 cursor-pointer"
+                className="btn-gradient-hover bg-white text-black font-bold px-6 py-3 rounded-lg text-sm whitespace-nowrap flex items-center gap-1.5 cursor-pointer"
                 data-testid="button-hero-getstarted"
               >
                 Get Started
@@ -748,7 +748,7 @@ export default function LandingPage() {
               />
               <button
                 onClick={handleGetStarted}
-                className="btn-gradient-hover bg-white hover:bg-white/90 text-black font-bold px-6 py-3 rounded-lg text-sm transition whitespace-nowrap flex items-center gap-1.5 cursor-pointer"
+                className="btn-gradient-hover bg-white text-black font-bold px-6 py-3 rounded-lg text-sm whitespace-nowrap flex items-center gap-1.5 cursor-pointer"
                 data-testid="button-cta-getstarted"
               >
                 Get Started

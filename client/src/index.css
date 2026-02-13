@@ -163,18 +163,19 @@ body {
 .btn-gradient-hover {
   position: relative;
   overflow: hidden;
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), box-shadow 0.3s ease;
+  background: linear-gradient(90deg, #ffffff 0%, #ffffff 100%);
+  background-size: 200% 100%;
+  background-position: 0% 0%;
 }
-.btn-gradient-hover::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(0,0,0,0.08) 40%, rgba(0,0,0,0.15) 50%, rgba(0,0,0,0.08) 60%, transparent);
-  transition: left 0.5s ease;
-  pointer-events: none;
+.btn-gradient-hover:hover {
+  transform: scale(1.03);
+  background: linear-gradient(90deg, #f0f0f0 0%, #ffffff 50%, #e8e8e8 100%);
+  background-size: 200% 100%;
+  animation: gradient-shimmer 1.5s ease infinite;
 }
-.btn-gradient-hover:hover::before {
-  left: 100%;
+@keyframes gradient-shimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
