@@ -421,7 +421,7 @@ export default function LandingPage() {
       <section className="relative py-16 md:py-24 px-4" data-testid="section-pricing">
         <div className="max-w-6xl mx-auto">
           <h2 className="text-2xl md:text-4xl font-display font-black text-center mb-3 text-white">
-            Pick Your Premium
+            Pick Your Plan. Cancel Anytime.
           </h2>
           <p className="text-gray-400 text-sm md:text-base text-center mb-8 max-w-lg mx-auto">
             Choose the plan that's right for you
