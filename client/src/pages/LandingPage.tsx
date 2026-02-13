@@ -387,7 +387,7 @@ export default function LandingPage() {
       <section className="relative h-[75vh] flex items-center justify-center overflow-hidden pt-16" data-testid="section-hero">
         <ScrollingPosterBackground posters={posterSources} />
         
-        <div className="relative z-10 text-center px-6 md:px-16 max-w-2xl mx-auto">
+        <div className="relative z-10 text-center w-full flex flex-col items-center px-6 md:px-16">
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-black leading-tight tracking-tight mb-3 md:mb-4 text-white whitespace-nowrap">
             Athlete Stories Live Here
           </h1>
