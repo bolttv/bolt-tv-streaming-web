@@ -128,7 +128,7 @@ function ScrollingPosterBackground({ posters }: { posters: { img: string; title:
         ))}
       </div>
       <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black" />
-      <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, black 0%, black 25%, rgba(0,0,0,0.7) 40%, rgba(0,0,0,0.2) 60%, transparent 80%)' }} />
+      <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, black 0%, black 20%, rgba(0,0,0,0.85) 35%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0.3) 65%, rgba(0,0,0,0.1) 80%, transparent 95%)' }} />
     </div>
   );
 }
@@ -384,21 +384,21 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Banner - Short with scrolling poster background */}
-      <section className="relative h-[75vh] flex items-center overflow-hidden pt-16" data-testid="section-hero">
+      <section className="relative h-[75vh] flex items-center justify-center overflow-hidden pt-16" data-testid="section-hero">
         <ScrollingPosterBackground posters={posterSources} />
         
-        <div className="relative z-10 text-left px-6 md:px-16 max-w-xl">
+        <div className="relative z-10 text-center px-6 md:px-16 max-w-xl mx-auto">
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-black leading-tight tracking-tight mb-3 md:mb-4 text-white">
             Athlete Stories Live Here
           </h1>
-          <p className="text-white/80 text-sm md:text-lg max-w-md mb-2 leading-relaxed">
+          <p className="text-white/80 text-sm md:text-lg max-w-md mx-auto mb-2 leading-relaxed">
             Exclusive sports documentaries, original series, and live events.
           </p>
           <p className="text-white/60 text-xs md:text-sm mb-6">
             Starting at {startingPrice}/mo. Cancel anytime.
           </p>
           
-          <div className="max-w-md">
+          <div className="max-w-md mx-auto">
             <div className="flex items-center gap-2" data-testid="hero-email-form">
               <input
                 type="email"
