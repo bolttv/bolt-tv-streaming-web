@@ -156,15 +156,15 @@ function OriginalsPosterCarousel() {
             const translateX = normalizedOffset * 280;
             const scale = isCenter ? 1 : absOffset === 1 ? 0.82 : 0.68;
             const zIndex = isCenter ? 30 : absOffset === 1 ? 20 : 10;
-            const opacity = isCenter ? 1 : absOffset === 1 ? 0.7 : 0.4;
-            const rotateY = normalizedOffset * -5;
+            const opacity = isCenter ? 1 : absOffset === 1 ? 0.55 : 0;
+            const brightness = isCenter ? 1 : absOffset === 1 ? 0.4 : 0;
 
             return (
               <div
                 key={i}
                 className="absolute transition-all duration-700 ease-out cursor-pointer"
                 style={{
-                  transform: `translateX(${translateX}px) scale(${scale}) perspective(1000px) rotateY(${rotateY}deg)`,
+                  transform: `translateX(${translateX}px) scale(${scale})`,
                   zIndex,
                   opacity,
                   width: "320px",
@@ -177,10 +177,10 @@ function OriginalsPosterCarousel() {
                     <img
                       src={poster.img}
                       alt={poster.title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover transition-all duration-700"
+                      style={{ filter: `brightness(${brightness})` }}
                     />
                   </div>
-                  <div className={`absolute inset-0 bg-black/40 transition-opacity duration-700 ${isCenter ? "opacity-0" : "opacity-100"}`} />
                 </div>
               </div>
             );
