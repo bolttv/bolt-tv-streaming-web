@@ -92,20 +92,29 @@ function ScrollingPosterBackground({ posters }: { posters: { img: string; title:
 
   return (
     <div className="absolute inset-0 overflow-hidden">
-      <div className="flex gap-2 w-full h-full justify-center">
-        {Array.from({ length: 12 }).map((_, colIdx) => (
+      <div
+        className="absolute right-[-10%] top-[-15%] bottom-[-15%] flex gap-6 justify-end"
+        style={{
+          width: '75%',
+          transform: 'rotate(-30deg)',
+          transformOrigin: 'center center',
+        }}
+      >
+        {Array.from({ length: 5 }).map((_, colIdx) => (
           <div
             key={colIdx}
-            className="flex flex-col gap-2 flex-1 min-w-0"
+            className="flex flex-col gap-6"
             style={{
               animation: `scrollPosters ${20 + colIdx * 3}s linear infinite`,
               animationDirection: colIdx % 2 === 0 ? "normal" : "reverse",
+              width: '220px',
+              flexShrink: 0,
             }}
           >
             {Array.from({ length: postersPerColumn * 2 }).map((_, rowIdx) => {
               const poster = allPosters[(colIdx * postersPerColumn + rowIdx) % allPosters.length];
               return (
-                <div key={rowIdx} className="w-full rounded-lg overflow-hidden shrink-0" style={{ aspectRatio: "2/3" }}>
+                <div key={rowIdx} className="rounded-lg overflow-hidden shrink-0" style={{ width: '220px', aspectRatio: "2/3" }}>
                   <img
                     src={poster.img}
                     alt={poster.title}
@@ -118,8 +127,8 @@ function ScrollingPosterBackground({ posters }: { posters: { img: string; title:
           </div>
         ))}
       </div>
-      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/80 to-black" />
-      <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-black/50" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black" />
+      <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, black 0%, black 25%, rgba(0,0,0,0.7) 40%, rgba(0,0,0,0.2) 60%, transparent 80%)' }} />
     </div>
   );
 }
@@ -375,21 +384,21 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Banner - Short with scrolling poster background */}
-      <section className="relative h-[75vh] flex items-center justify-center overflow-hidden pt-16" data-testid="section-hero">
+      <section className="relative h-[75vh] flex items-center overflow-hidden pt-16" data-testid="section-hero">
         <ScrollingPosterBackground posters={posterSources} />
         
-        <div className="relative z-10 text-center px-4 max-w-3xl mx-auto">
+        <div className="relative z-10 text-left px-6 md:px-16 max-w-xl">
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-black leading-tight tracking-tight mb-3 md:mb-4 text-white">
             Athlete Stories Live Here
           </h1>
-          <p className="text-white/80 text-sm md:text-lg max-w-xl mx-auto mb-2 leading-relaxed">
+          <p className="text-white/80 text-sm md:text-lg max-w-md mb-2 leading-relaxed">
             Exclusive sports documentaries, original series, and live events.
           </p>
           <p className="text-white/60 text-xs md:text-sm mb-6">
             Starting at {startingPrice}/mo. Cancel anytime.
           </p>
           
-          <div className="max-w-md mx-auto">
+          <div className="max-w-md">
             <div className="flex items-center gap-2" data-testid="hero-email-form">
               <input
                 type="email"
