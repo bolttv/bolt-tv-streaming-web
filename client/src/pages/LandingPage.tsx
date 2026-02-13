@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { 
   ChevronDown, ChevronRight, Check, X, Star
 } from "lucide-react";
@@ -88,10 +88,25 @@ function ScrollingPosterBackground({ posters }: { posters: { img: string; title:
   if (posters.length === 0) return null;
   
   const postersPerColumn = 4;
-  const allPosters = [...posters];
-  while (allPosters.length < 60) {
-    allPosters.push(...posters);
-  }
+  const columns = useMemo(() => {
+    const numCols = 6;
+    const result: { img: string; title: string }[][] = [];
+    const available = [...posters];
+    for (let c = 0; c < numCols; c++) {
+      const col: { img: string; title: string }[] = [];
+      const shuffled = [...available].sort(() => Math.random() - 0.5);
+      for (let r = 0; r < postersPerColumn * 2; r++) {
+        let pick = shuffled[r % shuffled.length];
+        if (col.length > 0 && pick.img === col[col.length - 1].img) {
+          const alt = shuffled.find(p => p.img !== pick.img);
+          if (alt) pick = alt;
+        }
+        col.push(pick);
+      }
+      result.push(col);
+    }
+    return result;
+  }, [posters]);
 
   return (
     <div className="absolute inset-0 overflow-hidden">
@@ -103,7 +118,7 @@ function ScrollingPosterBackground({ posters }: { posters: { img: string; title:
           transformOrigin: 'center center',
         }}
       >
-        {Array.from({ length: 6 }).map((_, colIdx) => (
+        {columns.map((col, colIdx) => (
           <div
             key={colIdx}
             className="flex flex-col gap-6"
@@ -114,19 +129,16 @@ function ScrollingPosterBackground({ posters }: { posters: { img: string; title:
               flexShrink: 0,
             }}
           >
-            {Array.from({ length: postersPerColumn * 2 }).map((_, rowIdx) => {
-              const poster = allPosters[(colIdx * postersPerColumn + rowIdx) % allPosters.length];
-              return (
-                <div key={rowIdx} className="rounded-lg overflow-hidden shrink-0" style={{ width: '264px', aspectRatio: "2/3" }}>
-                  <img
-                    src={poster.img}
-                    alt={poster.title}
-                    className="w-full h-full object-cover"
-                    loading={rowIdx < 2 ? "eager" : "lazy"}
-                  />
-                </div>
-              );
-            })}
+            {col.map((poster, rowIdx) => (
+              <div key={rowIdx} className="rounded-lg overflow-hidden shrink-0" style={{ width: '264px', aspectRatio: "2/3" }}>
+                <img
+                  src={poster.img}
+                  alt={poster.title}
+                  className="w-full h-full object-cover"
+                  loading={rowIdx < 2 ? "eager" : "lazy"}
+                />
+              </div>
+            ))}
           </div>
         ))}
       </div>
