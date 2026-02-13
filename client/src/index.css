@@ -155,3 +155,13 @@ body {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+@keyframes scroll-sports {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-scroll-sports {
+  animation: scroll-sports 40s linear infinite;
+}
+.animate-scroll-sports:hover {
+  animation-play-state: paused;
+}

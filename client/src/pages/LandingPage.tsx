@@ -639,9 +639,19 @@ export default function LandingPage() {
             </h2>
           </div>
         </div>
-        <div className="relative w-full overflow-x-auto scrollbar-hide">
-          <div className="flex gap-4 px-4 md:px-8 pb-4" style={{ width: "max-content" }}>
+        <div className="relative w-full overflow-hidden">
+          <div className="flex gap-4 animate-scroll-sports">
             {[
+              { img: sportFootball, label: "Football" },
+              { img: sportBasketball, label: "Basketball" },
+              { img: sportBaseball, label: "Baseball" },
+              { img: sportHockey, label: "Hockey" },
+              { img: sportGolf, label: "Golf" },
+              { img: sportBoxing, label: "Boxing" },
+              { img: sportCombat, label: "Combat" },
+              { img: sportActionSports, label: "Action Sports" },
+              { img: sportRugby, label: "Rugby" },
+              { img: sportGaming, label: "Gaming" },
               { img: sportFootball, label: "Football" },
               { img: sportBasketball, label: "Basketball" },
               { img: sportBaseball, label: "Baseball" },
@@ -656,7 +666,7 @@ export default function LandingPage() {
               <div
                 key={i}
                 className="relative flex-shrink-0 w-[200px] md:w-[240px] rounded-xl overflow-hidden group cursor-pointer"
-                data-testid={`sport-card-${sport.label.toLowerCase().replace(/\s+/g, "-")}`}
+                data-testid={`sport-card-${sport.label.toLowerCase().replace(/\s+/g, "-")}-${i}`}
               >
                 <img
                   src={sport.img}
