@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { 
-  ChevronDown, ChevronRight, ChevronLeft, Smartphone, Download, Zap, Check, 
+  ChevronDown, ChevronRight, Smartphone, Download, Zap, Check, 
   Globe, Trophy, Film, MonitorPlay, Tablet, Laptop, X, Star
 } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
@@ -119,148 +119,52 @@ const originalPosters = [
   { img: posterLifeOnIce, title: "Life on Ice" },
 ];
 
-function OriginalsPosterCarousel() {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [prevIndex, setPrevIndex] = useState(0);
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
-  const [isWrapping, setIsWrapping] = useState<Set<number>>(new Set());
-  const total = originalPosters.length;
-
-  useEffect(() => {
-    if (!isAutoPlaying) return;
-    const interval = setInterval(() => {
-      setActiveIndex(prev => (prev + 1) % total);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, [isAutoPlaying, total]);
-
-  useEffect(() => {
-    if (activeIndex === prevIndex) return;
-
-    const wrapping = new Set<number>();
-    originalPosters.forEach((_, i) => {
-      const oldOff = ((i - prevIndex + total) % total);
-      const oldNorm = oldOff > Math.floor(total / 2) ? oldOff - total : oldOff;
-      const newOff = ((i - activeIndex + total) % total);
-      const newNorm = newOff > Math.floor(total / 2) ? newOff - total : newOff;
-      if (Math.abs(newNorm - oldNorm) > 2) {
-        wrapping.add(i);
-      }
-    });
-
-    if (wrapping.size > 0) {
-      setIsWrapping(wrapping);
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setIsWrapping(new Set());
-        });
-      });
-    }
-
-    setPrevIndex(activeIndex);
-  }, [activeIndex, prevIndex, total]);
-
-  const goTo = useCallback((idx: number) => {
-    setActiveIndex(((idx % total) + total) % total);
-    setIsAutoPlaying(false);
-    setTimeout(() => setIsAutoPlaying(true), 8000);
-  }, [total]);
-
-  const prev = () => goTo(activeIndex - 1);
-  const next = () => goTo(activeIndex + 1);
-
+function OriginalsBanner() {
   return (
-    <section className="relative py-16 md:py-24 px-4 overflow-hidden bg-[#0a0a0a]" data-testid="section-originals-carousel">
-      <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-10">
-          <span className="text-[#C14600] text-xs font-bold uppercase tracking-widest mb-3 block">Only on Bolt TV</span>
-          <h2 className="text-3xl md:text-5xl font-display font-black text-white">
-            Exclusive Originals
+    <section className="relative overflow-hidden" data-testid="section-originals-banner">
+      <div className="relative h-[500px] md:h-[600px]">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover"
+        >
+          <source src="/assets/originals-banner.mov" type="video/quicktime" />
+          <source src="/assets/originals-banner.mov" type="video/mp4" />
+        </video>
+        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent" />
+
+        <div className="relative z-10 h-full flex flex-col justify-center px-6 md:px-16 max-w-2xl">
+          <h2 className="text-4xl md:text-6xl font-display font-black text-white uppercase leading-tight mb-4">
+            Exclusive<br />Originals
           </h2>
-          <p className="text-gray-400 text-sm md:text-base mt-3 max-w-lg mx-auto">
-            Award-winning series and documentaries you won't find anywhere else
+          <p className="text-gray-300 text-sm md:text-base leading-relaxed mb-6 max-w-md">
+            Award-winning series and documentaries you won't find anywhere else. Only on Bolt TV.
           </p>
-        </div>
-
-        <div className="relative flex items-center justify-center h-[480px] md:h-[620px]">
-          {originalPosters.map((poster, i) => {
-            const offset = ((i - activeIndex + total) % total);
-            const normalizedOffset = offset > Math.floor(total / 2) ? offset - total : offset;
-            const isCenter = normalizedOffset === 0;
-            const absOffset = Math.abs(normalizedOffset);
-
-            if (absOffset > 2) return null;
-
-            const translateX = normalizedOffset * 260;
-            const scale = isCenter ? 1 : absOffset === 1 ? 0.85 : 0.7;
-            const zIndex = isCenter ? 30 : absOffset === 1 ? 20 : 10;
-            const opacity = absOffset >= 2 ? 0.95 : 1;
-            const posterIsWrapping = isWrapping.has(i);
-
-            return (
-              <div
-                key={i}
-                className={`absolute cursor-pointer ${posterIsWrapping ? "" : "transition-all duration-700 ease-out"}`}
-                style={{
-                  transform: `translateX(${translateX}px) scale(${scale})`,
-                  zIndex,
-                  opacity: posterIsWrapping ? 0 : opacity,
-                  width: "320px",
-                }}
-                onClick={() => goTo(i)}
-                data-testid={`carousel-poster-${i}`}
-              >
-                <div className={`relative rounded-2xl overflow-hidden shadow-2xl ${posterIsWrapping ? "" : "transition-all duration-700"} ${isCenter ? "shadow-[#C14600]/20" : ""}`}>
-                  <div style={{ aspectRatio: "2/3" }}>
-                    <img
-                      src={poster.img}
-                      alt={poster.title}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  {normalizedOffset === -2 && (
-                    <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(to right, #0a0a0a 0%, transparent 80%)" }} />
-                  )}
-                  {normalizedOffset === 2 && (
-                    <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(to left, #0a0a0a 0%, transparent 80%)" }} />
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="flex items-center justify-center gap-6 mt-6">
-          <div className="flex items-center gap-1 bg-white/10 rounded-full p-1">
-            <button
-              onClick={prev}
-              className="p-2 hover:bg-white/10 rounded-full transition cursor-pointer"
-              data-testid="carousel-prev"
-            >
-              <ChevronLeft className="w-5 h-5 text-white" />
+          <Link href="/subscribe">
+            <button className="bg-[#C14600] hover:bg-[#9e3a00] text-white font-bold px-8 py-3 rounded-lg text-sm transition cursor-pointer uppercase tracking-wide w-fit" data-testid="button-originals-cta">
+              Get Started
             </button>
-            <button
-              onClick={next}
-              className="p-2 hover:bg-white/10 rounded-full transition cursor-pointer"
-              data-testid="carousel-next"
-            >
-              <ChevronRight className="w-5 h-5 text-white" />
-            </button>
-          </div>
+          </Link>
         </div>
+      </div>
 
-        <div className="flex items-center justify-center gap-2 mt-4">
-          {originalPosters.map((_, i) => (
-            <button
+      <div className="relative z-20 -mt-24 md:-mt-32 px-4 md:px-16 pb-10">
+        <div className="flex gap-3 md:gap-4 overflow-x-auto scrollbar-hide pb-2">
+          {originalPosters.map((poster, i) => (
+            <div
               key={i}
-              onClick={() => goTo(i)}
-              className={`transition-all duration-500 rounded-full cursor-pointer ${
-                i === activeIndex
-                  ? "w-8 h-2 bg-[#C14600]"
-                  : "w-2 h-2 bg-white/30 hover:bg-white/50"
-              }`}
-              data-testid={`carousel-dot-${i}`}
-            />
+              className="flex-shrink-0 w-[140px] md:w-[180px] rounded-xl overflow-hidden group cursor-pointer hover:scale-105 transition-transform duration-300"
+              data-testid={`originals-poster-${i}`}
+            >
+              <img
+                src={poster.img}
+                alt={poster.title}
+                className="w-full h-auto object-contain"
+              />
+            </div>
           ))}
         </div>
       </div>
@@ -660,7 +564,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <OriginalsPosterCarousel />
+      <OriginalsBanner />
 
       {/* Stories Across Every Sport */}
       <section className="relative py-16 md:py-24 overflow-hidden" data-testid="section-every-sport">
