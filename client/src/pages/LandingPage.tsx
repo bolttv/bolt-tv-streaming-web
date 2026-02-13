@@ -634,13 +634,13 @@ export default function LandingPage() {
             ].map((sport, i) => (
               <div
                 key={i}
-                className="relative flex-shrink-0 w-[180px] md:w-[239px] rounded-xl overflow-hidden group cursor-pointer"
+                className="relative flex-shrink-0 w-[180px] md:w-[239px] rounded-xl overflow-hidden"
                 data-testid={`sport-card-${sport.label.toLowerCase().replace(/\s+/g, "-")}-${i}`}
               >
                 <img
                   src={sport.img}
                   alt={sport.label}
-                  className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-500"
+                  className="w-full h-auto object-contain"
                 />
               </div>
             ))}
