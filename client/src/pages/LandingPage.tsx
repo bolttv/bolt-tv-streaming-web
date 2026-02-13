@@ -127,6 +127,7 @@ function ScrollingPosterBackground({ posters }: { posters: { img: string; title:
           </div>
         ))}
       </div>
+      <div className="absolute inset-0 bg-black/5" />
       <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black" />
       <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, black 0%, black 10%, rgba(0,0,0,0.85) 25%, rgba(0,0,0,0.6) 40%, rgba(0,0,0,0.3) 55%, rgba(0,0,0,0.1) 70%, transparent 85%)' }} />
     </div>
