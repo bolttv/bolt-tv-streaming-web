@@ -166,7 +166,7 @@ function OriginalsPosterCarousel() {
             const translateX = normalizedOffset * 260;
             const scale = isCenter ? 1 : absOffset === 1 ? 0.85 : 0.7;
             const zIndex = isCenter ? 30 : absOffset === 1 ? 20 : 10;
-            const opacity = 1;
+            const opacity = absOffset >= 2 ? 0.95 : 1;
             const brightness = 1;
 
             return (
@@ -192,10 +192,10 @@ function OriginalsPosterCarousel() {
                     />
                   </div>
                   {normalizedOffset === -2 && (
-                    <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(to right, #0a0a0a 0%, transparent 60%)" }} />
+                    <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(to right, #0a0a0a 0%, transparent 80%)" }} />
                   )}
                   {normalizedOffset === 2 && (
-                    <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(to left, #0a0a0a 0%, transparent 60%)" }} />
+                    <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(to left, #0a0a0a 0%, transparent 80%)" }} />
                   )}
                 </div>
               </div>
