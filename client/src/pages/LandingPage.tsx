@@ -603,7 +603,7 @@ export default function LandingPage() {
             ].map((sport, i) => (
               <div
                 key={i}
-                className="relative flex-shrink-0 w-[200px] md:w-[240px] rounded-xl overflow-hidden group cursor-pointer"
+                className="relative flex-shrink-0 w-[180px] md:w-[239px] rounded-xl overflow-hidden group cursor-pointer"
                 data-testid={`sport-card-${sport.label.toLowerCase().replace(/\s+/g, "-")}-${i}`}
               >
                 <img
