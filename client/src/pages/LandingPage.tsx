@@ -134,7 +134,7 @@ const originalPosters = [
 
 function OriginalsBanner() {
   return (
-    <section className="relative overflow-hidden min-h-[600px] md:min-h-[700px] flex flex-col" data-testid="section-originals-banner">
+    <section className="relative overflow-hidden min-h-[620px] md:min-h-[720px] flex flex-col" data-testid="section-originals-banner">
       <video
         autoPlay
         loop
