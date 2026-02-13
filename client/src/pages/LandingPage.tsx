@@ -95,12 +95,12 @@ function ScrollingPosterBackground({ posters }: { posters: { img: string; title:
       <div
         className="absolute right-[-10%] top-[-15%] bottom-[-15%] flex gap-6 justify-end"
         style={{
-          width: '75%',
+          width: '85%',
           transform: 'rotate(-30deg)',
           transformOrigin: 'center center',
         }}
       >
-        {Array.from({ length: 5 }).map((_, colIdx) => (
+        {Array.from({ length: 6 }).map((_, colIdx) => (
           <div
             key={colIdx}
             className="flex flex-col gap-6"
