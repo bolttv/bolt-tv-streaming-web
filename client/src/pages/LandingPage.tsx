@@ -233,19 +233,16 @@ export default function LandingPage() {
       .catch(() => {});
   }, []);
 
-  const allPosters = content?.rows?.flatMap(r => r.items) || [];
-  const posterSources = allPosters.length > 0
-    ? allPosters.map(p => ({ img: p.verticalPosterImage || p.posterImage, title: p.title }))
-    : [
-        { img: posterQuestForGold, title: "Quest for Gold" },
-        { img: posterSurfing, title: "Surfing the Midnight Sun" },
-        { img: posterFullThrottle, title: "Full Throttle" },
-        { img: posterLifeOnIce, title: "Life on Ice" },
-        { img: posterGritGlory, title: "Grit and Glory" },
-        { img: posterRookie, title: "Rookie" },
-        { img: posterSurfingMidnight, title: "Surfing the Midnight Sun" },
-        { img: posterTraviesa, title: "Traviesa" },
-      ];
+  const posterSources = [
+    { img: posterQuestForGold, title: "Quest for Gold" },
+    { img: posterSurfing, title: "Surfing the Midnight Sun" },
+    { img: posterFullThrottle, title: "Full Throttle" },
+    { img: posterLifeOnIce, title: "Life on Ice" },
+    { img: posterGritGlory, title: "Grit and Glory" },
+    { img: posterRookie, title: "Rookie" },
+    { img: posterSurfingMidnight, title: "Surfing the Midnight Sun" },
+    { img: posterTraviesa, title: "Traviesa" },
+  ];
 
   const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
