@@ -149,7 +149,7 @@ function OriginalsBanner() {
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
 
 
-      <div className="relative z-10 min-h-[500px] md:min-h-[700px] flex flex-col justify-end px-6 md:px-16">
+      <div className="relative z-10 min-h-[600px] md:min-h-[85vh] flex flex-col justify-end px-6 md:px-16">
         <div className="max-w-2xl mb-10 md:mb-14">
           <h2 className="text-4xl md:text-6xl font-display font-black text-white uppercase leading-tight mb-4">
             Exclusive<br />Originals
