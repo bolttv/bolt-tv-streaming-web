@@ -121,7 +121,9 @@ const originalPosters = [
 
 function OriginalsPosterCarousel() {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [prevIndex, setPrevIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [isWrapping, setIsWrapping] = useState<Set<number>>(new Set());
   const total = originalPosters.length;
 
   useEffect(() => {
@@ -131,6 +133,32 @@ function OriginalsPosterCarousel() {
     }, 4000);
     return () => clearInterval(interval);
   }, [isAutoPlaying, total]);
+
+  useEffect(() => {
+    if (activeIndex === prevIndex) return;
+
+    const wrapping = new Set<number>();
+    originalPosters.forEach((_, i) => {
+      const oldOff = ((i - prevIndex + total) % total);
+      const oldNorm = oldOff > Math.floor(total / 2) ? oldOff - total : oldOff;
+      const newOff = ((i - activeIndex + total) % total);
+      const newNorm = newOff > Math.floor(total / 2) ? newOff - total : newOff;
+      if (Math.abs(newNorm - oldNorm) > 2) {
+        wrapping.add(i);
+      }
+    });
+
+    if (wrapping.size > 0) {
+      setIsWrapping(wrapping);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setIsWrapping(new Set());
+        });
+      });
+    }
+
+    setPrevIndex(activeIndex);
+  }, [activeIndex, prevIndex, total]);
 
   const goTo = useCallback((idx: number) => {
     setActiveIndex(((idx % total) + total) % total);
@@ -167,28 +195,27 @@ function OriginalsPosterCarousel() {
             const scale = isCenter ? 1 : absOffset === 1 ? 0.85 : 0.7;
             const zIndex = isCenter ? 30 : absOffset === 1 ? 20 : 10;
             const opacity = absOffset >= 2 ? 0.95 : 1;
-            const brightness = 1;
+            const posterIsWrapping = isWrapping.has(i);
 
             return (
               <div
                 key={i}
-                className="absolute transition-all duration-700 ease-out cursor-pointer"
+                className={`absolute cursor-pointer ${posterIsWrapping ? "" : "transition-all duration-700 ease-out"}`}
                 style={{
                   transform: `translateX(${translateX}px) scale(${scale})`,
                   zIndex,
-                  opacity,
+                  opacity: posterIsWrapping ? 0 : opacity,
                   width: "320px",
                 }}
                 onClick={() => goTo(i)}
                 data-testid={`carousel-poster-${i}`}
               >
-                <div className={`relative rounded-2xl overflow-hidden shadow-2xl transition-all duration-700 ${isCenter ? "shadow-[#C14600]/20" : ""}`}>
+                <div className={`relative rounded-2xl overflow-hidden shadow-2xl ${posterIsWrapping ? "" : "transition-all duration-700"} ${isCenter ? "shadow-[#C14600]/20" : ""}`}>
                   <div style={{ aspectRatio: "2/3" }}>
                     <img
                       src={poster.img}
                       alt={poster.title}
-                      className="w-full h-full object-cover transition-all duration-700"
-                      style={{ filter: `brightness(${brightness})` }}
+                      className="w-full h-full object-cover"
                     />
                   </div>
                   {normalizedOffset === -2 && (
