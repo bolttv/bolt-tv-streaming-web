@@ -169,7 +169,7 @@ function OriginalsBanner() {
             {originalPosters.map((poster, i) => (
               <div
                 key={i}
-                className="flex-shrink-0 w-[180px] md:w-[239px] rounded-lg overflow-hidden group cursor-pointer"
+                className="flex-shrink-0 w-[180px] md:w-[239px] rounded-lg overflow-hidden"
                 style={{ aspectRatio: "2/3" }}
                 data-testid={`originals-poster-${i}`}
               >
