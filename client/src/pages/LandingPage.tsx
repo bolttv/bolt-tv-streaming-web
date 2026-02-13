@@ -107,14 +107,14 @@ function ScrollingPosterBackground({ posters }: { posters: { img: string; title:
             style={{
               animation: `scrollPosters ${20 + colIdx * 3}s linear infinite`,
               animationDirection: colIdx % 2 === 0 ? "normal" : "reverse",
-              width: '220px',
+              width: '264px',
               flexShrink: 0,
             }}
           >
             {Array.from({ length: postersPerColumn * 2 }).map((_, rowIdx) => {
               const poster = allPosters[(colIdx * postersPerColumn + rowIdx) % allPosters.length];
               return (
-                <div key={rowIdx} className="rounded-lg overflow-hidden shrink-0" style={{ width: '220px', aspectRatio: "2/3" }}>
+                <div key={rowIdx} className="rounded-lg overflow-hidden shrink-0" style={{ width: '264px', aspectRatio: "2/3" }}>
                   <img
                     src={poster.img}
                     alt={poster.title}
