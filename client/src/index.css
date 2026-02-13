@@ -159,6 +159,3 @@ body {
 .animate-scroll-sports {
   animation: scroll-sports 40s linear infinite;
 }
-.animate-scroll-sports:hover {
-  animation-play-state: paused;
-}
