@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { 
   ChevronDown, ChevronRight, Check, X, Star
 } from "lucide-react";
@@ -84,6 +84,21 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
   );
 }
 
+function LazySection({ children, className, rootMargin = "200px" }: { children: React.ReactNode; className?: string; rootMargin?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) { setVisible(true); obs.disconnect(); }
+    }, { rootMargin });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [rootMargin]);
+  return <div ref={ref} className={className}>{visible ? children : <div style={{ minHeight: '400px' }} />}</div>;
+}
+
 function ScrollingPosterBackground({ posters }: { posters: { img: string; title: string }[] }) {
   if (posters.length === 0) return null;
   
@@ -127,6 +142,9 @@ function ScrollingPosterBackground({ posters }: { posters: { img: string; title:
               animationDirection: colIdx % 2 === 0 ? "normal" : "reverse",
               width: '264px',
               flexShrink: 0,
+              willChange: 'transform',
+              backfaceVisibility: 'hidden' as const,
+              contain: 'layout style paint',
             }}
           >
             {col.map((poster, rowIdx) => (
@@ -136,6 +154,7 @@ function ScrollingPosterBackground({ posters }: { posters: { img: string; title:
                   alt={poster.title}
                   className="w-full h-full object-cover"
                   loading={rowIdx < 2 ? "eager" : "lazy"}
+                  decoding="async"
                 />
               </div>
             ))}
@@ -165,6 +184,7 @@ function OriginalsBanner() {
         loop
         muted
         playsInline
+        preload="none"
         className="absolute inset-0 w-full h-full object-cover"
       >
         <source src="/assets/originals-banner.mov" type="video/quicktime" />
@@ -202,6 +222,8 @@ function OriginalsBanner() {
                   src={poster.img}
                   alt={poster.title}
                   className="w-full h-full object-cover rounded-xl"
+                  loading="lazy"
+                  decoding="async"
                 />
               </div>
             ))}
@@ -358,13 +380,6 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <style>{`
-        @keyframes scrollPosters {
-          0% { transform: translateY(0); }
-          100% { transform: translateY(-50%); }
-        }
-      `}</style>
-
       <nav className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/80 to-transparent">
         <div className="px-4 md:px-12 h-16 md:h-20 flex items-center justify-between">
           <Link href="/" className="flex-shrink-0">
@@ -578,9 +593,12 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <OriginalsBanner />
+      <LazySection>
+        <OriginalsBanner />
+      </LazySection>
 
       {/* Athlete Driven Series */}
+      <LazySection>
       <section className="relative py-16 md:py-24 px-4" data-testid="section-athlete-series">
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-2 gap-8 md:gap-16 items-center">
@@ -612,6 +630,7 @@ export default function LandingPage() {
                       alt={item.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       loading="lazy"
+                      decoding="async"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-3">
@@ -624,9 +643,11 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+      </LazySection>
 
       {/* Stories Across Every Sport */}
-      <section className="relative py-16 md:py-24 overflow-hidden" data-testid="section-every-sport">
+      <LazySection>
+      <section className="relative py-16 md:py-24 overflow-hidden" style={{ contain: 'layout style paint' }} data-testid="section-every-sport">
         <div className="max-w-6xl mx-auto px-4 mb-10">
           <div className="text-center">
             <span className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-3 block">Worldwide Coverage</span>
@@ -668,14 +689,18 @@ export default function LandingPage() {
                   src={sport.img}
                   alt={sport.label}
                   className="w-full h-auto object-contain"
+                  loading="lazy"
+                  decoding="async"
                 />
               </div>
             ))}
           </div>
         </div>
       </section>
+      </LazySection>
 
       {/* So Many Ways To Watch */}
+      <LazySection>
       <section className="relative py-16 md:py-24 px-4 bg-black" data-testid="section-supported-devices">
         <div className="max-w-5xl mx-auto text-center">
           <h2 className="text-3xl md:text-5xl font-display font-black mb-2 text-white leading-tight">
@@ -693,23 +718,23 @@ export default function LandingPage() {
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-8 md:gap-x-14 md:gap-y-10 mb-10">
-            <img src={logoSamsung} alt="Samsung" className="h-3.5 md:h-5 w-auto object-contain" />
-            <img src={logoAppleTV} alt="Apple TV" className="h-3.5 md:h-5 w-auto object-contain" />
-            <img src={logoPanasonic} alt="Panasonic" className="h-3.5 md:h-5 w-auto object-contain" />
-            <img src={logoChromecast} alt="Chromecast" className="h-3.5 md:h-5 w-auto object-contain" />
-            <img src={logoSony} alt="Sony" className="h-3.5 md:h-5 w-auto object-contain" />
-            <img src={logoLG} alt="LG" className="h-3.5 md:h-5 w-auto object-contain" />
-            <img src={logoRoku} alt="Roku" className="h-3.5 md:h-5 w-auto object-contain" />
+            <img src={logoSamsung} alt="Samsung" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" decoding="async" />
+            <img src={logoAppleTV} alt="Apple TV" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" decoding="async" />
+            <img src={logoPanasonic} alt="Panasonic" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" decoding="async" />
+            <img src={logoChromecast} alt="Chromecast" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" decoding="async" />
+            <img src={logoSony} alt="Sony" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" decoding="async" />
+            <img src={logoLG} alt="LG" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" decoding="async" />
+            <img src={logoRoku} alt="Roku" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" decoding="async" />
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-8 md:gap-x-14 md:gap-y-10">
-            <img src={logoAmazonFire} alt="Amazon Fire TV" className="h-3.5 md:h-5 w-auto object-contain" />
-            <img src={logoGooglePlay} alt="Google Play" className="h-3.5 md:h-5 w-auto object-contain" />
-            <img src={logoAppStore} alt="App Store" className="h-3.5 md:h-5 w-auto object-contain" />
-            <img src={logoPS5} alt="PS5" className="h-3.5 md:h-5 w-auto object-contain" />
-            <img src={logoXbox} alt="Xbox" className="h-3.5 md:h-5 w-auto object-contain" />
-            <img src={logoAndroidTV} alt="Android TV" className="h-3.5 md:h-5 w-auto object-contain" />
-            <img src={logoHisense} alt="Hisense" className="h-3.5 md:h-5 w-auto object-contain" />
+            <img src={logoAmazonFire} alt="Amazon Fire TV" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" decoding="async" />
+            <img src={logoGooglePlay} alt="Google Play" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" decoding="async" />
+            <img src={logoAppStore} alt="App Store" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" decoding="async" />
+            <img src={logoPS5} alt="PS5" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" decoding="async" />
+            <img src={logoXbox} alt="Xbox" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" decoding="async" />
+            <img src={logoAndroidTV} alt="Android TV" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" decoding="async" />
+            <img src={logoHisense} alt="Hisense" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" decoding="async" />
           </div>
 
           <p className="text-gray-500 text-xs md:text-sm mt-10">
@@ -717,8 +742,10 @@ export default function LandingPage() {
           </p>
         </div>
       </section>
+      </LazySection>
 
       {/* FAQ */}
+      <LazySection>
       <section className="relative py-16 md:py-24 px-4" data-testid="section-faq">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-2xl md:text-4xl font-display font-black text-center mb-10 text-white">
@@ -752,6 +779,7 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+      </LazySection>
 
       {/* Final CTA */}
       <section className="relative py-14 md:py-20 px-4">

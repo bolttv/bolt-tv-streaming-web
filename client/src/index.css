@@ -158,6 +158,12 @@ body {
 }
 .animate-scroll-sports {
   animation: scroll-sports 40s linear infinite;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+@keyframes scrollPosters {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-50%); }
 }
 
 .btn-gradient-hover {
