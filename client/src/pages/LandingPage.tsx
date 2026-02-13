@@ -134,6 +134,7 @@ function OriginalsBanner() {
       </video>
       <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+      <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black to-transparent z-[1]" />
 
       <div className="relative z-10 pt-16 md:pt-24 px-6 md:px-16">
         <div className="max-w-2xl mb-12 md:mb-16">
