@@ -649,7 +649,7 @@ export default function LandingPage() {
       </section>
 
       {/* So Many Ways To Watch */}
-      <section className="relative py-16 md:py-24 px-4 bg-[#0a0a0a]" data-testid="section-supported-devices">
+      <section className="relative py-16 md:py-24 px-4 bg-black" data-testid="section-supported-devices">
         <div className="max-w-5xl mx-auto text-center">
           <h2 className="text-3xl md:text-5xl font-display font-black mb-2 text-white leading-tight">
             Watch on your favorite devices.
