@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { useEffect, useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import { 
   ChevronDown, ChevronRight, Check, X, Star
 } from "lucide-react";
@@ -84,7 +84,7 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
   );
 }
 
-function ScrollingPosterBackground({ posters }: { posters: { img: string; title: string }[] }) {
+const ScrollingPosterBackground = memo(function ScrollingPosterBackground({ posters }: { posters: { img: string; title: string }[] }) {
   if (posters.length === 0) return null;
   
   const postersPerColumn = 4;
@@ -127,6 +127,7 @@ function ScrollingPosterBackground({ posters }: { posters: { img: string; title:
               animationDirection: colIdx % 2 === 0 ? "normal" : "reverse",
               width: '264px',
               flexShrink: 0,
+              willChange: 'transform',
             }}
           >
             {col.map((poster, rowIdx) => (
@@ -147,7 +148,7 @@ function ScrollingPosterBackground({ posters }: { posters: { img: string; title:
       <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, black 0%, black 10%, rgba(0,0,0,0.85) 25%, rgba(0,0,0,0.6) 40%, rgba(0,0,0,0.3) 55%, rgba(0,0,0,0.1) 70%, transparent 85%)' }} />
     </div>
   );
-}
+});
 
 const originalPosters = [
   { img: posterGritGlory, title: "Grit & Glory" },
@@ -202,6 +203,7 @@ function OriginalsBanner() {
                   src={poster.img}
                   alt={poster.title}
                   className="w-full h-full object-cover rounded-xl"
+                  loading="lazy"
                 />
               </div>
             ))}
@@ -668,6 +670,7 @@ export default function LandingPage() {
                   src={sport.img}
                   alt={sport.label}
                   className="w-full h-auto object-contain"
+                  loading="lazy"
                 />
               </div>
             ))}
@@ -693,23 +696,23 @@ export default function LandingPage() {
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-8 md:gap-x-14 md:gap-y-10 mb-10">
-            <img src={logoSamsung} alt="Samsung" className="h-3.5 md:h-5 w-auto object-contain" />
-            <img src={logoAppleTV} alt="Apple TV" className="h-3.5 md:h-5 w-auto object-contain" />
-            <img src={logoPanasonic} alt="Panasonic" className="h-3.5 md:h-5 w-auto object-contain" />
-            <img src={logoChromecast} alt="Chromecast" className="h-3.5 md:h-5 w-auto object-contain" />
-            <img src={logoSony} alt="Sony" className="h-3.5 md:h-5 w-auto object-contain" />
-            <img src={logoLG} alt="LG" className="h-3.5 md:h-5 w-auto object-contain" />
-            <img src={logoRoku} alt="Roku" className="h-3.5 md:h-5 w-auto object-contain" />
+            <img src={logoSamsung} alt="Samsung" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" />
+            <img src={logoAppleTV} alt="Apple TV" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" />
+            <img src={logoPanasonic} alt="Panasonic" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" />
+            <img src={logoChromecast} alt="Chromecast" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" />
+            <img src={logoSony} alt="Sony" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" />
+            <img src={logoLG} alt="LG" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" />
+            <img src={logoRoku} alt="Roku" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" />
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-8 md:gap-x-14 md:gap-y-10">
-            <img src={logoAmazonFire} alt="Amazon Fire TV" className="h-3.5 md:h-5 w-auto object-contain" />
-            <img src={logoGooglePlay} alt="Google Play" className="h-3.5 md:h-5 w-auto object-contain" />
-            <img src={logoAppStore} alt="App Store" className="h-3.5 md:h-5 w-auto object-contain" />
-            <img src={logoPS5} alt="PS5" className="h-3.5 md:h-5 w-auto object-contain" />
-            <img src={logoXbox} alt="Xbox" className="h-3.5 md:h-5 w-auto object-contain" />
-            <img src={logoAndroidTV} alt="Android TV" className="h-3.5 md:h-5 w-auto object-contain" />
-            <img src={logoHisense} alt="Hisense" className="h-3.5 md:h-5 w-auto object-contain" />
+            <img src={logoAmazonFire} alt="Amazon Fire TV" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" />
+            <img src={logoGooglePlay} alt="Google Play" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" />
+            <img src={logoAppStore} alt="App Store" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" />
+            <img src={logoPS5} alt="PS5" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" />
+            <img src={logoXbox} alt="Xbox" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" />
+            <img src={logoAndroidTV} alt="Android TV" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" />
+            <img src={logoHisense} alt="Hisense" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" />
           </div>
 
           <p className="text-gray-500 text-xs md:text-sm mt-10">
