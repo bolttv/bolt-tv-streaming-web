@@ -167,7 +167,7 @@ function OriginalsPosterCarousel() {
             const scale = isCenter ? 1 : absOffset === 1 ? 0.85 : 0.7;
             const zIndex = isCenter ? 30 : absOffset === 1 ? 20 : 10;
             const opacity = 1;
-            const brightness = isCenter ? 1 : absOffset === 1 ? 0.5 : 0.15;
+            const brightness = 1;
 
             return (
               <div
