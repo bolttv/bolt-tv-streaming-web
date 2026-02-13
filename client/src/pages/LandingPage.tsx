@@ -1,8 +1,8 @@
 import { Link, useLocation } from "wouter";
 import { useEffect, useState } from "react";
 import { 
-  ChevronDown, ChevronRight, Smartphone, Download, Zap, Check, 
-  Globe, Trophy, Film, MonitorPlay, Tablet, Laptop, X, Star
+  ChevronDown, ChevronRight, Smartphone, Download, Check, 
+  MonitorPlay, Tablet, Laptop, X, Star
 } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import Footer from "@/components/Footer";
@@ -388,40 +388,6 @@ export default function LandingPage() {
             {emailError && (
               <p className="text-red-500 text-xs mt-2 text-left" data-testid="text-email-error">{emailError}</p>
             )}
-          </div>
-        </div>
-      </section>
-
-      {/* 6 Key Features */}
-      <section className="relative py-14 md:py-20 px-4 bg-[#0a0a0a]" data-testid="section-features">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-2xl md:text-4xl font-display font-black text-center mb-3 text-white">
-            Why Bolt TV?
-          </h2>
-          <p className="text-gray-400 text-sm md:text-base text-center mb-10 max-w-lg mx-auto">
-            The sports streaming platform built different
-          </p>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
-            {[
-              { icon: Trophy, title: "Exclusive Originals", desc: "Award-winning series you can't find anywhere else" },
-              { icon: Globe, title: "Global Sports", desc: "Live events and leagues from around the world" },
-              { icon: Film, title: "Athlete Stories", desc: "Intimate documentaries driven by real athletes" },
-              { icon: Zap, title: "Live Events", desc: "Watch every game and match as it happens" },
-              { icon: MonitorPlay, title: "Any Device", desc: "Stream on phone, tablet, laptop, or TV" },
-              { icon: Download, title: "Offline Viewing", desc: "Download and watch without internet" },
-            ].map((feature, i) => (
-              <div
-                key={i}
-                className="text-center p-4 md:p-5"
-                data-testid={`card-feature-${i}`}
-              >
-                <div className="w-12 h-12 mx-auto mb-3 bg-white/10 rounded-full flex items-center justify-center">
-                  <feature.icon className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="text-sm md:text-base font-bold mb-1 text-white">{feature.title}</h3>
-                <p className="text-gray-500 text-xs leading-relaxed">{feature.desc}</p>
-              </div>
-            ))}
           </div>
         </div>
       </section>
