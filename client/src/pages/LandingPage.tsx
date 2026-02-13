@@ -347,7 +347,7 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Banner - Short with scrolling poster background */}
-      <section className="relative h-[420px] md:h-[480px] flex items-center justify-center overflow-hidden pt-16" data-testid="section-hero">
+      <section className="relative h-[75vh] flex items-center justify-center overflow-hidden pt-16" data-testid="section-hero">
         <ScrollingPosterBackground posters={posterSources} />
         
         <div className="relative z-10 text-center px-4 max-w-3xl mx-auto">
