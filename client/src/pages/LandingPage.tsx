@@ -398,7 +398,7 @@ export default function LandingPage() {
             Starting at {startingPrice}/mo. Cancel anytime.
           </p>
           
-          <div className="max-w-lg mx-auto">
+          <div className="w-full max-w-xl mx-auto">
             <div className="flex items-center gap-2" data-testid="hero-email-form">
               <input
                 type="email"
