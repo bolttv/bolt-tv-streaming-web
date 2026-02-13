@@ -191,6 +191,12 @@ function OriginalsPosterCarousel() {
                       style={{ filter: `brightness(${brightness})` }}
                     />
                   </div>
+                  {normalizedOffset === -2 && (
+                    <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(to right, #0a0a0a 0%, transparent 60%)" }} />
+                  )}
+                  {normalizedOffset === 2 && (
+                    <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(to left, #0a0a0a 0%, transparent 60%)" }} />
+                  )}
                 </div>
               </div>
             );
