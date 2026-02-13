@@ -1,8 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { useEffect, useState } from "react";
 import { 
-  ChevronDown, ChevronRight, Smartphone, Download, Check, 
-  MonitorPlay, Tablet, Laptop, X, Star
+  ChevronDown, ChevronRight, Check, X, Star
 } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import Footer from "@/components/Footer";
@@ -636,28 +635,60 @@ export default function LandingPage() {
       </section>
 
       {/* So Many Ways To Watch */}
-      <section className="relative py-16 md:py-24 px-4 bg-[#0a0a0a]" data-testid="section-ways-to-watch">
+      <section className="relative py-16 md:py-24 px-4 bg-[#0a0a0a]" data-testid="section-supported-devices">
         <div className="max-w-5xl mx-auto text-center">
-          <span className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-3 block">Watch Anywhere</span>
-          <h2 className="text-3xl md:text-5xl font-display font-black mb-4 text-white">
-            So Many Ways To Watch
+          <h2 className="text-3xl md:text-5xl font-display font-black mb-2 text-white leading-tight">
+            Watch on your favorite devices.
           </h2>
-          <p className="text-gray-400 text-base md:text-lg mb-12 max-w-xl mx-auto">
-            Stream Bolt TV on your favorite devices. At home or on the go, your content follows you everywhere.
+          <h2 className="text-3xl md:text-5xl font-display font-black mb-6 text-white/70 italic leading-tight">
+            Anytime. Anywhere.
+          </h2>
+          <p className="text-gray-400 text-sm md:text-base mb-12 max-w-2xl mx-auto leading-relaxed">
+            Whether you are at home or on the go, Bolt TV is available on a wide range of mobile and connected devices including Smart TVs, Chromecast, Playstation, Xbox and more.
           </p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
-            {[
-              { icon: MonitorPlay, label: "Smart TV" },
-              { icon: Laptop, label: "Laptop" },
-              { icon: Tablet, label: "Tablet" },
-              { icon: Smartphone, label: "Phone" },
-            ].map((device, i) => (
-              <div key={i} className="flex flex-col items-center gap-3 p-6 bg-white/[0.03] border border-white/[0.06] rounded-2xl hover:border-white/20 transition">
-                <device.icon className="w-10 h-10 text-white" />
-                <span className="text-white font-semibold text-sm">{device.label}</span>
-              </div>
-            ))}
+
+          <div className="border-t border-white/10 pt-10 mb-10">
+            <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-8">Our leading supported devices</p>
           </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-6 md:gap-x-12 md:gap-y-8 mb-8">
+            <span className="text-white font-bold text-lg md:text-xl tracking-[0.25em] uppercase">Samsung</span>
+            <span className="text-white font-medium text-lg md:text-xl">
+              <span className="inline-flex items-center gap-1"><svg className="w-5 h-5 md:w-6 md:h-6" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg> tv</span>
+            </span>
+            <span className="text-white font-bold text-lg md:text-xl">Panasonic</span>
+            <span className="text-white font-medium text-lg md:text-xl inline-flex items-center gap-1.5">
+              <svg className="w-5 h-5 md:w-6 md:h-6" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="1.5"/><path d="M12 6v6l4.5 2.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+              chromecast
+            </span>
+            <span className="text-white font-bold text-xl md:text-2xl tracking-wider uppercase">Sony</span>
+            <span className="text-white font-bold text-lg md:text-xl">LG</span>
+            <span className="text-white font-bold text-xl md:text-2xl uppercase tracking-wide">Roku</span>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-6 md:gap-x-12 md:gap-y-8">
+            <span className="text-white/80 text-sm md:text-base font-medium">amazon <span className="font-bold">fireTV</span></span>
+            <span className="text-white/80 text-sm md:text-base font-medium inline-flex items-center gap-1">
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M3 20.5v-17c0-.83.67-1.5 1.5-1.5h11c.83 0 1.5.67 1.5 1.5v17c0 .83-.67 1.5-1.5 1.5h-11c-.83 0-1.5-.67-1.5-1.5zm18-9.5l-4-4v8l4-4z"/></svg>
+              Google Play
+            </span>
+            <span className="text-white/80 text-sm md:text-base font-medium inline-flex items-center gap-1">
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+              App Store
+            </span>
+            <span className="text-white font-bold text-base md:text-lg tracking-wide">
+              <span className="text-xs align-top">🎮</span> PS5
+            </span>
+            <span className="text-white font-bold text-base md:text-lg tracking-wide">
+              <span className="text-xs">🎮</span> XBOX
+            </span>
+            <span className="text-white/80 text-base md:text-lg font-medium">android<span className="font-light">tv</span></span>
+            <span className="text-white font-bold text-xl md:text-2xl">Hisense</span>
+          </div>
+
+          <p className="text-gray-500 text-xs md:text-sm mt-10">
+            For more information see our full list of <a href="#" className="text-white hover:text-white/80 underline">supported devices</a>.
+          </p>
         </div>
       </section>
 
