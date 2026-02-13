@@ -179,6 +179,7 @@ export default function LandingPage() {
   const [content, setContent] = useState<{ rows: LandingRow[]; hero: LandingItem[] } | null>(null);
   const [offers, setOffers] = useState<CleengOffer[]>([]);
   const [email, setEmail] = useState("");
+  const [emailError, setEmailError] = useState("");
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
 
   useEffect(() => {
@@ -218,12 +219,15 @@ export default function LandingPage() {
         { img: "/assets/poster-grit-arch.png", title: "Grit" },
       ];
 
+  const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+
   const handleGetStarted = () => {
-    if (email.trim()) {
-      setLocation(`/subscribe?email=${encodeURIComponent(email.trim())}`);
-    } else {
-      setLocation("/subscribe");
+    if (!email.trim() || !isValidEmail(email.trim())) {
+      setEmailError("Please enter a valid email address");
+      return;
     }
+    setEmailError("");
+    setLocation(`/subscribe?email=${encodeURIComponent(email.trim())}`);
   };
 
   const getOfferPrice = (offer: CleengOffer): number => {
@@ -361,24 +365,29 @@ export default function LandingPage() {
             Starting at {startingPrice}/mo. Cancel anytime.
           </p>
           
-          <div className="flex items-center gap-2 max-w-md mx-auto" data-testid="hero-email-form">
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
-              className="flex-1 px-4 py-3 bg-white/10 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent backdrop-blur-sm text-sm"
-              onKeyDown={(e) => e.key === "Enter" && handleGetStarted()}
-              data-testid="input-hero-email"
-            />
-            <button
-              onClick={handleGetStarted}
-              className="bg-white hover:bg-white/90 text-black font-bold px-6 py-3 rounded-lg text-sm transition whitespace-nowrap flex items-center gap-1.5 cursor-pointer"
-              data-testid="button-hero-getstarted"
-            >
-              Get Started
-              <ChevronRight className="w-4 h-4" />
-            </button>
+          <div className="max-w-md mx-auto">
+            <div className="flex items-center gap-2" data-testid="hero-email-form">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => { setEmail(e.target.value); setEmailError(""); }}
+                placeholder="Enter your email"
+                className="flex-1 px-4 py-3 bg-white/10 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent backdrop-blur-sm text-sm"
+                onKeyDown={(e) => e.key === "Enter" && handleGetStarted()}
+                data-testid="input-hero-email"
+              />
+              <button
+                onClick={handleGetStarted}
+                className="bg-white hover:bg-white/90 text-black font-bold px-6 py-3 rounded-lg text-sm transition whitespace-nowrap flex items-center gap-1.5 cursor-pointer"
+                data-testid="button-hero-getstarted"
+              >
+                Get Started
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+            {emailError && (
+              <p className="text-red-500 text-xs mt-2 text-left" data-testid="text-email-error">{emailError}</p>
+            )}
           </div>
         </div>
       </section>
@@ -737,24 +746,29 @@ export default function LandingPage() {
           <p className="text-gray-400 text-sm md:text-base mb-6">
             Join thousands of fans already streaming on Bolt TV.
           </p>
-          <div className="flex items-center gap-2 max-w-md mx-auto">
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
-              className="flex-1 px-4 py-3 bg-white/10 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent text-sm"
-              onKeyDown={(e) => e.key === "Enter" && handleGetStarted()}
-              data-testid="input-cta-email"
-            />
-            <button
-              onClick={handleGetStarted}
-              className="bg-white hover:bg-white/90 text-black font-bold px-6 py-3 rounded-lg text-sm transition whitespace-nowrap flex items-center gap-1.5 cursor-pointer"
-              data-testid="button-cta-getstarted"
-            >
-              Get Started
-              <ChevronRight className="w-4 h-4" />
-            </button>
+          <div className="max-w-md mx-auto">
+            <div className="flex items-center gap-2">
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => { setEmail(e.target.value); setEmailError(""); }}
+                placeholder="Enter your email"
+                className="flex-1 px-4 py-3 bg-white/10 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent text-sm"
+                onKeyDown={(e) => e.key === "Enter" && handleGetStarted()}
+                data-testid="input-cta-email"
+              />
+              <button
+                onClick={handleGetStarted}
+                className="bg-white hover:bg-white/90 text-black font-bold px-6 py-3 rounded-lg text-sm transition whitespace-nowrap flex items-center gap-1.5 cursor-pointer"
+                data-testid="button-cta-getstarted"
+              >
+                Get Started
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+            {emailError && (
+              <p className="text-red-500 text-xs mt-2 text-left" data-testid="text-cta-email-error">{emailError}</p>
+            )}
           </div>
         </div>
       </section>
