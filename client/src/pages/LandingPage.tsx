@@ -479,11 +479,7 @@ export default function LandingPage() {
               return (
                 <div
                   key={offer.id}
-                  className={`relative rounded-2xl p-6 md:p-8 transition-all duration-300 ${
-                    popular
-                      ? "bg-white text-black border-2 border-white scale-[1.02] shadow-xl shadow-white/10"
-                      : "bg-white/[0.04] border border-white/10 hover:border-white/20"
-                  }`}
+                  className="relative rounded-2xl p-6 md:p-8 transition-all duration-300 bg-white/[0.04] border border-white/10 hover:border-white/20"
                   data-testid={`card-plan-${i}`}
                 >
                   {popular && (
@@ -493,29 +489,25 @@ export default function LandingPage() {
                       </span>
                     </div>
                   )}
-                  <h3 className={`text-xl font-bold mb-1 ${popular ? "text-black" : "text-white"}`}>
+                  <h3 className="text-xl font-bold mb-1 text-white">
                     {planName}
                   </h3>
                   {desc && (
-                    <p className={`text-sm mb-4 ${popular ? "text-gray-600" : "text-gray-400"}`}>
+                    <p className="text-sm mb-4 text-gray-400">
                       {desc}
                     </p>
                   )}
                   <div className="flex items-baseline gap-1 mb-6">
-                    <span className={`text-3xl md:text-4xl font-black ${popular ? "text-black" : "text-white"}`}>
+                    <span className="text-3xl md:text-4xl font-black text-white">
                       {currency === "USD" ? "$" : currency}{price.toFixed(2)}
                     </span>
-                    <span className={`text-sm ${popular ? "text-gray-500" : "text-gray-400"}`}>
+                    <span className="text-sm text-gray-400">
                       /{billingCycle === "monthly" ? "mo" : "yr"}
                     </span>
                   </div>
                   <Link href="/subscribe">
                     <button
-                      className={`w-full py-3 rounded-lg font-bold text-sm uppercase tracking-wide transition cursor-pointer ${
-                        popular
-                          ? "bg-black hover:bg-black/80 text-white"
-                          : "bg-white/10 hover:bg-white/20 text-white border border-white/20"
-                      }`}
+                      className="w-full py-3 rounded-lg font-bold text-sm uppercase tracking-wide transition cursor-pointer bg-white/10 hover:bg-white/20 text-white border border-white/20"
                       data-testid={`button-choose-plan-${i}`}
                     >
                       Get Started
@@ -561,7 +553,7 @@ export default function LandingPage() {
                           ) : val === false ? (
                             <X className="w-5 h-5 text-gray-600 mx-auto" />
                           ) : (
-                            <span className={popular ? "text-black font-medium" : "text-gray-300"}>{String(val)}</span>
+                            <span className="text-gray-300">{String(val)}</span>
                           )}
                         </td>
                       );
