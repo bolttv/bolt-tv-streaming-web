@@ -141,7 +141,7 @@ export default function Checkout() {
           </p>
           <Link 
             href="/home"
-            className="inline-flex items-center justify-center px-10 py-4 bg-[#C14600] text-white rounded-lg font-semibold text-lg hover:bg-[#9e3a00] transition-colors"
+            className="inline-flex items-center justify-center px-10 py-4 bg-white text-black rounded-lg font-semibold text-lg hover:bg-white/90 transition-colors"
             data-testid="button-start-streaming"
           >
             Start Streaming
@@ -256,7 +256,7 @@ export default function Checkout() {
               <button
                 onClick={handleSubscribe}
                 disabled={processing}
-                className="w-full py-4 bg-[#C14600] text-white rounded-lg font-semibold text-lg hover:bg-[#9e3a00] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors"
+                className="w-full py-4 bg-white text-black rounded-lg font-semibold text-lg hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors"
                 data-testid="button-subscribe"
               >
                 {processing ? (

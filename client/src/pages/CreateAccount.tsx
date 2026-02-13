@@ -22,12 +22,10 @@ export default function CreateAccount() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   
-  // Check for pending offer in localStorage or user metadata (for cross-device persistence)
   const pendingOfferId = localStorage.getItem("pending_checkout_offer") || 
     user?.user_metadata?.pending_offer;
 
   useEffect(() => {
-    // If fully authenticated (account setup complete), redirect
     if (isAuthenticated && authStep === "authenticated" && !isLoading) {
       if (pendingOfferId) {
         setLocation(`/checkout?offerId=${encodeURIComponent(pendingOfferId)}`);
@@ -38,10 +36,7 @@ export default function CreateAccount() {
   }, [isAuthenticated, authStep, isLoading, pendingOfferId, setLocation]);
 
   useEffect(() => {
-    // If not in create_password step and not loading, redirect to login
-    // Give extra time for auth state to settle
     if (!isLoading && authStep !== "create_password" && !isAuthenticated) {
-      // Wait a bit more before redirecting as a fallback
       const timeout = setTimeout(() => {
         setLocation("/login");
       }, 1500);
@@ -82,12 +77,9 @@ export default function CreateAccount() {
       setError(result.error || "Failed to create account");
       setSubmitting(false);
     } else {
-      // Clear localStorage pending offer since we've captured it
-      // Account setup will have cleared user metadata version
       const offer = pendingOfferId;
       localStorage.removeItem("pending_checkout_offer");
       
-      // Redirect to checkout if we have a pending offer
       if (offer) {
         setLocation(`/checkout?offerId=${encodeURIComponent(offer)}`);
       } else {
@@ -104,7 +96,6 @@ export default function CreateAccount() {
     );
   }
 
-  // Show loading if auth step isn't determined yet
   if (authStep !== "create_password" && !isAuthenticated) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
@@ -134,14 +125,14 @@ export default function CreateAccount() {
             </Link>
           </div>
 
-          <div className="bg-gradient-to-br from-[#2E1C2B]/60 to-[#050404]/60 rounded-2xl p-8 backdrop-blur-sm border border-white/10">
+          <div className="bg-white/[0.04] rounded-2xl p-8 backdrop-blur-sm border border-white/10">
             <form onSubmit={handleSubmit}>
               <h1 className="text-2xl font-bold text-center mb-2">Create Your Account</h1>
               <p className="text-gray-400 text-center mb-2">
                 You'll use this to watch on your favorite devices.
               </p>
               {user?.email && (
-                <p className="text-[#C14600] text-center mb-6 text-sm">
+                <p className="text-white text-center mb-6 text-sm">
                   {user.email}
                 </p>
               )}
@@ -166,7 +157,7 @@ export default function CreateAccount() {
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
                       placeholder="First"
-                      className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#C14600] focus:border-transparent"
+                      className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
                       disabled={submitting}
                       data-testid="input-firstname"
                     />
@@ -185,7 +176,7 @@ export default function CreateAccount() {
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
                       placeholder="Last"
-                      className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#C14600] focus:border-transparent"
+                      className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
                       disabled={submitting}
                       data-testid="input-lastname"
                     />
@@ -206,7 +197,7 @@ export default function CreateAccount() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter password"
-                    className="w-full pl-10 pr-12 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#C14600] focus:border-transparent"
+                    className="w-full pl-10 pr-12 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
                     disabled={submitting}
                     data-testid="input-password"
                   />
@@ -232,7 +223,7 @@ export default function CreateAccount() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Confirm password"
-                    className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#C14600] focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
                     disabled={submitting}
                     data-testid="input-confirm-password"
                   />
@@ -242,7 +233,7 @@ export default function CreateAccount() {
               <button
                 type="submit"
                 disabled={submitting || !firstName.trim() || !lastName.trim() || !password || !confirmPassword}
-                className="w-full py-3 bg-gradient-to-r from-[#C14600] to-[#4A1942] hover:from-[#9e3a00] hover:to-[#2E1C2B] disabled:from-[#C14600]/40 disabled:to-[#4A1942]/40 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
+                className="w-full py-3 bg-white hover:bg-white/90 disabled:bg-white/40 disabled:cursor-not-allowed text-black font-semibold rounded-lg transition flex items-center justify-center gap-2"
                 data-testid="button-create-account"
               >
                 {submitting ? (
@@ -257,16 +248,16 @@ export default function CreateAccount() {
 
               <p className="text-xs text-gray-500 text-center mt-6">
                 By selecting Create Account, you agree to our{" "}
-                <a href="#" className="text-[#C14600] hover:underline">Terms of Use</a>
+                <a href="#" className="text-white hover:underline">Terms of Use</a>
                 {" "}and acknowledge you have read our{" "}
-                <a href="#" className="text-[#C14600] hover:underline">Privacy Policy</a>.
+                <a href="#" className="text-white hover:underline">Privacy Policy</a>.
               </p>
             </form>
           </div>
 
           <p className="text-center mt-6 text-gray-400">
             Already have an account?{" "}
-            <Link href="/login" className="text-[#C14600] hover:text-[#d85200] font-medium">
+            <Link href="/login" className="text-white hover:text-white/80 font-medium">
               Sign In
             </Link>
           </p>

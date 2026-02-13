@@ -195,7 +195,7 @@ export default function ContentDetails() {
 
               {/* New Episode Banner - Mobile */}
               {(content.contentType === "Series" || content.contentType === "Episode") && (
-                <span className="text-[#C14600] font-bold text-xs uppercase tracking-wider sm:hidden">New Episode Available</span>
+                <span className="text-white font-bold text-xs uppercase tracking-wider sm:hidden">New Episode Available</span>
               )}
 
               {/* Metadata Line */}
@@ -210,7 +210,7 @@ export default function ContentDetails() {
                 <span className="w-1 h-1 bg-gray-400 rounded-full" />
                 <span>{displayGenres[0]}</span>
                 {(content.contentType === "Series" || content.contentType === "Episode") && (
-                  <span className="text-[#C14600] font-bold uppercase tracking-wider hidden sm:inline">New Episode</span>
+                  <span className="text-white font-bold uppercase tracking-wider hidden sm:inline">New Episode</span>
                 )}
               </div>
 

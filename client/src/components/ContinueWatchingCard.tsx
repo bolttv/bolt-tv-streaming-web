@@ -58,7 +58,7 @@ export default function ContinueWatchingCard({ item }: ContinueWatchingCardProps
           
           <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700">
             <div 
-              className="h-full bg-[#C14600] transition-all duration-300"
+              className="h-full bg-white transition-all duration-300"
               style={{ width: `${Math.min(item.progress * 100, 100)}%` }}
             />
           </div>

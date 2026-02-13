@@ -80,7 +80,7 @@ export default function Login() {
             </Link>
           </div>
 
-          <div className="bg-gradient-to-br from-[#2E1C2B]/60 to-[#050404]/60 rounded-2xl p-8 backdrop-blur-sm border border-white/10">
+          <div className="bg-white/[0.04] rounded-2xl p-8 backdrop-blur-sm border border-white/10">
             <form onSubmit={handleSignIn}>
               <h1 className="text-2xl font-bold text-center mb-2">Sign In</h1>
               <p className="text-gray-400 text-center mb-8">
@@ -106,7 +106,7 @@ export default function Login() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
-                    className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#C14600] focus:border-transparent"
+                    className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
                     disabled={submitting}
                     data-testid="input-email"
                   />
@@ -125,7 +125,7 @@ export default function Login() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password"
-                    className="w-full pl-10 pr-12 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-[#C14600] focus:border-transparent"
+                    className="w-full pl-10 pr-12 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
                     disabled={submitting}
                     data-testid="input-password"
                   />
@@ -142,7 +142,7 @@ export default function Login() {
               <button
                 type="submit"
                 disabled={submitting || !email.trim() || !password}
-                className="w-full py-3 bg-gradient-to-r from-[#C14600] to-[#4A1942] hover:from-[#9e3a00] hover:to-[#2E1C2B] disabled:from-[#C14600]/40 disabled:to-[#4A1942]/40 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition flex items-center justify-center gap-2"
+                className="w-full py-3 bg-white hover:bg-white/90 disabled:bg-white/40 disabled:cursor-not-allowed text-black font-semibold rounded-lg transition flex items-center justify-center gap-2"
                 data-testid="button-signin"
               >
                 {submitting ? (
@@ -157,7 +157,7 @@ export default function Login() {
 
               <p className="text-center mt-6 text-gray-400">
                 Don't have an account?{" "}
-                <Link href="/subscribe" className="text-[#C14600] hover:text-[#d85200] font-medium">
+                <Link href="/subscribe" className="text-white hover:text-white/80 font-medium">
                   Subscribe
                 </Link>
               </p>

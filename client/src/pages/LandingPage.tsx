@@ -59,7 +59,7 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
         className="w-full flex items-center justify-between py-5 md:py-6 text-left cursor-pointer group"
       >
         <span className="text-base md:text-lg font-semibold text-white pr-4 group-hover:text-[#EAEAEA] transition-colors">{question}</span>
-        <ChevronDown className={`w-5 h-5 text-[#C14600] shrink-0 transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
+        <ChevronDown className={`w-5 h-5 text-white shrink-0 transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
       </button>
       <div className={`overflow-hidden transition-all duration-300 ${open ? "max-h-96 pb-5" : "max-h-0"}`}>
         <p className="text-gray-400 text-sm md:text-base leading-relaxed">{answer}</p>
@@ -144,7 +144,7 @@ function OriginalsBanner() {
             Award-winning series and documentaries you won't find anywhere else. Only on Bolt TV.
           </p>
           <Link href="/subscribe">
-            <button className="bg-[#C14600] hover:bg-[#9e3a00] text-white font-bold px-8 py-3 rounded-lg text-sm transition cursor-pointer uppercase tracking-wide w-fit" data-testid="button-originals-cta">
+            <button className="bg-white hover:bg-white/90 text-black font-bold px-8 py-3 rounded-lg text-sm transition cursor-pointer uppercase tracking-wide w-fit" data-testid="button-originals-cta">
               Get Started
             </button>
           </Link>
@@ -336,7 +336,7 @@ export default function LandingPage() {
             </Link>
             <Link href="/subscribe">
               <button
-                className="bg-[#C14600] hover:bg-[#9e3a00] text-white font-bold px-5 md:px-6 py-2 rounded text-sm transition cursor-pointer uppercase tracking-wide"
+                className="bg-white hover:bg-white/90 text-black font-bold px-5 md:px-6 py-2 rounded text-sm transition cursor-pointer uppercase tracking-wide"
                 data-testid="button-landing-subscribe"
               >
                 Get Started
@@ -367,13 +367,13 @@ export default function LandingPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email"
-              className="flex-1 px-4 py-3 bg-white/10 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-[#C14600] focus:border-transparent backdrop-blur-sm text-sm"
+              className="flex-1 px-4 py-3 bg-white/10 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent backdrop-blur-sm text-sm"
               onKeyDown={(e) => e.key === "Enter" && handleGetStarted()}
               data-testid="input-hero-email"
             />
             <button
               onClick={handleGetStarted}
-              className="bg-[#C14600] hover:bg-[#9e3a00] text-white font-bold px-6 py-3 rounded-lg text-sm transition whitespace-nowrap flex items-center gap-1.5 cursor-pointer"
+              className="bg-white hover:bg-white/90 text-black font-bold px-6 py-3 rounded-lg text-sm transition whitespace-nowrap flex items-center gap-1.5 cursor-pointer"
               data-testid="button-hero-getstarted"
             >
               Get Started
@@ -406,8 +406,8 @@ export default function LandingPage() {
                 className="text-center p-4 md:p-5"
                 data-testid={`card-feature-${i}`}
               >
-                <div className="w-12 h-12 mx-auto mb-3 bg-[#C14600]/10 rounded-full flex items-center justify-center">
-                  <feature.icon className="w-6 h-6 text-[#C14600]" />
+                <div className="w-12 h-12 mx-auto mb-3 bg-white/10 rounded-full flex items-center justify-center">
+                  <feature.icon className="w-6 h-6 text-white" />
                 </div>
                 <h3 className="text-sm md:text-base font-bold mb-1 text-white">{feature.title}</h3>
                 <p className="text-gray-500 text-xs leading-relaxed">{feature.desc}</p>
@@ -433,7 +433,7 @@ export default function LandingPage() {
               <button
                 onClick={() => setBillingCycle("monthly")}
                 className={`px-6 py-2 rounded-full text-sm font-semibold transition ${
-                  billingCycle === "monthly" ? "bg-[#C14600] text-white" : "text-gray-400 hover:text-white"
+                  billingCycle === "monthly" ? "bg-white text-black" : "text-gray-400 hover:text-white"
                 }`}
                 data-testid="toggle-monthly"
               >
@@ -442,13 +442,13 @@ export default function LandingPage() {
               <button
                 onClick={() => setBillingCycle("yearly")}
                 className={`px-6 py-2 rounded-full text-sm font-semibold transition flex items-center gap-1.5 ${
-                  billingCycle === "yearly" ? "bg-[#C14600] text-white" : "text-gray-400 hover:text-white"
+                  billingCycle === "yearly" ? "bg-white text-black" : "text-gray-400 hover:text-white"
                 }`}
                 data-testid="toggle-yearly"
               >
                 Yearly
                 {savingsPercent > 0 && (
-                  <span className={`text-xs px-1.5 py-0.5 rounded-full ${billingCycle === "yearly" ? "bg-white/20" : "bg-[#C14600]/20 text-[#C14600]"}`}>
+                  <span className={`text-xs px-1.5 py-0.5 rounded-full ${billingCycle === "yearly" ? "bg-black/20" : "bg-white/20 text-white"}`}>
                     Save {savingsPercent}%
                   </span>
                 )}
@@ -472,14 +472,14 @@ export default function LandingPage() {
                   key={offer.id}
                   className={`relative rounded-2xl p-6 md:p-8 transition-all duration-300 ${
                     popular
-                      ? "bg-white text-black border-2 border-[#C14600] scale-[1.02] shadow-xl shadow-[#C14600]/10"
+                      ? "bg-white text-black border-2 border-white scale-[1.02] shadow-xl shadow-white/10"
                       : "bg-white/[0.04] border border-white/10 hover:border-white/20"
                   }`}
                   data-testid={`card-plan-${i}`}
                 >
                   {popular && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <span className="bg-[#C14600] text-white text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider">
+                      <span className="bg-white text-black text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider">
                         Most Popular
                       </span>
                     </div>
@@ -504,7 +504,7 @@ export default function LandingPage() {
                     <button
                       className={`w-full py-3 rounded-lg font-bold text-sm uppercase tracking-wide transition cursor-pointer ${
                         popular
-                          ? "bg-[#C14600] hover:bg-[#d85200] text-white"
+                          ? "bg-black hover:bg-black/80 text-white"
                           : "bg-white/10 hover:bg-white/20 text-white border border-white/20"
                       }`}
                       data-testid={`button-choose-plan-${i}`}
@@ -527,7 +527,7 @@ export default function LandingPage() {
                     const offer = getOfferForPlan(planName, billingCycle === "monthly" ? "month" : "year");
                     const popular = offer ? isPopularOffer(offer) : false;
                     return (
-                      <th key={i} className={`py-4 px-3 text-center font-bold ${popular ? "text-[#C14600]" : "text-white"}`}>
+                      <th key={i} className={`py-4 px-3 text-center font-bold ${popular ? "text-white" : "text-white"}`}>
                         {planName}
                       </th>
                     );
@@ -548,7 +548,7 @@ export default function LandingPage() {
                       return (
                         <td key={i} className="py-3 px-3 text-center">
                           {val === true ? (
-                            <Check className="w-5 h-5 text-[#C14600] mx-auto" />
+                            <Check className="w-5 h-5 text-white mx-auto" />
                           ) : val === false ? (
                             <X className="w-5 h-5 text-gray-600 mx-auto" />
                           ) : (
@@ -571,7 +571,7 @@ export default function LandingPage() {
       <section className="relative py-16 md:py-24 overflow-hidden" data-testid="section-every-sport">
         <div className="max-w-6xl mx-auto px-4 mb-10">
           <div className="text-center">
-            <span className="text-[#C14600] text-xs font-bold uppercase tracking-widest mb-3 block">Worldwide Coverage</span>
+            <span className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-3 block">Worldwide Coverage</span>
             <h2 className="text-3xl md:text-5xl font-display font-black text-white">
               Stories Across Every Sport
             </h2>
@@ -622,7 +622,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-2 gap-8 md:gap-16 items-center">
             <div>
-              <span className="text-[#C14600] text-xs font-bold uppercase tracking-widest mb-3 block">Real Stories</span>
+              <span className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-3 block">Real Stories</span>
               <h2 className="text-3xl md:text-5xl font-display font-black mb-4 text-white">
                 Athlete Driven Series
               </h2>
@@ -632,8 +632,8 @@ export default function LandingPage() {
               <div className="flex items-center gap-4">
                 <div className="flex -space-x-2">
                   {[1,2,3,4].map(i => (
-                    <div key={i} className="w-10 h-10 rounded-full bg-gradient-to-br from-[#C14600]/40 to-[#4A1942]/40 border-2 border-black flex items-center justify-center">
-                      <Star className="w-4 h-4 text-[#C14600]" />
+                    <div key={i} className="w-10 h-10 rounded-full bg-white/10 border-2 border-black flex items-center justify-center">
+                      <Star className="w-4 h-4 text-white" />
                     </div>
                   ))}
                 </div>
@@ -670,7 +670,7 @@ export default function LandingPage() {
       {/* So Many Ways To Watch */}
       <section className="relative py-16 md:py-24 px-4 bg-[#0a0a0a]" data-testid="section-ways-to-watch">
         <div className="max-w-5xl mx-auto text-center">
-          <span className="text-[#C14600] text-xs font-bold uppercase tracking-widest mb-3 block">Watch Anywhere</span>
+          <span className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-3 block">Watch Anywhere</span>
           <h2 className="text-3xl md:text-5xl font-display font-black mb-4 text-white">
             So Many Ways To Watch
           </h2>
@@ -684,8 +684,8 @@ export default function LandingPage() {
               { icon: Tablet, label: "Tablet" },
               { icon: Smartphone, label: "Phone" },
             ].map((device, i) => (
-              <div key={i} className="flex flex-col items-center gap-3 p-6 bg-white/[0.03] border border-white/[0.06] rounded-2xl hover:border-[#C14600]/20 transition">
-                <device.icon className="w-10 h-10 text-[#C14600]" />
+              <div key={i} className="flex flex-col items-center gap-3 p-6 bg-white/[0.03] border border-white/[0.06] rounded-2xl hover:border-white/20 transition">
+                <device.icon className="w-10 h-10 text-white" />
                 <span className="text-white font-semibold text-sm">{device.label}</span>
               </div>
             ))}
@@ -743,13 +743,13 @@ export default function LandingPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email"
-              className="flex-1 px-4 py-3 bg-white/10 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-[#C14600] focus:border-transparent text-sm"
+              className="flex-1 px-4 py-3 bg-white/10 border border-white/30 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent text-sm"
               onKeyDown={(e) => e.key === "Enter" && handleGetStarted()}
               data-testid="input-cta-email"
             />
             <button
               onClick={handleGetStarted}
-              className="bg-[#C14600] hover:bg-[#9e3a00] text-white font-bold px-6 py-3 rounded-lg text-sm transition whitespace-nowrap flex items-center gap-1.5 cursor-pointer"
+              className="bg-white hover:bg-white/90 text-black font-bold px-6 py-3 rounded-lg text-sm transition whitespace-nowrap flex items-center gap-1.5 cursor-pointer"
               data-testid="button-cta-getstarted"
             >
               Get Started
