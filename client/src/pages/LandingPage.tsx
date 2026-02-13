@@ -5,11 +5,14 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import Footer from "@/components/Footer";
-import posterGritGlory from "@assets/Grit-Glory-Poster-Web_1770942256469.png";
-import posterRookie from "@assets/rookie-web_1770942256470.png";
-import posterTraviesa from "@assets/traviesa-web_1770942256471.png";
-import posterSurfing from "@assets/ChatGPT_Image_Oct_1,_2025_at_01_26_07_PM_1770942322327.png";
-import posterLifeOnIce from "@assets/ChatGPT_Image_Oct_3,_2025,_11_50_56_AM_1770942322329.png";
+import posterGritGlory from "@assets/Grit-Glory-Poster-Web_1771007420672.png";
+import posterRookie from "@assets/rookie-web_1771007420673.png";
+import posterTraviesa from "@assets/traviesa-web_1771007420674.png";
+import posterSurfing from "@assets/ChatGPT_Image_Oct_1,_2025_at_01_26_07_PM_1771007394434.png";
+import posterLifeOnIce from "@assets/ChatGPT_Image_Oct_3,_2025,_11_50_56_AM_1771007394435.png";
+import posterQuestForGold from "@assets/QuestForGoal-FINAL_1771007348206.jpeg";
+import posterFullThrottle from "@assets/ChatGPT_Image_Oct_2,_2025_at_05_43_18_PM_1771007394434.png";
+import posterSurfingMidnight from "@assets/SurfingTheMidnightSun-Poster_1771007420673.png";
 import sportActionSports from "@assets/Action_Sports-New_1770944151377.png";
 import sportBaseball from "@assets/Baseball-New_1770944155832.png";
 import sportBasketball from "@assets/Basketball-New_1770944159354.png";
@@ -234,14 +237,14 @@ export default function LandingPage() {
   const posterSources = allPosters.length > 0
     ? allPosters.map(p => ({ img: p.verticalPosterImage || p.posterImage, title: p.title }))
     : [
-        { img: "/assets/poster-grit-bo.png", title: "Grit" },
-        { img: "/assets/poster-life-on-ice.png", title: "Life on Ice" },
-        { img: "/assets/poster-full-throttle.png", title: "Full Throttle" },
-        { img: "/assets/poster-rookie.png", title: "Rookie" },
-        { img: "/assets/poster-surfing.png", title: "Surfing" },
-        { img: "/assets/poster-traviesa.png", title: "Traviesa" },
-        { img: "/assets/poster-dtm.png", title: "DTM" },
-        { img: "/assets/poster-grit-arch.png", title: "Grit" },
+        { img: posterQuestForGold, title: "Quest for Gold" },
+        { img: posterSurfing, title: "Surfing the Midnight Sun" },
+        { img: posterFullThrottle, title: "Full Throttle" },
+        { img: posterLifeOnIce, title: "Life on Ice" },
+        { img: posterGritGlory, title: "Grit and Glory" },
+        { img: posterRookie, title: "Rookie" },
+        { img: posterSurfingMidnight, title: "Surfing the Midnight Sun" },
+        { img: posterTraviesa, title: "Traviesa" },
       ];
 
   const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
