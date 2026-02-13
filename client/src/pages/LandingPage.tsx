@@ -666,23 +666,23 @@ export default function LandingPage() {
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-8 md:gap-x-14 md:gap-y-10 mb-10">
-            <img src={logoSamsung} alt="Samsung" className="h-5 md:h-7 w-auto object-contain" />
-            <img src={logoAppleTV} alt="Apple TV" className="h-5 md:h-7 w-auto object-contain" />
-            <img src={logoPanasonic} alt="Panasonic" className="h-4 md:h-6 w-auto object-contain" />
-            <img src={logoChromecast} alt="Chromecast" className="h-4 md:h-6 w-auto object-contain" />
-            <img src={logoSony} alt="Sony" className="h-5 md:h-7 w-auto object-contain" />
-            <img src={logoLG} alt="LG" className="h-6 md:h-8 w-auto object-contain" />
-            <img src={logoRoku} alt="Roku" className="h-5 md:h-7 w-auto object-contain" />
+            <img src={logoSamsung} alt="Samsung" className="h-3.5 md:h-5 w-auto object-contain" />
+            <img src={logoAppleTV} alt="Apple TV" className="h-3.5 md:h-5 w-auto object-contain" />
+            <img src={logoPanasonic} alt="Panasonic" className="h-3 md:h-4 w-auto object-contain" />
+            <img src={logoChromecast} alt="Chromecast" className="h-3 md:h-4 w-auto object-contain" />
+            <img src={logoSony} alt="Sony" className="h-3.5 md:h-5 w-auto object-contain" />
+            <img src={logoLG} alt="LG" className="h-4 md:h-[22px] w-auto object-contain" />
+            <img src={logoRoku} alt="Roku" className="h-3.5 md:h-5 w-auto object-contain" />
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-8 md:gap-x-14 md:gap-y-10">
-            <img src={logoAmazonFire} alt="Amazon Fire TV" className="h-5 md:h-7 w-auto object-contain" />
-            <img src={logoGooglePlay} alt="Google Play" className="h-5 md:h-7 w-auto object-contain" />
-            <img src={logoAppStore} alt="App Store" className="h-5 md:h-7 w-auto object-contain" />
-            <img src={logoPS5} alt="PS5" className="h-5 md:h-7 w-auto object-contain" />
-            <img src={logoXbox} alt="Xbox" className="h-5 md:h-7 w-auto object-contain" />
-            <img src={logoAndroidTV} alt="Android TV" className="h-4 md:h-6 w-auto object-contain" />
-            <img src={logoHisense} alt="Hisense" className="h-5 md:h-7 w-auto object-contain" />
+            <img src={logoAmazonFire} alt="Amazon Fire TV" className="h-3.5 md:h-5 w-auto object-contain" />
+            <img src={logoGooglePlay} alt="Google Play" className="h-3.5 md:h-5 w-auto object-contain" />
+            <img src={logoAppStore} alt="App Store" className="h-3.5 md:h-5 w-auto object-contain" />
+            <img src={logoPS5} alt="PS5" className="h-3.5 md:h-5 w-auto object-contain" />
+            <img src={logoXbox} alt="Xbox" className="h-3.5 md:h-5 w-auto object-contain" />
+            <img src={logoAndroidTV} alt="Android TV" className="h-3 md:h-4 w-auto object-contain" />
+            <img src={logoHisense} alt="Hisense" className="h-3.5 md:h-5 w-auto object-contain" />
           </div>
 
           <p className="text-gray-500 text-xs md:text-sm mt-10">
