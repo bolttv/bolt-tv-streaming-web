@@ -150,8 +150,8 @@ function OriginalsBanner() {
           </Link>
         </div>
 
-        <div className="pb-10">
-          <div className="flex gap-3 md:gap-4 overflow-x-auto scrollbar-hide pb-2">
+        <div className="pb-14">
+          <div className="flex gap-3 md:gap-4 overflow-x-auto scrollbar-hide">
             {originalPosters.map((poster, i) => (
               <div
                 key={i}
