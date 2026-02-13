@@ -102,7 +102,7 @@ function LazySection({ children, className, rootMargin = "200px" }: { children: 
 function ScrollingPosterBackground({ posters }: { posters: { img: string; title: string }[] }) {
   if (posters.length === 0) return null;
   
-  const postersPerColumn = 4;
+  const postersPerColumn = 6;
   const columns = useMemo(() => {
     const numCols = 6;
     const result: { img: string; title: string }[][] = [];
@@ -126,10 +126,15 @@ function ScrollingPosterBackground({ posters }: { posters: { img: string; title:
   return (
     <div className="absolute inset-0 overflow-hidden">
       <div
-        className="absolute top-[-60%] bottom-[-60%] left-[-20%] right-[-20%] flex gap-6 justify-end"
+        className="flex gap-6 justify-end"
         style={{
-          transform: 'rotate(-30deg)',
+          position: 'absolute',
+          top: '50%',
+          right: '-10%',
+          transform: 'translate(0, -50%) rotate(-30deg)',
           transformOrigin: 'center center',
+          width: '120vw',
+          height: '250vh',
         }}
       >
         {columns.map((col, colIdx) => (
