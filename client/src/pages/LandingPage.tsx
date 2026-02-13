@@ -593,15 +593,10 @@ export default function LandingPage() {
             </div>
             <div className="relative">
               <div className="grid grid-cols-2 gap-3">
-                {(allPosters.slice(4, 8).length > 0 ? allPosters.slice(4, 8) : [
-                  { verticalPosterImage: "/assets/poster-surfing.png", posterImage: "/assets/poster-surfing.png", title: "Surfing" },
-                  { verticalPosterImage: "/assets/poster-traviesa.png", posterImage: "/assets/poster-traviesa.png", title: "Traviesa" },
-                  { verticalPosterImage: "/assets/poster-dtm.png", posterImage: "/assets/poster-dtm.png", title: "DTM" },
-                  { verticalPosterImage: "/assets/poster-grit-arch.png", posterImage: "/assets/poster-grit-arch.png", title: "Grit" },
-                ]).map((item, i) => (
+                {posterSources.slice(4, 8).map((item, i) => (
                   <div key={i} className="relative rounded-xl overflow-hidden aspect-[2/3] group">
                     <img
-                      src={item.verticalPosterImage || item.posterImage}
+                      src={item.img}
                       alt={item.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       loading="lazy"
