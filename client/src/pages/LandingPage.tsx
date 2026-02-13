@@ -20,6 +20,20 @@ import sportGolf from "@assets/Golf-New_1770944179196.png";
 import sportHockey from "@assets/Hockey-New_1770944184636.png";
 import sportCombat from "@assets/MMA-New_1770944197258.png";
 import sportRugby from "@assets/Rugby-New_1770944206484.png";
+import logoSamsung from "@assets/Samsung_1770967338626.webp";
+import logoAppleTV from "@assets/AppleTV_1770967338626.webp";
+import logoPanasonic from "@assets/Panasonic_1770967338626.webp";
+import logoChromecast from "@assets/Chromecast_1770967338625.webp";
+import logoSony from "@assets/Sony_1770967338625.webp";
+import logoLG from "@assets/LG_1770967338625.webp";
+import logoRoku from "@assets/Roku_1770967338626.webp";
+import logoAmazonFire from "@assets/AmazonFire_1770967338627.webp";
+import logoGooglePlay from "@assets/GooglePlay_1770967338627.webp";
+import logoAppStore from "@assets/AppStore_1770967338627.webp";
+import logoPS5 from "@assets/PS5_1770967338625.webp";
+import logoXbox from "@assets/XBOX_1770967338628.webp";
+import logoAndroidTV from "@assets/AndroidTV_1770967338628.webp";
+import logoHisense from "@assets/Hisense_1770967338627.webp";
 
 interface LandingItem {
   id: string;
@@ -651,39 +665,24 @@ export default function LandingPage() {
             <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-8">Our leading supported devices</p>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-6 md:gap-x-12 md:gap-y-8 mb-8">
-            <span className="text-white font-bold text-lg md:text-xl tracking-[0.25em] uppercase">Samsung</span>
-            <span className="text-white font-medium text-lg md:text-xl">
-              <span className="inline-flex items-center gap-1"><svg className="w-5 h-5 md:w-6 md:h-6" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg> tv</span>
-            </span>
-            <span className="text-white font-bold text-lg md:text-xl">Panasonic</span>
-            <span className="text-white font-medium text-lg md:text-xl inline-flex items-center gap-1.5">
-              <svg className="w-5 h-5 md:w-6 md:h-6" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" strokeWidth="1.5"/><path d="M12 6v6l4.5 2.5" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
-              chromecast
-            </span>
-            <span className="text-white font-bold text-xl md:text-2xl tracking-wider uppercase">Sony</span>
-            <span className="text-white font-bold text-lg md:text-xl">LG</span>
-            <span className="text-white font-bold text-xl md:text-2xl uppercase tracking-wide">Roku</span>
+          <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-8 md:gap-x-14 md:gap-y-10 mb-10">
+            <img src={logoSamsung} alt="Samsung" className="h-5 md:h-7 w-auto object-contain" />
+            <img src={logoAppleTV} alt="Apple TV" className="h-5 md:h-7 w-auto object-contain" />
+            <img src={logoPanasonic} alt="Panasonic" className="h-4 md:h-6 w-auto object-contain" />
+            <img src={logoChromecast} alt="Chromecast" className="h-4 md:h-6 w-auto object-contain" />
+            <img src={logoSony} alt="Sony" className="h-5 md:h-7 w-auto object-contain" />
+            <img src={logoLG} alt="LG" className="h-6 md:h-8 w-auto object-contain" />
+            <img src={logoRoku} alt="Roku" className="h-5 md:h-7 w-auto object-contain" />
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-6 md:gap-x-12 md:gap-y-8">
-            <span className="text-white/80 text-sm md:text-base font-medium">amazon <span className="font-bold">fireTV</span></span>
-            <span className="text-white/80 text-sm md:text-base font-medium inline-flex items-center gap-1">
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M3 20.5v-17c0-.83.67-1.5 1.5-1.5h11c.83 0 1.5.67 1.5 1.5v17c0 .83-.67 1.5-1.5 1.5h-11c-.83 0-1.5-.67-1.5-1.5zm18-9.5l-4-4v8l4-4z"/></svg>
-              Google Play
-            </span>
-            <span className="text-white/80 text-sm md:text-base font-medium inline-flex items-center gap-1">
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
-              App Store
-            </span>
-            <span className="text-white font-bold text-base md:text-lg tracking-wide">
-              <span className="text-xs align-top">🎮</span> PS5
-            </span>
-            <span className="text-white font-bold text-base md:text-lg tracking-wide">
-              <span className="text-xs">🎮</span> XBOX
-            </span>
-            <span className="text-white/80 text-base md:text-lg font-medium">android<span className="font-light">tv</span></span>
-            <span className="text-white font-bold text-xl md:text-2xl">Hisense</span>
+          <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-8 md:gap-x-14 md:gap-y-10">
+            <img src={logoAmazonFire} alt="Amazon Fire TV" className="h-5 md:h-7 w-auto object-contain" />
+            <img src={logoGooglePlay} alt="Google Play" className="h-5 md:h-7 w-auto object-contain" />
+            <img src={logoAppStore} alt="App Store" className="h-5 md:h-7 w-auto object-contain" />
+            <img src={logoPS5} alt="PS5" className="h-5 md:h-7 w-auto object-contain" />
+            <img src={logoXbox} alt="Xbox" className="h-5 md:h-7 w-auto object-contain" />
+            <img src={logoAndroidTV} alt="Android TV" className="h-4 md:h-6 w-auto object-contain" />
+            <img src={logoHisense} alt="Hisense" className="h-5 md:h-7 w-auto object-contain" />
           </div>
 
           <p className="text-gray-500 text-xs md:text-sm mt-10">
