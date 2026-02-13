@@ -191,10 +191,12 @@ function OriginalsPosterCarousel() {
 
             if (absOffset > 2) return null;
 
-            const translateX = normalizedOffset * 260;
-            const scale = isCenter ? 1 : absOffset === 1 ? 0.85 : 0.7;
+            const spacing = absOffset === 2 ? 48 : 40;
+            const translateXPercent = normalizedOffset * spacing;
+            const scale = isCenter ? 1 : absOffset === 1 ? 0.88 : 0.78;
             const zIndex = isCenter ? 30 : absOffset === 1 ? 20 : 10;
-            const opacity = absOffset >= 2 ? 0.95 : 1;
+            const opacity = 1;
+            const rotateY = isCenter ? 0 : normalizedOffset < 0 ? 35 : -35;
             const posterIsWrapping = isWrapping.has(i);
 
             return (
@@ -202,10 +204,12 @@ function OriginalsPosterCarousel() {
                 key={i}
                 className={`absolute cursor-pointer ${posterIsWrapping ? "" : "transition-all duration-700 ease-out"}`}
                 style={{
-                  transform: `translateX(${translateX}px) scale(${scale})`,
+                  left: "50%",
+                  transform: `translateX(calc(-50% + ${translateXPercent}vw)) scale(${scale}) perspective(1200px) rotateY(${rotateY}deg)`,
                   zIndex,
                   opacity: posterIsWrapping ? 0 : opacity,
                   width: "320px",
+                  transformOrigin: normalizedOffset < 0 ? "right center" : normalizedOffset > 0 ? "left center" : "center center",
                 }}
                 onClick={() => goTo(i)}
                 data-testid={`carousel-poster-${i}`}
@@ -219,10 +223,10 @@ function OriginalsPosterCarousel() {
                     />
                   </div>
                   {normalizedOffset === -2 && (
-                    <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(to right, #0a0a0a 0%, transparent 80%)" }} />
+                    <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(to right, #0a0a0a 0%, transparent 70%)" }} />
                   )}
                   {normalizedOffset === 2 && (
-                    <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(to left, #0a0a0a 0%, transparent 80%)" }} />
+                    <div className="absolute inset-0 pointer-events-none" style={{ background: "linear-gradient(to left, #0a0a0a 0%, transparent 70%)" }} />
                   )}
                 </div>
               </div>
