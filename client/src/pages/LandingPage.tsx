@@ -134,7 +134,7 @@ const originalPosters = [
 
 function OriginalsBanner() {
   return (
-    <section className="relative overflow-hidden" data-testid="section-originals-banner">
+    <section className="relative overflow-hidden min-h-[600px] md:min-h-[700px] flex flex-col" data-testid="section-originals-banner">
       <video
         autoPlay
         loop
@@ -148,8 +148,8 @@ function OriginalsBanner() {
       <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
 
-
-      <div className="relative z-10 pt-[84px] md:pt-[116px] px-6 md:px-16 mt-[60px]">
+      <div className="flex-1" />
+      <div className="relative z-10 px-6 md:px-16">
         <div className="max-w-2xl mb-12 md:mb-16">
           <h2 className="text-4xl md:text-6xl font-display font-black text-white uppercase leading-tight mb-4">
             Exclusive<br />Originals
