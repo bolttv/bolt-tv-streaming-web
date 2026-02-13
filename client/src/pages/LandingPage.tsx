@@ -194,6 +194,7 @@ export default function LandingPage() {
   const [offers, setOffers] = useState<CleengOffer[]>([]);
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
+  const [emailErrorFading, setEmailErrorFading] = useState(false);
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
 
   useEffect(() => {
@@ -234,6 +235,15 @@ export default function LandingPage() {
       ];
 
   const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+
+  useEffect(() => {
+    if (emailError) {
+      setEmailErrorFading(false);
+      const fadeTimer = setTimeout(() => setEmailErrorFading(true), 8500);
+      const clearTimer = setTimeout(() => { setEmailError(""); setEmailErrorFading(false); }, 10000);
+      return () => { clearTimeout(fadeTimer); clearTimeout(clearTimer); };
+    }
+  }, [emailError]);
 
   const handleGetStarted = () => {
     if (!email.trim() || !isValidEmail(email.trim())) {
@@ -400,7 +410,7 @@ export default function LandingPage() {
               </button>
             </div>
             {emailError && (
-              <p className="text-red-500 text-xs mt-2 text-left" data-testid="text-email-error">{emailError}</p>
+              <p className={`text-red-500 mt-2 text-left transition-opacity duration-[1500ms] ${emailErrorFading ? 'opacity-0' : 'opacity-100'}`} style={{ fontSize: '0.525rem', lineHeight: '0.75rem' }} data-testid="text-email-error">{emailError}</p>
             )}
           </div>
         </div>
@@ -756,7 +766,7 @@ export default function LandingPage() {
               </button>
             </div>
             {emailError && (
-              <p className="text-red-500 text-xs mt-2 text-left" data-testid="text-cta-email-error">{emailError}</p>
+              <p className={`text-red-500 mt-2 text-left transition-opacity duration-[1500ms] ${emailErrorFading ? 'opacity-0' : 'opacity-100'}`} style={{ fontSize: '0.525rem', lineHeight: '0.75rem' }} data-testid="text-cta-email-error">{emailError}</p>
             )}
           </div>
         </div>
