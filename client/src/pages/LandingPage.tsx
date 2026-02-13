@@ -126,9 +126,8 @@ function ScrollingPosterBackground({ posters }: { posters: { img: string; title:
   return (
     <div className="absolute inset-0 overflow-hidden">
       <div
-        className="absolute right-[-10%] top-[-50%] bottom-[-50%] flex gap-6 justify-end"
+        className="absolute top-[-60%] bottom-[-60%] left-[-20%] right-[-20%] flex gap-6 justify-end"
         style={{
-          width: '85%',
           transform: 'rotate(-30deg)',
           transformOrigin: 'center center',
         }}
