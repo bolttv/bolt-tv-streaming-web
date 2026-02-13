@@ -172,7 +172,7 @@ function OriginalsPosterCarousel() {
                 onClick={() => goTo(i)}
                 data-testid={`carousel-poster-${i}`}
               >
-                <div className={`relative rounded-2xl overflow-hidden shadow-2xl transition-all duration-700 ${isCenter ? "ring-2 ring-[#C14600]/50 shadow-[#C14600]/20" : ""}`}>
+                <div className={`relative rounded-2xl overflow-hidden shadow-2xl transition-all duration-700 ${isCenter ? "" : ""}`}>
                   <div style={{ aspectRatio: "2/3" }}>
                     <img
                       src={poster.img}
