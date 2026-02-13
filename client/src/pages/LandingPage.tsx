@@ -163,11 +163,11 @@ function OriginalsPosterCarousel() {
 
             if (absOffset > 2) return null;
 
-            const translateX = normalizedOffset * 280;
-            const scale = isCenter ? 1 : absOffset === 1 ? 0.82 : 0.68;
+            const translateX = normalizedOffset * 260;
+            const scale = isCenter ? 1 : absOffset === 1 ? 0.85 : 0.7;
             const zIndex = isCenter ? 30 : absOffset === 1 ? 20 : 10;
-            const opacity = isCenter ? 1 : absOffset === 1 ? 0.55 : 0;
-            const brightness = isCenter ? 1 : absOffset === 1 ? 0.4 : 0;
+            const opacity = isCenter ? 1 : absOffset === 1 ? 0.8 : 0.5;
+            const brightness = isCenter ? 1 : absOffset === 1 ? 0.5 : 0.15;
 
             return (
               <div
