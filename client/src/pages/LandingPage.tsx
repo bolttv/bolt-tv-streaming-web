@@ -406,56 +406,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Stories Across Every Sport */}
-      <section className="relative py-16 md:py-24 overflow-hidden" data-testid="section-every-sport">
-        <div className="max-w-6xl mx-auto px-4 mb-10">
-          <div className="text-center">
-            <span className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-3 block">Worldwide Coverage</span>
-            <h2 className="text-3xl md:text-5xl font-display font-black text-white">
-              Stories Across Every Sport
-            </h2>
-          </div>
-        </div>
-        <div className="relative w-full overflow-hidden">
-          <div className="flex gap-4 animate-scroll-sports">
-            {[
-              { img: sportFootball, label: "Football" },
-              { img: sportBasketball, label: "Basketball" },
-              { img: sportBaseball, label: "Baseball" },
-              { img: sportHockey, label: "Hockey" },
-              { img: sportGolf, label: "Golf" },
-              { img: sportBoxing, label: "Boxing" },
-              { img: sportCombat, label: "Combat" },
-              { img: sportActionSports, label: "Action Sports" },
-              { img: sportRugby, label: "Rugby" },
-              { img: sportGaming, label: "Gaming" },
-              { img: sportFootball, label: "Football" },
-              { img: sportBasketball, label: "Basketball" },
-              { img: sportBaseball, label: "Baseball" },
-              { img: sportHockey, label: "Hockey" },
-              { img: sportGolf, label: "Golf" },
-              { img: sportBoxing, label: "Boxing" },
-              { img: sportCombat, label: "Combat" },
-              { img: sportActionSports, label: "Action Sports" },
-              { img: sportRugby, label: "Rugby" },
-              { img: sportGaming, label: "Gaming" },
-            ].map((sport, i) => (
-              <div
-                key={i}
-                className="relative flex-shrink-0 w-[180px] md:w-[239px] rounded-xl overflow-hidden group cursor-pointer"
-                data-testid={`sport-card-${sport.label.toLowerCase().replace(/\s+/g, "-")}-${i}`}
-              >
-                <img
-                  src={sport.img}
-                  alt={sport.label}
-                  className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Pricing Table with Monthly/Yearly Toggle */}
       <section className="relative py-16 md:py-24 px-4" data-testid="section-pricing">
         <div className="max-w-6xl mx-auto">
@@ -644,6 +594,56 @@ export default function LandingPage() {
                 ))}
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Stories Across Every Sport */}
+      <section className="relative py-16 md:py-24 overflow-hidden" data-testid="section-every-sport">
+        <div className="max-w-6xl mx-auto px-4 mb-10">
+          <div className="text-center">
+            <span className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-3 block">Worldwide Coverage</span>
+            <h2 className="text-3xl md:text-5xl font-display font-black text-white">
+              Stories Across Every Sport
+            </h2>
+          </div>
+        </div>
+        <div className="relative w-full overflow-hidden">
+          <div className="flex gap-4 animate-scroll-sports">
+            {[
+              { img: sportFootball, label: "Football" },
+              { img: sportBasketball, label: "Basketball" },
+              { img: sportBaseball, label: "Baseball" },
+              { img: sportHockey, label: "Hockey" },
+              { img: sportGolf, label: "Golf" },
+              { img: sportBoxing, label: "Boxing" },
+              { img: sportCombat, label: "Combat" },
+              { img: sportActionSports, label: "Action Sports" },
+              { img: sportRugby, label: "Rugby" },
+              { img: sportGaming, label: "Gaming" },
+              { img: sportFootball, label: "Football" },
+              { img: sportBasketball, label: "Basketball" },
+              { img: sportBaseball, label: "Baseball" },
+              { img: sportHockey, label: "Hockey" },
+              { img: sportGolf, label: "Golf" },
+              { img: sportBoxing, label: "Boxing" },
+              { img: sportCombat, label: "Combat" },
+              { img: sportActionSports, label: "Action Sports" },
+              { img: sportRugby, label: "Rugby" },
+              { img: sportGaming, label: "Gaming" },
+            ].map((sport, i) => (
+              <div
+                key={i}
+                className="relative flex-shrink-0 w-[180px] md:w-[239px] rounded-xl overflow-hidden group cursor-pointer"
+                data-testid={`sport-card-${sport.label.toLowerCase().replace(/\s+/g, "-")}-${i}`}
+              >
+                <img
+                  src={sport.img}
+                  alt={sport.label}
+                  className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-500"
+                />
+              </div>
+            ))}
           </div>
         </div>
       </section>
