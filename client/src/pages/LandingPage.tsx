@@ -11,6 +11,16 @@ import posterRookie from "@assets/rookie-web_1770942256470.png";
 import posterTraviesa from "@assets/traviesa-web_1770942256471.png";
 import posterSurfing from "@assets/ChatGPT_Image_Oct_1,_2025_at_01_26_07_PM_1770942322327.png";
 import posterLifeOnIce from "@assets/ChatGPT_Image_Oct_3,_2025,_11_50_56_AM_1770942322329.png";
+import sportActionSports from "@assets/Action_Sports-New_1770944151377.png";
+import sportBaseball from "@assets/Baseball-New_1770944155832.png";
+import sportBasketball from "@assets/Basketball-New_1770944159354.png";
+import sportBoxing from "@assets/Boxing-New_1770944162862.png";
+import sportFootball from "@assets/Football-New_1770944167300.png";
+import sportGaming from "@assets/Gaming-New_1770944173095.png";
+import sportGolf from "@assets/Golf-New_1770944179196.png";
+import sportHockey from "@assets/Hockey-New_1770944184636.png";
+import sportCombat from "@assets/MMA-New_1770944197258.png";
+import sportRugby from "@assets/Rugby-New_1770944206484.png";
 
 interface LandingItem {
   id: string;
@@ -619,29 +629,42 @@ export default function LandingPage() {
 
       <OriginalsPosterCarousel />
 
-      {/* Global Home of Sports */}
-      <section className="relative py-16 md:py-24 px-4 bg-[#0a0a0a]" data-testid="section-global-sports">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid md:grid-cols-2 gap-8 md:gap-16 items-center">
-            <div className="order-2 md:order-1">
-              <div className="grid grid-cols-3 gap-4">
-                {["Football", "Basketball", "Soccer", "Tennis", "Boxing", "Racing"].map((sport, i) => (
-                  <div key={i} className="bg-white/[0.04] border border-white/10 rounded-xl p-4 text-center hover:border-[#C14600]/30 transition">
-                    <Globe className="w-8 h-8 text-[#C14600] mx-auto mb-2" />
-                    <p className="text-white text-xs font-semibold">{sport}</p>
-                  </div>
-                ))}
+      {/* Stories Across Every Sport */}
+      <section className="relative py-16 md:py-24 overflow-hidden" data-testid="section-every-sport">
+        <div className="max-w-6xl mx-auto px-4 mb-10">
+          <div className="text-center">
+            <span className="text-[#C14600] text-xs font-bold uppercase tracking-widest mb-3 block">Worldwide Coverage</span>
+            <h2 className="text-3xl md:text-5xl font-display font-black text-white">
+              Stories Across Every Sport
+            </h2>
+          </div>
+        </div>
+        <div className="relative w-full overflow-x-auto scrollbar-hide">
+          <div className="flex gap-4 px-4 md:px-8 pb-4" style={{ width: "max-content" }}>
+            {[
+              { img: sportFootball, label: "Football" },
+              { img: sportBasketball, label: "Basketball" },
+              { img: sportBaseball, label: "Baseball" },
+              { img: sportHockey, label: "Hockey" },
+              { img: sportGolf, label: "Golf" },
+              { img: sportBoxing, label: "Boxing" },
+              { img: sportCombat, label: "Combat" },
+              { img: sportActionSports, label: "Action Sports" },
+              { img: sportRugby, label: "Rugby" },
+              { img: sportGaming, label: "Gaming" },
+            ].map((sport, i) => (
+              <div
+                key={i}
+                className="relative flex-shrink-0 w-[200px] md:w-[240px] rounded-xl overflow-hidden group cursor-pointer"
+                data-testid={`sport-card-${sport.label.toLowerCase().replace(/\s+/g, "-")}`}
+              >
+                <img
+                  src={sport.img}
+                  alt={sport.label}
+                  className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-500"
+                />
               </div>
-            </div>
-            <div className="order-1 md:order-2">
-              <span className="text-[#C14600] text-xs font-bold uppercase tracking-widest mb-3 block">Worldwide Coverage</span>
-              <h2 className="text-3xl md:text-5xl font-display font-black mb-4 text-white">
-                Global Home of Sports
-              </h2>
-              <p className="text-gray-400 text-base md:text-lg leading-relaxed">
-                From the Premier League to the NBA, from Formula 1 to the UFC — access live games, matches, and tournaments from leagues and events across the globe, all in one place.
-              </p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
