@@ -387,18 +387,18 @@ export default function LandingPage() {
       <section className="relative h-[75vh] flex items-center justify-center overflow-hidden pt-16" data-testid="section-hero">
         <ScrollingPosterBackground posters={posterSources} />
         
-        <div className="relative z-10 text-center px-6 md:px-16 max-w-xl mx-auto">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-black leading-tight tracking-tight mb-3 md:mb-4 text-white">
+        <div className="relative z-10 text-center px-6 md:px-16 max-w-2xl mx-auto">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-black leading-tight tracking-tight mb-3 md:mb-4 text-white whitespace-nowrap">
             Athlete Stories Live Here
           </h1>
-          <p className="text-white/80 text-sm md:text-lg max-w-md mx-auto mb-2 leading-relaxed">
+          <p className="text-white/80 text-sm md:text-lg mx-auto mb-2 leading-relaxed whitespace-nowrap">
             Exclusive sports documentaries, original series, and live events.
           </p>
           <p className="text-white/60 text-xs md:text-sm mb-6">
             Starting at {startingPrice}/mo. Cancel anytime.
           </p>
           
-          <div className="max-w-md mx-auto">
+          <div className="max-w-lg mx-auto">
             <div className="flex items-center gap-2" data-testid="hero-email-form">
               <input
                 type="email"
