@@ -144,7 +144,7 @@ function OriginalsPosterCarousel() {
           </p>
         </div>
 
-        <div className="relative flex items-center justify-center h-[380px] md:h-[480px]">
+        <div className="relative flex items-center justify-center h-[480px] md:h-[620px]">
           {originalPosters.map((poster, i) => {
             const offset = ((i - activeIndex + total) % total);
             const normalizedOffset = offset > Math.floor(total / 2) ? offset - total : offset;
@@ -153,7 +153,7 @@ function OriginalsPosterCarousel() {
 
             if (absOffset > 2) return null;
 
-            const translateX = normalizedOffset * 220;
+            const translateX = normalizedOffset * 280;
             const scale = isCenter ? 1 : absOffset === 1 ? 0.82 : 0.68;
             const zIndex = isCenter ? 30 : absOffset === 1 ? 20 : 10;
             const opacity = isCenter ? 1 : absOffset === 1 ? 0.7 : 0.4;
@@ -167,7 +167,7 @@ function OriginalsPosterCarousel() {
                   transform: `translateX(${translateX}px) scale(${scale}) perspective(1000px) rotateY(${rotateY}deg)`,
                   zIndex,
                   opacity,
-                  width: "240px",
+                  width: "320px",
                 }}
                 onClick={() => goTo(i)}
                 data-testid={`carousel-poster-${i}`}
@@ -181,10 +181,6 @@ function OriginalsPosterCarousel() {
                     />
                   </div>
                   <div className={`absolute inset-0 bg-black/40 transition-opacity duration-700 ${isCenter ? "opacity-0" : "opacity-100"}`} />
-                  <div className={`absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent transition-opacity duration-500 ${isCenter ? "opacity-100" : "opacity-0"}`}>
-                    <p className="text-white font-bold text-base">{poster.title}</p>
-                    <p className="text-[#C14600] text-xs font-semibold uppercase tracking-wider mt-1">Bolt TV Original</p>
-                  </div>
                 </div>
               </div>
             );
