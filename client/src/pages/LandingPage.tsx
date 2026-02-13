@@ -155,13 +155,14 @@ function OriginalsBanner() {
             {originalPosters.map((poster, i) => (
               <div
                 key={i}
-                className="flex-shrink-0 w-[140px] md:w-[180px] rounded-xl group cursor-pointer hover:scale-105 transition-transform duration-300"
+                className="flex-shrink-0 w-[140px] md:w-[180px] rounded-xl overflow-hidden group cursor-pointer hover:scale-105 transition-transform duration-300"
+                style={{ aspectRatio: "2/3" }}
                 data-testid={`originals-poster-${i}`}
               >
                 <img
                   src={poster.img}
                   alt={poster.title}
-                  className="w-full h-auto object-contain rounded-xl"
+                  className="w-full h-full object-cover rounded-xl"
                 />
               </div>
             ))}
