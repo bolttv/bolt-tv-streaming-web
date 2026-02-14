@@ -492,42 +492,42 @@ export default function LandingPage() {
               return (
                 <div
                   key={offer.id}
-                  className={`relative rounded-2xl p-6 md:p-8 transition-all duration-300 bg-white/[0.04] border ${popular ? "border-white/30" : "border-white/10"} hover:border-white/30 flex flex-col`}
+                  className={`relative rounded-2xl pt-10 p-6 md:p-8 md:pt-10 transition-all duration-300 bg-white/[0.04] border ${popular ? "border-white/30" : "border-white/10"} hover:border-white/30 flex flex-col`}
                   data-testid={`card-plan-${i}`}
                 >
                   {popular && (
-                    <div className="text-center mb-4">
-                      <span className="text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5">
-                        <Star className="w-3.5 h-3.5 fill-white" />
+                    <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
+                      <span className="bg-white text-black text-xs font-bold px-5 py-1.5 rounded-full uppercase tracking-wider whitespace-nowrap">
                         Most Popular
-                        <Star className="w-3.5 h-3.5 fill-white" />
                       </span>
                     </div>
                   )}
-                  <h3 className="text-2xl md:text-3xl font-display font-black text-center text-white mb-2">
-                    {planName}
-                  </h3>
-                  <div className="text-center mb-1">
-                    <span className="text-2xl md:text-3xl font-black text-white">
-                      {currency === "USD" ? "$" : currency}{price.toFixed(2)}
-                    </span>
-                    <span className="text-sm text-gray-400">
-                      /{billingCycle === "monthly" ? "mo" : "yr"}
-                    </span>
+                  <div className={`${!popular ? "pt-0" : ""}`}>
+                    <h3 className="text-2xl md:text-3xl font-display font-black text-center text-white mb-2">
+                      {planName}
+                    </h3>
+                    <div className="text-center mb-1">
+                      <span className="text-2xl md:text-3xl font-black text-white">
+                        {currency === "USD" ? "$" : currency}{price.toFixed(2)}
+                      </span>
+                      <span className="text-sm text-gray-400">
+                        /{billingCycle === "monthly" ? "mo" : "yr"}
+                      </span>
+                    </div>
+                    {desc && (
+                      <p className="text-xs text-gray-500 text-center uppercase tracking-wider mb-6">
+                        {desc}
+                      </p>
+                    )}
+                    <Link href="/subscribe" className="block mb-6">
+                      <button
+                        className="w-full py-3.5 rounded-full font-bold text-sm uppercase tracking-wide transition cursor-pointer bg-white hover:bg-white/90 text-black"
+                        data-testid={`button-choose-plan-${i}`}
+                      >
+                        Start 7-day Free Trial
+                      </button>
+                    </Link>
                   </div>
-                  {desc && (
-                    <p className="text-xs text-gray-500 text-center uppercase tracking-wider mb-6">
-                      {desc}
-                    </p>
-                  )}
-                  <Link href="/subscribe" className="block mb-6">
-                    <button
-                      className="w-full py-3.5 rounded-full font-bold text-sm uppercase tracking-wide transition cursor-pointer bg-white hover:bg-white/90 text-black"
-                      data-testid={`button-choose-plan-${i}`}
-                    >
-                      Start 7-day Free Trial
-                    </button>
-                  </Link>
                   <div className="border-t border-white/10 pt-6 flex-1">
                     <ul className="space-y-4">
                       {features.map((feature, fi) => (
