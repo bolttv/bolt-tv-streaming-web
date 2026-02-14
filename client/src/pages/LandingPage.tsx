@@ -305,23 +305,21 @@ export default function LandingPage() {
     );
   };
 
-  const planFeatureMap: Record<string, Record<string, boolean | string>> = {
-    "Basic": {
-      "Full content library": true,
-      "Ad-supported": true,
-      "Simultaneous streams": "1",
-      "Video quality": "HD",
-      "Offline downloads": false,
-      "Live events": false,
-    },
-    "Premium": {
-      "Full content library": true,
-      "Ad-supported": false,
-      "Simultaneous streams": "3",
-      "Video quality": "4K Ultra HD",
-      "Offline downloads": true,
-      "Live events": true,
-    },
+  const planFeatureMap: Record<string, { label: string; value: boolean | string }[]> = {
+    "Basic": [
+      { label: "Full content library", value: true },
+      { label: "Simultaneous streams", value: "1" },
+      { label: "Video quality", value: "HD" },
+      { label: "Offline downloads", value: false },
+      { label: "Ad-supported", value: true },
+    ],
+    "Premium": [
+      { label: "Full content library", value: true },
+      { label: "Simultaneous streams", value: "3" },
+      { label: "Video quality", value: "4K Ultra HD" },
+      { label: "Offline downloads", value: true },
+      { label: "Ad-supported", value: false },
+    ],
   };
 
   const planDescMap: Record<string, string> = {
@@ -354,9 +352,9 @@ export default function LandingPage() {
     return 16;
   })();
 
-  const featureKeys = planNames.length > 0 
-    ? Object.keys(planFeatureMap[planNames[0]] || planFeatureMap["Basic"])
-    : Object.keys(planFeatureMap["Basic"]);
+  const getFeatures = (planName: string) => {
+    return planFeatureMap[planName] || planFeatureMap["Basic"];
+  };
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -479,8 +477,8 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Plan Cards from Cleeng */}
-          <div className={`grid gap-5 mb-12 ${planNames.length === 1 ? "max-w-md mx-auto" : planNames.length === 2 ? "md:grid-cols-2 max-w-3xl mx-auto" : "md:grid-cols-3"}`}>
+          {/* Plan Cards */}
+          <div className={`grid gap-6 ${planNames.length === 1 ? "max-w-md mx-auto" : planNames.length === 2 ? "md:grid-cols-2 max-w-3xl mx-auto" : "md:grid-cols-3"}`}>
             {planNames.map((planName, i) => {
               const period = billingCycle === "monthly" ? "month" : "year";
               const offer = getOfferForPlan(planName, period);
@@ -489,93 +487,69 @@ export default function LandingPage() {
               const currency = getOfferCurrency(offer);
               const popular = isPopularOffer(offer);
               const desc = planDescMap[planName] || offer.description || "";
+              const features = getFeatures(planName);
 
               return (
                 <div
                   key={offer.id}
-                  className="relative rounded-2xl p-6 md:p-8 transition-all duration-300 bg-white/[0.04] border border-white/10 hover:border-white/20"
+                  className={`relative rounded-2xl p-6 md:p-8 transition-all duration-300 bg-white/[0.04] border ${popular ? "border-white/30" : "border-white/10"} hover:border-white/30 flex flex-col`}
                   data-testid={`card-plan-${i}`}
                 >
                   {popular && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <span className="bg-white text-black text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wider">
+                    <div className="text-center mb-4">
+                      <span className="text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5">
+                        <Star className="w-3.5 h-3.5 fill-white" />
                         Most Popular
+                        <Star className="w-3.5 h-3.5 fill-white" />
                       </span>
                     </div>
                   )}
-                  <h3 className="text-xl font-bold mb-1 text-white">
+                  <h3 className="text-2xl md:text-3xl font-display font-black text-center text-white mb-2">
                     {planName}
                   </h3>
-                  {desc && (
-                    <p className="text-sm mb-4 text-gray-400">
-                      {desc}
-                    </p>
-                  )}
-                  <div className="flex items-baseline gap-1 mb-6">
-                    <span className="text-3xl md:text-4xl font-black text-white">
+                  <div className="text-center mb-1">
+                    <span className="text-2xl md:text-3xl font-black text-white">
                       {currency === "USD" ? "$" : currency}{price.toFixed(2)}
                     </span>
                     <span className="text-sm text-gray-400">
                       /{billingCycle === "monthly" ? "mo" : "yr"}
                     </span>
                   </div>
-                  <Link href="/subscribe">
+                  {desc && (
+                    <p className="text-xs text-gray-500 text-center uppercase tracking-wider mb-6">
+                      {desc}
+                    </p>
+                  )}
+                  <Link href="/subscribe" className="block mb-6">
                     <button
-                      className="w-full py-3 rounded-lg font-bold text-sm uppercase tracking-wide transition cursor-pointer bg-white/10 hover:bg-white/20 text-white border border-white/20"
+                      className="w-full py-3.5 rounded-full font-bold text-sm uppercase tracking-wide transition cursor-pointer bg-white hover:bg-white/90 text-black"
                       data-testid={`button-choose-plan-${i}`}
                     >
-                      Get Started
+                      Start 7-day Free Trial
                     </button>
                   </Link>
+                  <div className="border-t border-white/10 pt-6 flex-1">
+                    <ul className="space-y-4">
+                      {features.map((feature, fi) => (
+                        <li key={fi} className="flex items-start gap-3">
+                          {feature.value === false ? (
+                            <X className="w-4 h-4 text-gray-600 mt-0.5 shrink-0" />
+                          ) : (
+                            <Check className="w-4 h-4 text-white mt-0.5 shrink-0" />
+                          )}
+                          <span className={`text-sm ${feature.value === false ? "text-gray-500" : "text-gray-300"}`}>
+                            {typeof feature.value === "string" 
+                              ? <>{feature.label}: <span className="text-white font-semibold">{feature.value}</span></>
+                              : feature.label
+                            }
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               );
             })}
-          </div>
-
-          {/* Comparison Table */}
-          <div className="overflow-x-auto" data-testid="comparison-table">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-white/10">
-                  <th className="text-left py-4 px-3 text-gray-400 font-medium">Features</th>
-                  {planNames.map((planName, i) => {
-                    const offer = getOfferForPlan(planName, billingCycle === "monthly" ? "month" : "year");
-                    const popular = offer ? isPopularOffer(offer) : false;
-                    return (
-                      <th key={i} className={`py-4 px-3 text-center font-bold ${popular ? "text-white" : "text-white"}`}>
-                        {planName}
-                      </th>
-                    );
-                  })}
-                </tr>
-              </thead>
-              <tbody>
-                {featureKeys.map((featureKey) => (
-                  <tr key={featureKey} className="border-b border-white/5">
-                    <td className="py-3 px-3 text-gray-300">
-                      {featureKey}
-                    </td>
-                    {planNames.map((planName, i) => {
-                      const features = planFeatureMap[planName] || planFeatureMap["Basic"];
-                      const val = features[featureKey];
-                      const offer = getOfferForPlan(planName, billingCycle === "monthly" ? "month" : "year");
-                      const popular = offer ? isPopularOffer(offer) : false;
-                      return (
-                        <td key={i} className="py-3 px-3 text-center">
-                          {val === true ? (
-                            <Check className="w-5 h-5 text-white mx-auto" />
-                          ) : val === false ? (
-                            <X className="w-5 h-5 text-gray-600 mx-auto" />
-                          ) : (
-                            <span className="text-gray-300">{String(val)}</span>
-                          )}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
           </div>
         </div>
       </section>
