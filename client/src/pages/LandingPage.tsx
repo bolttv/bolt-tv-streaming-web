@@ -173,15 +173,15 @@ function OriginalsBanner() {
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
       </div>
 
-      <img
-        src={originalsBannerFront}
-        alt="Exclusive Originals athletes"
-        className="absolute right-[calc(5%+30px)] w-[50%] md:w-[45%] lg:w-[40%] h-auto object-contain hidden sm:block z-[5]"
-        style={{ bottom: '85px', top: 'calc(-15% + 15px)' }}
-      />
-
       <div className="relative z-10 h-full flex flex-col justify-end px-6 md:px-16">
-        <div className="max-w-2xl mb-10 md:mb-14">
+        <div className="relative max-w-full mb-10 md:mb-14">
+          <img
+            src={originalsBannerFront}
+            alt="Exclusive Originals athletes"
+            className="absolute right-0 md:right-[30px] w-[300px] md:w-[400px] lg:w-[480px] h-auto object-contain hidden sm:block z-[5]"
+            style={{ bottom: '0px', transform: 'translateY(-15px)' }}
+          />
+          <div className="max-w-2xl">
           <h2 className="text-4xl md:text-6xl font-display font-black text-white uppercase leading-tight mb-4">
             Exclusive<br />Originals
           </h2>
@@ -193,6 +193,7 @@ function OriginalsBanner() {
               Get Started
             </button>
           </Link>
+          </div>
         </div>
 
         <div className="pb-14">
