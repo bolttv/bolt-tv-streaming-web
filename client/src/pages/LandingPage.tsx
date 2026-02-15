@@ -162,7 +162,7 @@ const originalPosters = [
 
 function OriginalsBanner() {
   return (
-    <section className="relative h-[320px] sm:h-[400px] md:h-[550px] lg:h-[600px]" data-testid="section-originals-banner">
+    <section className="relative h-[450px] sm:h-[550px] md:h-[700px] lg:h-[800px]" data-testid="section-originals-banner">
       <div className="absolute inset-0 overflow-hidden">
       <img
         src={originalsBannerBg}
