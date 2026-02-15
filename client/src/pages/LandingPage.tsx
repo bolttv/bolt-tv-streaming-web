@@ -178,7 +178,7 @@ function OriginalsBanner() {
           <img
             src={originalsBannerFront}
             alt="Exclusive Originals athletes"
-            className="absolute right-0 md:right-[30px] w-[300px] md:w-[400px] lg:w-[480px] h-auto object-contain hidden sm:block z-[5]"
+            className="absolute right-[-40px] md:right-[-10px] w-[600px] md:w-[800px] lg:w-[960px] h-auto object-contain hidden sm:block z-[5]"
             style={{ bottom: '0px', transform: 'translateY(-15px)' }}
           />
           <div className="max-w-2xl">
