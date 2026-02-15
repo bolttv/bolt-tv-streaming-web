@@ -11,6 +11,7 @@ import posterTraviesa from "@assets/traviesa-web_1771007420674.png";
 import posterSurfing from "@assets/ChatGPT_Image_Oct_1,_2025_at_01_26_07_PM_1771007394434.png";
 import posterLifeOnIce from "@assets/ChatGPT_Image_Oct_3,_2025,_11_50_56_AM_1771007394435.png";
 import posterQuestForGold from "@assets/QuestForGoal-FINAL_1771007348206.jpeg";
+import originalsBannerBg from "@assets/GG_BoNix_BackgroundBanner_1771182530667.jpg";
 import posterFullThrottle from "@assets/ChatGPT_Image_Oct_2,_2025_at_05_43_18_PM_1771007394434.png";
 import posterSurfingMidnight from "@assets/SurfingTheMidnightSun-Poster_1771007420673.png";
 import sportActionSports from "@assets/Action_Sports-New_1770944151377.png";
@@ -161,16 +162,11 @@ const originalPosters = [
 function OriginalsBanner() {
   return (
     <section className="relative overflow-hidden" data-testid="section-originals-banner">
-      <video
-        autoPlay
-        loop
-        muted
-        playsInline
+      <img
+        src={originalsBannerBg}
+        alt="Exclusive Originals"
         className="absolute inset-0 w-full h-full object-cover"
-      >
-        <source src="/assets/originals-banner.mov" type="video/quicktime" />
-        <source src="/assets/originals-banner.mov" type="video/mp4" />
-      </video>
+      />
       <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
 
