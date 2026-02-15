@@ -12,7 +12,7 @@ import posterSurfing from "@assets/ChatGPT_Image_Oct_1,_2025_at_01_26_07_PM_1771
 import posterLifeOnIce from "@assets/ChatGPT_Image_Oct_3,_2025,_11_50_56_AM_1771007394435.png";
 import posterQuestForGold from "@assets/QuestForGoal-FINAL_1771007348206.jpeg";
 import originalsBannerBg from "@assets/GG_BoNix_Background_1771183611134.jpg";
-import originalsBannerFront from "@assets/GG_BoNix_Foreground_1771183611135.jpg";
+import originalsBannerFront from "@assets/GG_Banner_Foreground_1771183837974.png";
 import posterFullThrottle from "@assets/ChatGPT_Image_Oct_2,_2025_at_05_43_18_PM_1771007394434.png";
 import posterSurfingMidnight from "@assets/SurfingTheMidnightSun-Poster_1771007420673.png";
 import sportActionSports from "@assets/Action_Sports-New_1770944151377.png";
