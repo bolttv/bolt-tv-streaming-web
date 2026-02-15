@@ -1,0 +1,27 @@
+Restructure the Exclusive Originals banner to match this design pattern:
+The banner should have two independent layers:
+Layer 1 — Background image:
+
+Full-width, fills the section, crops vertically as viewport resizes.
+Acts independently from the foreground content. It's just the backdrop.
+Behaves the same as it does now.
+
+Layer 2 — Foreground content group:
+
+The "EXCLUSIVE ORIGINALS" title, description text, "GET STARTED" button, and the foreground people image should all be grouped together in one container.
+This foreground group should scale proportionally as a single unit when the viewport resizes. Think of it as one composition that shrinks and grows together, maintaining the same spatial relationships between the text and the people image at every size.
+The text and button sit on the left side of this group, the people image sits on the right side.
+This group is centered (or left-aligned with padding) within the banner and scales proportionally using something like max-width with percentage-based sizing, or a transform-based scaling approach.
+
+Foreground image overflow:
+
+Allow the foreground people image to slightly overflow above the banner section into the dark area above it. This creates a nice visual blend between sections. Don't clip the top — use overflow: visible on the banner container (or only clip the bottom/sides). The figures should feel like they're emerging from behind the section boundary, connecting the sections visually.
+
+Thumbnail cards:
+
+The show thumbnail row is completely independent from the banner. It sits below the banner in its own container and is not affected by the background or foreground layers.
+The cards should be in a horizontal flex/grid layout with their own responsive behavior (shrinking gaps, wrapping, or scrolling as needed).
+
+The key principle: The background reacts to viewport size independently. The foreground content (text + people image) reacts to viewport size as a grouped unit. The thumbnails react independently. Three separate responsive systems stacked vertically.
+Keep the mix-blend-mode: multiply on the foreground people image to blend the white background into the scene.
+Allow the foreground image to overflow slightly above the banner — roughly 10-15% of the image height can extend above the section top edge. This softens the transition between sections.
