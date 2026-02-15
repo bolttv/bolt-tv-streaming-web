@@ -162,7 +162,7 @@ const originalPosters = [
 
 function OriginalsBanner() {
   return (
-    <section className="relative h-[520px] sm:h-[550px] md:h-[700px] lg:h-[800px]" data-testid="section-originals-banner">
+    <section className="relative h-[420px] sm:h-[480px] md:h-[600px] lg:h-[680px]" data-testid="section-originals-banner">
       {/* Background layer — scales independently to fill section, clipped */}
       <div className="absolute inset-0 z-0 overflow-hidden">
         <img
