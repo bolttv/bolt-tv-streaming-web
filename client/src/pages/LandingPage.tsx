@@ -162,9 +162,9 @@ const originalPosters = [
 
 function OriginalsBanner() {
   return (
-    <section className="relative overflow-hidden h-[450px] sm:h-[550px] md:h-[700px] lg:h-[800px]" data-testid="section-originals-banner">
-      {/* Background layer — scales independently to fill section */}
-      <div className="absolute inset-0 z-0">
+    <section className="relative h-[450px] sm:h-[550px] md:h-[700px] lg:h-[800px]" data-testid="section-originals-banner">
+      {/* Background layer — scales independently to fill section, clipped */}
+      <div className="absolute inset-0 z-0 overflow-hidden">
         <img
           src={originalsBannerBg}
           alt="Exclusive Originals background"
@@ -174,7 +174,7 @@ function OriginalsBanner() {
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
       </div>
 
-      {/* Foreground layer — fixed sizing, anchored to content */}
+      {/* Foreground layer — fixed sizing, allowed to overflow above */}
       <div className="absolute inset-0 z-[5] pointer-events-none">
         <div className="relative h-full w-full max-w-[1400px] mx-auto px-6 md:px-16">
           <img
