@@ -162,7 +162,7 @@ const originalPosters = [
 
 function OriginalsBanner() {
   return (
-    <section className="relative h-[380px] sm:h-[550px] md:h-[700px] lg:h-[800px]" data-testid="section-originals-banner">
+    <section className="relative h-[520px] sm:h-[550px] md:h-[700px] lg:h-[800px]" data-testid="section-originals-banner">
       {/* Background layer — scales independently to fill section, clipped */}
       <div className="absolute inset-0 z-0 overflow-hidden">
         <img
@@ -180,7 +180,7 @@ function OriginalsBanner() {
           <img
             src={originalsBannerFront}
             alt="Exclusive Originals athletes"
-            className="absolute right-[115px] md:right-[145px] w-[392px] md:w-[548px] lg:w-[680px] max-h-[118%] object-contain object-bottom hidden sm:block sm:opacity-60 md:opacity-100"
+            className="absolute right-[10px] sm:right-[115px] md:right-[145px] w-[200px] sm:w-[392px] md:w-[548px] lg:w-[680px] max-h-[80%] sm:max-h-[118%] object-contain object-bottom block opacity-30 sm:opacity-60 md:opacity-100"
             style={{ bottom: '350px' }}
           />
         </div>
