@@ -181,7 +181,7 @@ function OriginalsBanner() {
             src={originalsBannerFront}
             alt="Exclusive Originals athletes"
             className="absolute right-0 md:right-[30px] w-[360px] md:w-[504px] lg:w-[624px] max-h-[108%] object-contain object-bottom hidden sm:block sm:opacity-60 md:opacity-100"
-            style={{ bottom: '110px' }}
+            style={{ bottom: '360px' }}
           />
         </div>
       </div>
