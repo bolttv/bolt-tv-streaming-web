@@ -162,7 +162,7 @@ const originalPosters = [
 
 function OriginalsBanner() {
   return (
-    <section className="relative h-[450px] sm:h-[550px] md:h-[700px] lg:h-[800px]" data-testid="section-originals-banner">
+    <section className="relative h-[380px] sm:h-[550px] md:h-[700px] lg:h-[800px]" data-testid="section-originals-banner">
       {/* Background layer — scales independently to fill section, clipped */}
       <div className="absolute inset-0 z-0 overflow-hidden">
         <img
@@ -188,26 +188,26 @@ function OriginalsBanner() {
 
       {/* Content layer — text, button, posters */}
       <div className="relative z-10 h-full flex flex-col justify-end px-6 md:px-16">
-        <div className="max-w-2xl mb-10 md:mb-14">
-          <h2 className="text-4xl md:text-6xl font-display font-black text-white uppercase leading-tight mb-4">
+        <div className="max-w-2xl mb-6 md:mb-14">
+          <h2 className="text-3xl sm:text-4xl md:text-6xl font-display font-black text-white uppercase leading-tight mb-3 md:mb-4">
             Exclusive<br />Originals
           </h2>
-          <p className="text-gray-300 text-sm md:text-base leading-relaxed mb-6 max-w-md">
+          <p className="text-gray-300 text-xs sm:text-sm md:text-base leading-relaxed mb-4 md:mb-6 max-w-md">
             Award-winning series and documentaries you won't find anywhere else. Only on Bolt TV.
           </p>
           <Link href="/subscribe">
-            <button className="btn-gradient-hover bg-white text-black font-bold px-8 py-3 rounded-lg text-sm cursor-pointer uppercase tracking-wide w-fit" data-testid="button-originals-cta">
+            <button className="btn-gradient-hover bg-white text-black font-bold px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg text-xs sm:text-sm cursor-pointer uppercase tracking-wide w-fit" data-testid="button-originals-cta">
               Get Started
             </button>
           </Link>
         </div>
 
-        <div className="pb-14">
-          <div className="flex gap-3 md:gap-4 overflow-x-auto scrollbar-hide">
+        <div className="pb-6 md:pb-14">
+          <div className="flex gap-2 md:gap-4 overflow-x-auto scrollbar-hide">
             {originalPosters.map((poster, i) => (
               <div
                 key={i}
-                className="flex-shrink-0 w-[180px] md:w-[239px] rounded-lg overflow-hidden"
+                className="flex-shrink-0 w-[120px] sm:w-[150px] md:w-[239px] rounded-lg overflow-hidden"
                 style={{ aspectRatio: "2/3" }}
                 data-testid={`originals-poster-${i}`}
               >
