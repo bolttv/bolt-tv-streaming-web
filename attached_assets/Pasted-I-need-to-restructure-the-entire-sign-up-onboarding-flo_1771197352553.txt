@@ -1,0 +1,44 @@
+I need to restructure the entire sign-up/onboarding flow, add an account settings page, and handle different user states throughout the platform. Here's everything:
+
+New Sign-Up Flow (remove email verification as a blocker):
+
+The current flow requires email verification before users can create their account, which creates friction and was causing redirect issues. I want to flip this so users get instant access. The new flow should be:
+
+User clicks "Get Started" / "Subscribe"
+User enters email and creates a password (account is created in Supabase immediately)
+User selects a subscription plan and completes payment
+User gets instant access to the streaming platform
+In the background, a verification email is automatically sent to their email address after step 2
+Email verification should NOT block any part of the sign-up, payment, or platform access. Users can verify their email at any time — it's not a gate. In Supabase, unverified users should still have full access to authenticated routes and content. Make sure the Supabase auth config supports this — you may need to disable the "Confirm email" requirement in the auth settings or handle it so that unverified users aren't blocked from signing in.
+
+Handling Users Who Abandon Payment:
+
+If a user creates an account (enters email + password) but exits before completing the payment/plan selection step, the system should still save them as a registered user in Supabase. They should be able to log back in with their credentials at any time.
+
+However, since they don't have an active subscription, their experience inside the platform should reflect that:
+
+Any "Watch Now" button (or whatever the primary CTA is to play content) should instead display as "Upgrade to Watch"
+When clicked, "Upgrade to Watch" should redirect the user back to the plan selection/payment page so they can pick a subscription and complete checkout
+This means we need a way to check the user's subscription status (e.g., a field like subscription_status or checking against Cleeng for an active plan). If they have no active subscription, they're treated as a free/unpaid user
+These users should still be able to browse the platform, see content thumbnails, descriptions, etc. — they just can't play anything until they subscribe
+Essentially there are three user states the UI needs to account for:
+
+No account — sees the public marketing/landing page, CTAs say "Get Started" or "Subscribe"
+Account created, no subscription — can log in and browse but can't watch content. CTAs say "Upgrade to Watch" and redirect to the plan/payment page
+Account created, active subscription — full access. CTAs say "Watch Now" and play content
+Make sure the UI dynamically reflects whichever state the logged-in user is in.
+
+New Account Settings Page (for logged-in users):
+
+I need an account settings page accessible from within the platform when users are signed in. It should include at minimum:
+
+Profile information (email, display name if applicable)
+Subscription/plan details
+Password management
+Email verification status
+If a user's email is NOT yet verified, display a persistent notification banner at the top of the settings page prompting them to verify. Something like: "Your email hasn't been verified yet. Check your inbox or click here to resend the verification email." Include a resend verification email button. This banner should only appear on the settings page — don't block access to any other part of the platform because of an unverified email.
+
+Context on what was already fixed:
+
+I updated the Supabase Dashboard under Authentication → URL Configuration — set the Site URL to https://bolt-tv-web.up.railway.app and added https://bolt-tv-web.up.railway.app/** to the Redirect URLs list. So the redirect configuration is good to go on the Supabase side.
+
