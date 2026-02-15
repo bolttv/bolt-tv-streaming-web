@@ -163,20 +163,29 @@ const originalPosters = [
 function OriginalsBanner() {
   return (
     <section className="relative overflow-hidden h-[450px] sm:h-[550px] md:h-[700px] lg:h-[800px]" data-testid="section-originals-banner">
-      <img
-        src={originalsBannerBg}
-        alt="Exclusive Originals background"
-        className="absolute inset-0 w-full h-full object-cover object-center"
-      />
-      <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent z-[1]" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent z-[1]" />
+      {/* Background layer — scales independently to fill section */}
+      <div className="absolute inset-0 z-0">
+        <img
+          src={originalsBannerBg}
+          alt="Exclusive Originals background"
+          className="absolute inset-0 w-full h-full object-cover object-center"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+      </div>
 
-      <img
-        src={originalsBannerFront}
-        alt="Exclusive Originals athletes"
-        className="absolute bottom-0 right-0 w-[45%] md:w-[40%] lg:w-[40%] h-full object-contain object-bottom hidden sm:block z-[2] sm:opacity-60 md:opacity-100"
-      />
+      {/* Foreground layer — fixed sizing, anchored to content */}
+      <div className="absolute inset-0 z-[5] pointer-events-none">
+        <div className="relative h-full w-full max-w-[1400px] mx-auto px-6 md:px-16">
+          <img
+            src={originalsBannerFront}
+            alt="Exclusive Originals athletes"
+            className="absolute bottom-0 right-0 md:right-[30px] w-[300px] md:w-[420px] lg:w-[520px] max-h-[90%] object-contain object-bottom hidden sm:block sm:opacity-60 md:opacity-100"
+          />
+        </div>
+      </div>
 
+      {/* Content layer — text, button, posters */}
       <div className="relative z-10 h-full flex flex-col justify-end px-6 md:px-16">
         <div className="max-w-2xl mb-10 md:mb-14">
           <h2 className="text-4xl md:text-6xl font-display font-black text-white uppercase leading-tight mb-4">
