@@ -162,7 +162,8 @@ const originalPosters = [
 
 function OriginalsBanner() {
   return (
-    <section className="relative overflow-hidden h-[320px] sm:h-[400px] md:h-[550px] lg:h-[600px]" data-testid="section-originals-banner">
+    <section className="relative h-[320px] sm:h-[400px] md:h-[550px] lg:h-[600px]" data-testid="section-originals-banner">
+      <div className="absolute inset-0 overflow-hidden">
       <img
         src={originalsBannerBg}
         alt="Exclusive Originals background"
@@ -170,6 +171,7 @@ function OriginalsBanner() {
       />
       <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+      </div>
 
       <img
         src={originalsBannerFront}
