@@ -4,6 +4,7 @@ import { ArrowLeft, X } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getSessionId, getAuthHeaders } from "@/lib/session";
 import LoadingSpinner from "@/components/LoadingSpinner";
+import { useAuth } from "@/lib/AuthContext";
 
 declare global {
   interface Window {
@@ -33,6 +34,7 @@ const DEFAULT_PLAYER_LIBRARY_URL = "https://cdn.jwplayer.com/libraries/EBg26wOK.
 export default function Watch() {
   const { id } = useParams();
   const [, setLocation] = useLocation();
+  const { hasActiveSubscription, isLoading: authLoading } = useAuth();
   const queryClient = useQueryClient();
   const playerContainerRef = useRef<HTMLDivElement>(null);
   const [playerReady, setPlayerReady] = useState(false);
@@ -42,6 +44,12 @@ export default function Watch() {
   const lastProgressUpdateRef = useRef<number>(0);
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const playerLibraryUrlRef = useRef<string>(DEFAULT_PLAYER_LIBRARY_URL);
+
+  useEffect(() => {
+    if (!authLoading && !hasActiveSubscription) {
+      setLocation("/subscribe");
+    }
+  }, [authLoading, hasActiveSubscription, setLocation]);
 
   const { data: content, isLoading, error: contentError } = useQuery<Content>({
     queryKey: [`/api/content/${id}`],
@@ -326,6 +334,14 @@ export default function Watch() {
       queryClient.invalidateQueries({ queryKey: ["/api/continue-watching", getSessionId()] });
     };
   }, [scriptLoaded, mediaId, saveProgress, queryClient, contentNotFound]);
+
+  if (authLoading || !hasActiveSubscription) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
 
   const handleBack = () => {
     // Go back to the previous page in history, or home if no history

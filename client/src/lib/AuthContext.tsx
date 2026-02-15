@@ -4,7 +4,7 @@ import { supabase, Profile, getProfile, updateProfile, upsertProfile } from "./s
 import { ssoLogin, saveCleengCustomer, getCleengCustomer, clearCleengCustomer, CleengCustomer, getSubscriptions } from "./cleeng";
 import { getSessionId } from "./session";
 
-type AuthStep = "email" | "verification_sent" | "create_password" | "authenticated";
+type AuthStep = "email" | "authenticated";
 
 interface AuthContextType {
   session: Session | null;
@@ -13,15 +13,12 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   authStep: AuthStep;
-  pendingEmail: string | null;
+  hasActiveSubscription: boolean;
   cleengCustomer: CleengCustomer | null;
   isLinking: boolean;
-  signUp: (email: string) => Promise<{ success: boolean; error?: string; existingUser?: boolean }>;
+  signUp: (email: string, password: string) => Promise<{ success: boolean; error?: string; existingUser?: boolean }>;
   signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
-  completeAccountSetup: (password: string, firstName: string, lastName: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
-  setAuthStep: (step: AuthStep) => void;
-  setPendingEmail: (email: string | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -32,13 +29,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [authStep, setAuthStep] = useState<AuthStep>("email");
-  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
   const [cleengCustomer, setCleengCustomer] = useState<CleengCustomer | null>(() => getCleengCustomer());
   const [isLinking, setIsLinking] = useState(false);
   const [linkAttempted, setLinkAttempted] = useState(false);
   const migrationAttempted = useRef(false);
 
   const isAuthenticated = !!session && !!user;
+  const hasActiveSubscription = !!profile && profile.subscription_tier !== "free";
 
   const linkToCleeng = useCallback(async (currentUser: User) => {
     if (!currentUser.email) return;
@@ -70,7 +67,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         saveCleengCustomer(customer);
         setCleengCustomer(customer);
 
-        // Fetch user's subscriptions from Cleeng to determine tier and billing period
         let subscriptionTier: "free" | "basic" | "premium" = "free";
         let billingPeriod: "none" | "monthly" | "annual" = "none";
         
@@ -79,25 +75,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           console.log("Cleeng subscriptions response:", subscriptionsResponse);
           
           if (subscriptionsResponse.items && subscriptionsResponse.items.length > 0) {
-            // Find an active subscription
             const activeSubscription = subscriptionsResponse.items.find(
               (sub: any) => sub.status === "active" || sub.status === "paid"
             );
             
             if (activeSubscription) {
-              // Determine tier based on offer ID or price
               const offerId = activeSubscription.offerId || "";
               const period = activeSubscription.period || "";
               console.log("Active subscription - offerId:", offerId, "period:", period);
               
-              // Determine billing period from Cleeng subscription data
-              // Cleeng uses periods like "month", "year", "week", etc.
               if (period.toLowerCase().includes("year") || period.toLowerCase().includes("annual")) {
                 billingPeriod = "annual";
               } else if (period.toLowerCase().includes("month")) {
                 billingPeriod = "monthly";
               } else {
-                // Check offer ID as fallback
                 if (offerId.toLowerCase().includes("annual") || offerId.toLowerCase().includes("yearly")) {
                   billingPeriod = "annual";
                 } else if (offerId.toLowerCase().includes("monthly")) {
@@ -105,11 +96,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 }
               }
               
-              // Map offer IDs to tiers
               if (offerId.toLowerCase().includes("premium")) {
                 subscriptionTier = "premium";
               } else {
-                // Default to basic for any active subscription
                 subscriptionTier = "basic";
               }
             }
@@ -118,7 +107,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           console.error("Error fetching subscriptions:", subError);
         }
 
-        // Always upsert the profile with the Cleeng customer ID, subscription tier, and billing period
         if (cleengId) {
           console.log("Upserting profile with Cleeng customer ID:", cleengId, "tier:", subscriptionTier, "billing:", billingPeriod);
           const updatedProfile = await upsertProfile(
@@ -148,24 +136,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [cleengCustomer]);
 
-  const checkAccountSetupComplete = (currentUser: User): boolean => {
-    // Check if user has completed account setup (has password set and profile info)
-    const passwordSet = currentUser.user_metadata?.password_set === true;
-    return passwordSet;
-  };
-
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       if (session?.user) {
-        // Check if user needs to complete account setup
-        const setupComplete = checkAccountSetupComplete(session.user);
-        if (!setupComplete && session.user.email_confirmed_at) {
-          setAuthStep("create_password");
-        } else if (setupComplete) {
-          setAuthStep("authenticated");
-        }
+        setAuthStep("authenticated");
         getProfile(session.user.id).then(setProfile);
       }
       setIsLoading(false);
@@ -178,12 +154,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          const setupComplete = checkAccountSetupComplete(session.user);
-          if (!setupComplete && session.user.email_confirmed_at) {
-            setAuthStep("create_password");
-          } else if (setupComplete) {
-            setAuthStep("authenticated");
-          }
+          setAuthStep("authenticated");
           getProfile(session.user.id).then(setProfile);
         } else {
           setAuthStep("email");
@@ -225,30 +196,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [isAuthenticated, cleengCustomer]);
 
-  const signUp = async (email: string): Promise<{ success: boolean; error?: string; existingUser?: boolean }> => {
+  const signUp = async (email: string, password: string): Promise<{ success: boolean; error?: string; existingUser?: boolean }> => {
     try {
-      const baseUrl = window.location.origin;
-      
-      // Get pending offer to include in user metadata for cross-device persistence
-      const pendingOffer = localStorage.getItem("pending_checkout_offer");
-      
-      // Sign up with a temporary random password - user will set real password after verification
-      const tempPassword = crypto.randomUUID();
-      
       const { data, error } = await supabase.auth.signUp({
         email,
-        password: tempPassword,
+        password,
         options: {
-          emailRedirectTo: `${baseUrl}/create-account`,
           data: {
-            password_set: false,
-            pending_offer: pendingOffer || undefined,
+            password_set: true,
           },
         },
       });
 
       if (error) {
-        // Check if user already exists
         if (error.message.toLowerCase().includes("already registered") || 
             error.message.toLowerCase().includes("user already exists")) {
           return { success: false, error: "An account with this email already exists. Please sign in instead.", existingUser: true };
@@ -256,16 +216,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { success: false, error: error.message };
       }
 
-      // Check if this is an existing user (Supabase returns user but no session for existing emails)
       if (data.user && !data.session && data.user.identities?.length === 0) {
         return { success: false, error: "An account with this email already exists. Please sign in instead.", existingUser: true };
       }
 
-      setPendingEmail(email);
-      setAuthStep("verification_sent");
+      if (data.session) {
+        setSession(data.session);
+        setUser(data.session.user);
+        setAuthStep("authenticated");
+      }
+
       return { success: true };
     } catch (error) {
-      return { success: false, error: "Failed to send verification email" };
+      return { success: false, error: "Failed to create account" };
     }
   };
 
@@ -293,66 +256,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const completeAccountSetup = async (
-    password: string, 
-    firstName: string, 
-    lastName: string
-  ): Promise<{ success: boolean; error?: string }> => {
-    try {
-      // Update user password and metadata
-      const { data, error } = await supabase.auth.updateUser({
-        password,
-        data: {
-          password_set: true,
-          first_name: firstName,
-          last_name: lastName,
-          full_name: `${firstName} ${lastName}`,
-        },
-      });
-
-      if (error) {
-        return { success: false, error: error.message };
-      }
-
-      if (data.user) {
-        setUser(data.user);
-        
-        // Try to update profile in database (may fail if table doesn't have columns yet)
-        try {
-          await updateProfile(data.user.id, {
-            first_name: firstName,
-            last_name: lastName,
-          });
-        } catch (profileError) {
-          // Profile update is non-critical - names are stored in user metadata
-          console.log("Profile update skipped - names stored in user metadata");
-        }
-        
-        // Clear pending offer from user metadata now that setup is complete
-        // The checkout flow will read it before we clear it
-        await supabase.auth.updateUser({
-          data: {
-            pending_offer: null,
-          },
-        });
-        
-        setAuthStep("authenticated");
-        return { success: true };
-      }
-
-      return { success: false, error: "Failed to complete account setup" };
-    } catch (error) {
-      return { success: false, error: "Failed to complete account setup" };
-    }
-  };
-
   const logout = async () => {
     await supabase.auth.signOut();
     setSession(null);
     setUser(null);
     setProfile(null);
     setAuthStep("email");
-    setPendingEmail(null);
     clearCleengCustomer();
     setCleengCustomer(null);
     setLinkAttempted(false);
@@ -367,15 +276,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoading,
         isAuthenticated,
         authStep,
-        pendingEmail,
+        hasActiveSubscription,
         cleengCustomer,
         isLinking,
         signUp,
         signIn,
-        completeAccountSetup,
         logout,
-        setAuthStep,
-        setPendingEmail,
       }}
     >
       {children}

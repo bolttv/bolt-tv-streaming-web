@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { ArrowLeft, Check, Loader2, Mail, AlertCircle, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Check, Loader2, Mail, AlertCircle, Lock, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import { getOffers, CleengOffer, formatPrice } from "@/lib/cleeng";
 
@@ -44,11 +44,11 @@ function mapOffersToPlan(offers: CleengOffer[]): PricingPlan[] {
   });
 }
 
-type Step = "plan" | "email" | "verification_sent";
+type Step = "plan" | "account";
 
 export default function Subscribe() {
   const [, setLocation] = useLocation();
-  const { isAuthenticated, authStep, signUp, pendingEmail, setPendingEmail, setAuthStep } = useAuth();
+  const { isAuthenticated, authStep, signUp } = useAuth();
   const [step, setStep] = useState<Step>("plan");
   const [plans, setPlans] = useState<PricingPlan[]>([]);
   const [billingPeriod, setBillingPeriod] = useState<"month" | "year">("month");
@@ -57,6 +57,8 @@ export default function Subscribe() {
     const params = new URLSearchParams(window.location.search);
     return params.get("email") || "";
   });
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingOffers, setLoadingOffers] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -130,11 +132,11 @@ export default function Subscribe() {
 
     localStorage.setItem("pending_checkout_offer", selectedPlanData.offerId);
     
-    setStep("email");
+    setStep("account");
     setError(null);
   };
 
-  const handleSendVerification = async (e: React.FormEvent) => {
+  const handleCreateAccount = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!email.trim()) {
@@ -142,43 +144,34 @@ export default function Subscribe() {
       return;
     }
 
+    if (!password) {
+      setError("Please enter a password");
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
-    const result = await signUp(email.trim());
+    const result = await signUp(email.trim(), password);
     
     if (result.success) {
-      setStep("verification_sent");
+      const pendingOffer = localStorage.getItem("pending_checkout_offer");
+      if (pendingOffer) {
+        setLocation(`/checkout?offerId=${encodeURIComponent(pendingOffer)}`);
+      } else {
+        setLocation("/home");
+      }
     } else if (result.existingUser) {
       setLocation(`/login?returnTo=${encodeURIComponent("/subscribe")}`);
     } else {
-      setError(result.error || "Failed to send verification email");
-    }
-    
-    setLoading(false);
-  };
-
-  const handleResend = async () => {
-    if (!pendingEmail) return;
-    
-    setLoading(true);
-    setError(null);
-    
-    const result = await signUp(pendingEmail);
-    
-    if (!result.success) {
-      setError(result.error || "Failed to resend verification email");
+      setError(result.error || "Failed to create account");
     }
     
     setLoading(false);
   };
 
   const handleBack = () => {
-    if (step === "verification_sent") {
-      setStep("email");
-      setAuthStep("email");
-      setPendingEmail(null);
-    } else if (step === "email") {
+    if (step === "account") {
       setStep("plan");
     }
     setError(null);
@@ -201,7 +194,6 @@ export default function Subscribe() {
 
       <div className="max-w-6xl mx-auto px-4 py-8">
         
-        {/* Step 1: Plan Selection */}
         {step === "plan" && (
           <>
             <div className="text-center mb-12">
@@ -327,8 +319,7 @@ export default function Subscribe() {
           </>
         )}
 
-        {/* Step 2: Email Entry */}
-        {step === "email" && (
+        {step === "account" && (
           <div className="max-w-md mx-auto">
             <button
               onClick={handleBack}
@@ -345,14 +336,14 @@ export default function Subscribe() {
                 alt="Bolt TV" 
                 className="h-8 mx-auto mb-6"
               />
-              <h1 className="text-2xl md:text-3xl font-bold mb-2">Get Started</h1>
+              <h1 className="text-2xl md:text-3xl font-bold mb-2">Create Your Account</h1>
               <p className="text-gray-400">
-                Enter your email address to get started. If you're already a subscriber, enter the email associated with that account.
+                Enter your email and password to get started.
               </p>
             </div>
 
             <div className="bg-white/[0.04] rounded-2xl p-8 backdrop-blur-sm border border-white/10">
-              <form onSubmit={handleSendVerification}>
+              <form onSubmit={handleCreateAccount}>
                 {error && (
                   <div className="flex items-center gap-2 bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg mb-6" data-testid="error-message">
                     <AlertCircle className="w-5 h-5 flex-shrink-0" />
@@ -360,7 +351,7 @@ export default function Subscribe() {
                   </div>
                 )}
 
-                <div className="mb-6">
+                <div className="mb-4">
                   <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
                     Email Address
                   </label>
@@ -379,19 +370,45 @@ export default function Subscribe() {
                   </div>
                 </div>
 
+                <div className="mb-6">
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      id="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Enter your password"
+                      className="w-full pl-10 pr-12 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
+                      disabled={loading}
+                      data-testid="input-password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                    >
+                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                </div>
+
                 <button
                   type="submit"
-                  disabled={loading || !email.trim()}
+                  disabled={loading || !email.trim() || !password}
                   className="w-full py-3 bg-white hover:bg-white/90 disabled:bg-white/40 disabled:cursor-not-allowed text-black font-semibold rounded-lg transition flex items-center justify-center gap-2"
-                  data-testid="button-continue-email"
+                  data-testid="button-create-account"
                 >
                   {loading ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
-                      Sending...
+                      Creating Account...
                     </>
                   ) : (
-                    "Continue"
+                    "Create Account & Continue"
                   )}
                 </button>
               </form>
@@ -403,69 +420,6 @@ export default function Subscribe() {
                 Sign In
               </Link>
             </p>
-          </div>
-        )}
-
-        {/* Step 3: Verification Sent */}
-        {step === "verification_sent" && (
-          <div className="max-w-md mx-auto">
-            <button
-              onClick={handleBack}
-              className="flex items-center gap-2 text-white hover:text-white/80 transition mb-8"
-              data-testid="button-back-step"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back
-            </button>
-
-            <div className="bg-white/[0.04] rounded-2xl p-8 backdrop-blur-sm border border-white/10 text-center">
-              <div className="mb-6">
-                <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <CheckCircle2 className="w-8 h-8 text-green-400" />
-                </div>
-                <h1 className="text-2xl font-bold mb-2">Verify Your Email</h1>
-                <p className="text-gray-400 mb-2">
-                  We sent a verification link to
-                </p>
-                <p className="text-white font-semibold mb-4">
-                  {pendingEmail}
-                </p>
-                <p className="text-gray-400 text-sm">
-                  Click the link in the email to verify your account and create your password.
-                </p>
-              </div>
-
-              {error && (
-                <div className="flex items-center gap-2 bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg mb-6" data-testid="error-message">
-                  <AlertCircle className="w-5 h-5 flex-shrink-0" />
-                  <span className="text-sm">{error}</span>
-                </div>
-              )}
-
-              <div className="bg-white/5 rounded-lg p-4 mb-6">
-                <p className="text-sm text-gray-400">
-                  <strong className="text-white">Didn't receive the email?</strong>
-                  <br />
-                  Check your spam folder or click below to resend.
-                </p>
-              </div>
-
-              <button
-                onClick={handleResend}
-                disabled={loading}
-                className="text-white hover:text-white/80 font-medium transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mx-auto"
-                data-testid="button-resend"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Sending...
-                  </>
-                ) : (
-                  "Resend Verification Email"
-                )}
-              </button>
-            </div>
           </div>
         )}
       </div>

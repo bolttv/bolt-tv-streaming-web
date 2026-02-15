@@ -4,6 +4,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import { Play, Plus, Info, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLocation } from "wouter";
+import { useAuth } from "@/lib/AuthContext";
 
 interface HeroCarouselProps {
   items: HeroItem[];
@@ -21,6 +22,7 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
       return true;
     },
   });
+  const { hasActiveSubscription } = useAuth();
   const [, setLocation] = useLocation();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [failedLogos, setFailedLogos] = useState<Set<string>>(new Set());
@@ -133,17 +135,19 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
                     const isSeries = item.contentType === "Series";
                     const isSingleContent = item.contentType === "Movie" || item.contentType === "Documentary" || item.contentType === "Episode";
                     
-                    const watchButtonText = isSingleContent 
-                      ? "Watch Now" 
-                      : isSeries && item.nextEpisode 
-                        ? `Watch S${item.nextEpisode.seasonNumber} E${item.nextEpisode.episodeNumber}`
-                        : isSeries 
-                          ? "Watch S1 E1"
-                          : "Watch Now";
+                    const watchButtonText = !hasActiveSubscription
+                      ? "Upgrade to Watch"
+                      : isSingleContent 
+                        ? "Watch Now" 
+                        : isSeries && item.nextEpisode 
+                          ? `Watch S${item.nextEpisode.seasonNumber} E${item.nextEpisode.episodeNumber}`
+                          : isSeries 
+                            ? "Watch S1 E1"
+                            : "Watch Now";
                     
                     const hasPlayableMedia = !isSeries || (isSeries && item.nextEpisode?.mediaId);
                     const watchMediaId = isSeries && item.nextEpisode ? item.nextEpisode.mediaId : item.id;
-                    const watchHref = hasPlayableMedia ? `/watch/${watchMediaId}` : `/content/${item.id}`;
+                    const watchHref = !hasActiveSubscription ? "/subscribe" : hasPlayableMedia ? `/watch/${watchMediaId}` : `/content/${item.id}`;
                     
                     return (
                       <button 

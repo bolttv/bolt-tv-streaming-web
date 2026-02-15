@@ -143,30 +143,39 @@ Authentication uses Supabase Auth with email/password authentication and email v
 ### Auth Flow
 **Sign Up (New Users via Subscribe):**
 1. User selects a plan on `/subscribe` page
-2. User enters email on the next step
-3. Supabase sends "Verify Your Email" email
-4. User clicks "Verify Email" button in email
-5. User is redirected to `/create-account`
-6. User enters password, first name, and last name
-7. Account is created and user is authenticated
-8. AuthContext automatically links user to Cleeng customer via SSO
+2. User enters email and password (account created immediately in Supabase)
+3. Verification email sent in background (does NOT block access)
+4. User is redirected to `/checkout?offerId=...` to complete payment
+5. AuthContext automatically links user to Cleeng customer via SSO
 
 **Sign In (Existing Users):**
 1. User enters email and password on `/login` page
 2. User is authenticated immediately
 
+**Supabase Settings:**
+- "Confirm email" is DISABLED in Authentication → Providers → Email
+- Users can sign in immediately without email verification
+- Verification emails are still sent but don't block access
+
+### 3 User States
+1. **No account** — sees landing page, CTAs say "Get Started"/"Subscribe"
+2. **Account, no subscription** — can browse content but can't watch. CTAs say "Upgrade to Watch", redirect to /subscribe
+3. **Account, active subscription** — full access. CTAs say "Watch Now" and play content
+
 ### Key Files
 - `client/src/lib/supabase.ts`: Supabase client initialization
-- `client/src/lib/AuthContext.tsx`: Auth provider with Cleeng SSO integration
+- `client/src/lib/AuthContext.tsx`: Auth provider with Cleeng SSO integration and subscription state
 - `client/src/pages/Login.tsx`: Sign in page for returning users
-- `client/src/pages/Subscribe.tsx`: Subscription flow with plan selection and email verification
-- `client/src/pages/CreateAccount.tsx`: Account creation page with password/name fields
+- `client/src/pages/Subscribe.tsx`: Plan selection → account creation (email+password) → checkout redirect
+- `client/src/pages/AccountSettings.tsx`: Account settings with profile, subscription, password, email verification
+- `client/src/pages/CreateAccount.tsx`: Redirects to /subscribe (legacy route)
 
 ### AuthContext Features
-- Manages Supabase auth state
+- Manages Supabase auth state (simplified: "email" | "authenticated")
 - Automatically links authenticated users to Cleeng customers
 - Stores Cleeng customer ID in `profiles.cleeng_customer_id`
-- Provides: `user`, `isAuthenticated`, `isLoading`, `cleengCustomer`, `isLinking`, `logout`
+- Provides: `user`, `profile`, `isAuthenticated`, `isLoading`, `hasActiveSubscription`, `cleengCustomer`, `isLinking`, `signUp`, `signIn`, `logout`
+- `hasActiveSubscription` derived from `profile.subscription_tier !== "free"`
 
 ## Cleeng Integration (Subscription Management)
 

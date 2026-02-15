@@ -13,6 +13,7 @@ import CreateAccount from "@/pages/CreateAccount";
 import Subscribe from "@/pages/Subscribe";
 import Checkout from "@/pages/Checkout";
 import Search from "@/pages/Search";
+import AccountSettings from "@/pages/AccountSettings";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -29,6 +30,7 @@ function Router() {
       <Route path="/watch/:id">{(params) => <AuthGuard><Watch /></AuthGuard>}</Route>
       <Route path="/sport/:playlistId">{(params) => <AuthGuard><SportCategory /></AuthGuard>}</Route>
       <Route path="/search">{() => <AuthGuard><Search /></AuthGuard>}</Route>
+      <Route path="/account">{() => <AuthGuard><AccountSettings /></AuthGuard>}</Route>
       <Route component={NotFound} />
     </Switch>
   );

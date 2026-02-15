@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
-import { Search, User, Loader2, X } from "lucide-react";
+import { Search, User, Loader2, X, Settings, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/AuthContext";
 
@@ -8,9 +8,11 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const [, setLocation] = useLocation();
   const { isAuthenticated, isLoading, logout } = useAuth();
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -25,6 +27,16 @@ export default function Navbar() {
       setTimeout(() => searchInputRef.current?.focus(), 150);
     }
   }, [searchOpen]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setShowUserMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleSearchClose = () => {
     setSearchOpen(false);
@@ -152,16 +164,42 @@ export default function Navbar() {
           {isLoading ? (
             <Loader2 className="w-5 h-5 animate-spin flex-shrink-0" />
           ) : isAuthenticated ? (
-            <button 
-              onClick={handleSignOut}
-              className="flex items-center gap-2 hover:text-white transition font-bold text-sm flex-shrink-0"
-              data-testid="button-signout"
-            >
-              <div className="p-1 border-2 border-current rounded-full">
-                <User className="w-4 h-4 md:w-5 md:h-5 fill-current" />
-              </div>
-              <span className="hidden md:inline whitespace-nowrap">Sign Out</span>
-            </button>
+            <div className="relative" ref={userMenuRef}>
+              <button 
+                onClick={() => setShowUserMenu(!showUserMenu)}
+                className="flex items-center gap-2 hover:text-white transition font-bold text-sm flex-shrink-0"
+                data-testid="button-user-menu"
+              >
+                <div className="p-1 border-2 border-current rounded-full">
+                  <User className="w-4 h-4 md:w-5 md:h-5 fill-current" />
+                </div>
+              </button>
+              {showUserMenu && (
+                <div className="absolute right-0 top-full mt-2 w-48 bg-black/95 border border-white/10 rounded-lg shadow-xl overflow-hidden z-50" data-testid="dropdown-user-menu">
+                  <Link href="/account">
+                    <span
+                      onClick={() => setShowUserMenu(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-white hover:bg-white/10 transition cursor-pointer"
+                      data-testid="link-account-settings"
+                    >
+                      <Settings className="w-4 h-4" />
+                      Account
+                    </span>
+                  </Link>
+                  <button
+                    onClick={() => {
+                      setShowUserMenu(false);
+                      handleSignOut();
+                    }}
+                    className="flex items-center gap-3 w-full px-4 py-2.5 text-sm text-white hover:bg-white/10 transition cursor-pointer"
+                    data-testid="button-signout"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Sign Out
+                  </button>
+                </div>
+              )}
+            </div>
           ) : (
             <Link href="/login">
               <span 

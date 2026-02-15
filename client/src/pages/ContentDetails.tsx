@@ -7,6 +7,7 @@ import LoadingSpinner from "@/components/LoadingSpinner";
 import { useQuery } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
 import { getAuthHeaders } from "@/lib/session";
+import { useAuth } from "@/lib/AuthContext";
 
 type ContentType = "Trailer" | "Episode" | "Series" | "Movie" | "Documentary";
 
@@ -65,6 +66,7 @@ function formatDuration(seconds: number): string {
 
 export default function ContentDetails() {
   const { id } = useParams();
+  const { hasActiveSubscription } = useAuth();
   const [logoFailed, setLogoFailed] = useState(false);
   const [motionThumbnailFailed, setMotionThumbnailFailed] = useState(false);
   
@@ -108,13 +110,15 @@ export default function ContentDetails() {
 
   const isSeries = content?.contentType === "Series";
   const isSingleContent = content?.contentType === "Movie" || content?.contentType === "Documentary" || content?.contentType === "Episode";
-  const watchButtonText = isSingleContent 
-    ? "Watch Now" 
-    : isSeries && nextEpisode 
-      ? `Watch S${nextEpisode.seasonNumber} E${nextEpisode.episodeNumber}`
-      : isSeries 
-        ? "Watch S1 E1"
-        : "Watch Now";
+  const watchButtonText = !hasActiveSubscription
+    ? "Upgrade to Watch"
+    : isSingleContent 
+      ? "Watch Now" 
+      : isSeries && nextEpisode 
+        ? `Watch S${nextEpisode.seasonNumber} E${nextEpisode.episodeNumber}`
+        : isSeries 
+          ? "Watch S1 E1"
+          : "Watch Now";
   
   const firstEpisodeMediaId = episodes.length > 0
     ? [...episodes].sort((a, b) => {
@@ -216,7 +220,14 @@ export default function ContentDetails() {
 
               {/* Watch Button - 60% width on mobile, auto on tablet+ */}
               <div className="w-[60%] sm:w-auto">
-                {watchMediaId ? (
+                {!hasActiveSubscription ? (
+                  <Link href="/subscribe" className="w-full sm:w-auto">
+                    <button className="flex items-center justify-center gap-2 sm:gap-2 bg-white text-black hover:bg-white/90 transition-colors h-11 sm:h-10 md:h-12 w-full sm:w-auto px-4 sm:px-28 md:px-36 rounded font-semibold tracking-wide text-sm sm:text-sm md:text-base cursor-pointer" data-testid="button-upgrade">
+                      <Play className="w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5 fill-current" />
+                      {watchButtonText}
+                    </button>
+                  </Link>
+                ) : watchMediaId ? (
                   <Link href={`/watch/${watchMediaId}${category ? `?category=${category}` : ''}`} className="w-full sm:w-auto">
                     <button className="flex items-center justify-center gap-2 sm:gap-2 bg-white text-black hover:bg-white/90 transition-colors h-11 sm:h-10 md:h-12 w-full sm:w-auto px-4 sm:px-28 md:px-36 rounded font-semibold tracking-wide text-sm sm:text-sm md:text-base cursor-pointer" data-testid="button-watch">
                       <Play className="w-4 h-4 sm:w-4 sm:h-4 md:w-5 md:h-5 fill-current" />
