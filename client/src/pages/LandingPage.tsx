@@ -165,7 +165,8 @@ function OriginalsBanner() {
       <img
         src={originalsBannerBg}
         alt="Exclusive Originals"
-        className="absolute inset-0 w-full h-full object-cover"
+        className="absolute inset-0 w-full object-cover"
+        style={{ width: '100%', height: 'auto', minHeight: '100%', top: '50%', transform: 'translateY(-50%)' }}
       />
       <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
