@@ -11,8 +11,8 @@ import posterTraviesa from "@assets/traviesa-web_1771007420674.png";
 import posterSurfing from "@assets/ChatGPT_Image_Oct_1,_2025_at_01_26_07_PM_1771007394434.png";
 import posterLifeOnIce from "@assets/ChatGPT_Image_Oct_3,_2025,_11_50_56_AM_1771007394435.png";
 import posterQuestForGold from "@assets/QuestForGoal-FINAL_1771007348206.jpeg";
-import originalsBannerBg from "@assets/GG_BoNix_BackgroundBanner_1771182530667.jpg";
-import originalsBannerFront from "@assets/GG_BoNix_BackgroundBanner_Front_1771183185691.jpg";
+import originalsBannerBg from "@assets/GG_BoNix_Background_1771183611134.jpg";
+import originalsBannerFront from "@assets/GG_BoNix_Foreground_1771183611135.jpg";
 import posterFullThrottle from "@assets/ChatGPT_Image_Oct_2,_2025_at_05_43_18_PM_1771007394434.png";
 import posterSurfingMidnight from "@assets/SurfingTheMidnightSun-Poster_1771007420673.png";
 import sportActionSports from "@assets/Action_Sports-New_1770944151377.png";
@@ -175,7 +175,7 @@ function OriginalsBanner() {
         src={originalsBannerFront}
         alt="Exclusive Originals athletes"
         className="absolute right-[5%] w-[50%] md:w-[45%] lg:w-[40%] h-auto object-contain hidden sm:block z-[5]"
-        style={{ mixBlendMode: 'multiply', bottom: '100px', top: '-15%' }}
+        style={{ bottom: '100px', top: '-15%' }}
       />
 
       <div className="relative z-10 h-full flex flex-col justify-end px-6 md:px-16">
