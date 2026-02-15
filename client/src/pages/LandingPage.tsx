@@ -174,7 +174,7 @@ function OriginalsBanner() {
       <img
         src={originalsBannerFront}
         alt="Exclusive Originals athletes"
-        className="absolute bottom-0 right-0 w-[55%] md:w-[50%] h-auto object-contain object-right-bottom hidden sm:block"
+        className="absolute bottom-0 right-0 w-[55%] md:w-[50%] h-auto object-contain object-right-bottom hidden sm:block z-[5]"
         style={{ mixBlendMode: 'multiply' }}
       />
 
