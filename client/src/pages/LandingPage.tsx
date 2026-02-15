@@ -162,26 +162,23 @@ const originalPosters = [
 
 function OriginalsBanner() {
   return (
-    <section className="relative h-[450px] sm:h-[550px] md:h-[700px] lg:h-[800px]" data-testid="section-originals-banner">
-      <div className="absolute inset-0 overflow-hidden">
+    <section className="relative overflow-hidden h-[450px] sm:h-[550px] md:h-[700px] lg:h-[800px]" data-testid="section-originals-banner">
       <img
         src={originalsBannerBg}
         alt="Exclusive Originals background"
         className="absolute inset-0 w-full h-full object-cover object-center"
       />
-      <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-      </div>
+      <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent z-[1]" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent z-[1]" />
+
+      <img
+        src={originalsBannerFront}
+        alt="Exclusive Originals athletes"
+        className="absolute bottom-0 right-0 w-[45%] md:w-[40%] lg:w-[40%] h-full object-contain object-bottom hidden sm:block z-[2] sm:opacity-60 md:opacity-100"
+      />
 
       <div className="relative z-10 h-full flex flex-col justify-end px-6 md:px-16">
-        <div className="relative max-w-full mb-10 md:mb-14">
-          <img
-            src={originalsBannerFront}
-            alt="Exclusive Originals athletes"
-            className="absolute right-[-40px] md:right-[-10px] w-[600px] md:w-[800px] lg:w-[960px] h-auto object-contain hidden sm:block z-[5]"
-            style={{ bottom: '0px', transform: 'translateY(-15px)' }}
-          />
-          <div className="max-w-2xl">
+        <div className="max-w-2xl mb-10 md:mb-14">
           <h2 className="text-4xl md:text-6xl font-display font-black text-white uppercase leading-tight mb-4">
             Exclusive<br />Originals
           </h2>
@@ -193,7 +190,6 @@ function OriginalsBanner() {
               Get Started
             </button>
           </Link>
-          </div>
         </div>
 
         <div className="pb-14">
