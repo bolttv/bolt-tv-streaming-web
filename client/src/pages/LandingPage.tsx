@@ -180,7 +180,8 @@ function OriginalsBanner() {
           <img
             src={originalsBannerFront}
             alt="Exclusive Originals athletes"
-            className="absolute bottom-0 right-0 md:right-[30px] w-[300px] md:w-[420px] lg:w-[520px] max-h-[90%] object-contain object-bottom hidden sm:block sm:opacity-60 md:opacity-100"
+            className="absolute right-0 md:right-[30px] w-[360px] md:w-[504px] lg:w-[624px] max-h-[108%] object-contain object-bottom hidden sm:block sm:opacity-60 md:opacity-100"
+            style={{ bottom: '50px' }}
           />
         </div>
       </div>
