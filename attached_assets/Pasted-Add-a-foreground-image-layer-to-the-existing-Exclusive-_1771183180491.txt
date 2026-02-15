@@ -1,0 +1,29 @@
+Add a foreground image layer to the existing "Exclusive Originals" banner section and adjust background image behavior.
+I'm uploading GG_BoNix_BackgroundBanner_Front.jpg — an image of three people on a white background. I need this layered on top of the existing background image in the "Exclusive Originals" banner, positioned on the right side of the section.
+Background image behavior:
+
+The background image should always show its full width — it should never crop from the sides.
+Lock the width of the image to the width of the section container so we always see the full image horizontally.
+When the browser window resizes, the top and bottom of the image should crop (not the sides). The image should stay vertically centered so the best part of the scene is always visible.
+Essentially: width: 100% with object-fit: cover and object-position: center center, inside a container with a fixed or max height and overflow: hidden.
+The banner section height should be roughly 500-600px on desktop, scaling down to around 300-350px on mobile.
+
+Foreground image layer:
+
+Add the foreground image as an absolutely positioned element inside the existing banner container.
+Position it on the right side of the banner, anchored to the bottom of the section, so the figures appear to be standing in the scene.
+The image should take up roughly 50-60% of the banner width and be right-aligned.
+The foreground image has a white background. Use mix-blend-mode: multiply to make the white areas transparent so the figures blend naturally into the dark background scene.
+The existing text ("EXCLUSIVE ORIGINALS"), description, and "GET STARTED" button should remain on the left side and sit on top of the foreground image (higher z-index for the text content).
+
+Responsive behavior:
+
+On desktop (1200px+): Full banner, background shows full width with top/bottom cropping as needed. Foreground image visible on the right half, text on the left.
+On tablet (768-1199px): Banner height reduces, background crops more from top/bottom but still shows full width. Foreground image scales down, may crop slightly on the right edge. Text still readable on the left.
+On mobile (below 768px): Banner height around 300-350px, background crops significantly from top/bottom but full width always visible. Foreground image either significantly scaled down and partially hidden, or hidden entirely. Text and button remain the priority.
+
+Important:
+
+Don't rebuild the section. Just add the foreground image layer into the existing component and adjust the background image behavior.
+Keep all existing text, button, and show card functionality intact.
+The show thumbnail cards below the banner should not be affected.

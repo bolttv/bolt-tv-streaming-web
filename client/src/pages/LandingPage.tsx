@@ -12,6 +12,7 @@ import posterSurfing from "@assets/ChatGPT_Image_Oct_1,_2025_at_01_26_07_PM_1771
 import posterLifeOnIce from "@assets/ChatGPT_Image_Oct_3,_2025,_11_50_56_AM_1771007394435.png";
 import posterQuestForGold from "@assets/QuestForGoal-FINAL_1771007348206.jpeg";
 import originalsBannerBg from "@assets/GG_BoNix_BackgroundBanner_1771182530667.jpg";
+import originalsBannerFront from "@assets/GG_BoNix_BackgroundBanner_Front_1771183185691.jpg";
 import posterFullThrottle from "@assets/ChatGPT_Image_Oct_2,_2025_at_05_43_18_PM_1771007394434.png";
 import posterSurfingMidnight from "@assets/SurfingTheMidnightSun-Poster_1771007420673.png";
 import sportActionSports from "@assets/Action_Sports-New_1770944151377.png";
@@ -161,18 +162,23 @@ const originalPosters = [
 
 function OriginalsBanner() {
   return (
-    <section className="relative overflow-hidden" data-testid="section-originals-banner">
+    <section className="relative overflow-hidden h-[320px] sm:h-[400px] md:h-[550px] lg:h-[600px]" data-testid="section-originals-banner">
       <img
         src={originalsBannerBg}
-        alt="Exclusive Originals"
-        className="absolute inset-0 w-full object-cover"
-        style={{ width: '100%', height: 'auto', minHeight: '100%', top: '50%', transform: 'translateY(-50%)' }}
+        alt="Exclusive Originals background"
+        className="absolute inset-0 w-full h-full object-cover object-center"
       />
       <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
 
+      <img
+        src={originalsBannerFront}
+        alt="Exclusive Originals athletes"
+        className="absolute bottom-0 right-0 w-[55%] md:w-[50%] h-auto object-contain object-right-bottom hidden sm:block"
+        style={{ mixBlendMode: 'multiply' }}
+      />
 
-      <div className="relative z-10 min-h-[600px] md:min-h-[85vh] flex flex-col justify-end px-6 md:px-16">
+      <div className="relative z-10 h-full flex flex-col justify-end px-6 md:px-16">
         <div className="max-w-2xl mb-10 md:mb-14">
           <h2 className="text-4xl md:text-6xl font-display font-black text-white uppercase leading-tight mb-4">
             Exclusive<br />Originals
