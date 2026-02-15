@@ -35,14 +35,22 @@ export default function CreateAccount() {
     }
   }, [isAuthenticated, authStep, isLoading, pendingOfferId, setLocation]);
 
+  const [waitingForAuth, setWaitingForAuth] = useState(true);
+
   useEffect(() => {
-    if (!isLoading && authStep !== "create_password" && !isAuthenticated) {
-      const timeout = setTimeout(() => {
-        setLocation("/login");
-      }, 1500);
-      return () => clearTimeout(timeout);
+    // Give Supabase extra time to process the auth tokens from the verification link URL
+    // The URL fragment contains access_token and refresh_token that need to be parsed
+    const timeout = setTimeout(() => {
+      setWaitingForAuth(false);
+    }, 4000);
+    return () => clearTimeout(timeout);
+  }, []);
+
+  useEffect(() => {
+    if (!waitingForAuth && !isLoading && authStep !== "create_password" && !isAuthenticated) {
+      setLocation("/login");
     }
-  }, [isLoading, authStep, isAuthenticated, setLocation]);
+  }, [waitingForAuth, isLoading, authStep, isAuthenticated, setLocation]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,7 +104,7 @@ export default function CreateAccount() {
     );
   }
 
-  if (authStep !== "create_password" && !isAuthenticated) {
+  if (waitingForAuth || (authStep !== "create_password" && !isAuthenticated)) {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <LoadingSpinner size="lg" />
