@@ -16,7 +16,7 @@ interface AuthContextType {
   hasActiveSubscription: boolean;
   cleengCustomer: CleengCustomer | null;
   isLinking: boolean;
-  signUp: (email: string, password: string) => Promise<{ success: boolean; error?: string; existingUser?: boolean }>;
+  signUp: (email: string, password: string, profileData?: { firstName?: string; lastName?: string; gender?: string; birthYear?: string; zipCode?: string }) => Promise<{ success: boolean; error?: string; existingUser?: boolean }>;
   signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
 }
@@ -196,7 +196,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [isAuthenticated, cleengCustomer]);
 
-  const signUp = async (email: string, password: string): Promise<{ success: boolean; error?: string; existingUser?: boolean }> => {
+  const signUp = async (email: string, password: string, profileData?: { firstName?: string; lastName?: string; gender?: string; birthYear?: string; zipCode?: string }): Promise<{ success: boolean; error?: string; existingUser?: boolean }> => {
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -204,6 +204,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         options: {
           data: {
             password_set: true,
+            first_name: profileData?.firstName || undefined,
+            last_name: profileData?.lastName || undefined,
+            gender: profileData?.gender || undefined,
+            birth_year: profileData?.birthYear || undefined,
+            zip_code: profileData?.zipCode || undefined,
           },
         },
       });

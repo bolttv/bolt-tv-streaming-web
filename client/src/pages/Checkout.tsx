@@ -393,7 +393,7 @@ export default function Checkout() {
           Back to plans
         </Link>
 
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-3xl mx-auto">
           <h1 className="text-3xl font-bold mb-8 text-center">Complete Your Subscription</h1>
 
           {error && (
@@ -403,8 +403,8 @@ export default function Checkout() {
             </div>
           )}
 
-          <div className="grid md:grid-cols-5 gap-6">
-            <div className="md:col-span-3 space-y-6">
+          <div className="flex flex-col md:flex-row gap-6">
+            <div className="flex-1 space-y-6">
               <div className="bg-gray-900 rounded-xl p-6">
                 <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
                   <CreditCard className="w-5 h-5" />
@@ -563,7 +563,7 @@ export default function Checkout() {
               </div>
             </div>
 
-            <div className="md:col-span-2">
+            <div className="md:w-72 lg:w-80 flex-shrink-0">
               <div className="bg-gray-900 rounded-xl p-6 sticky top-8">
                 <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
                 

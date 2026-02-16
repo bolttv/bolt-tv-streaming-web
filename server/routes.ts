@@ -561,15 +561,17 @@ export async function registerRoutes(
         return res.status(400).json({ error: "Coupon code and offer ID are required" });
       }
 
+      console.log("Validating coupon:", couponCode, "for offer:", offerId);
+
       const response = await fetch(`${CLEENG_CORE_API_URL}/3.0/json-rpc`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          method: "getCouponDetails",
+          method: "getOfferDetails",
           params: {
             publisherToken: CLEENG_API_SECRET,
-            couponCode: couponCode,
             offerId: offerId,
+            couponCode: couponCode,
           },
           jsonrpc: "2.0",
           id: 1,
@@ -577,20 +579,32 @@ export async function registerRoutes(
       });
 
       const data = await response.json();
-      console.log("Cleeng coupon response:", JSON.stringify(data, null, 2));
+      console.log("Cleeng coupon/offer response:", JSON.stringify(data, null, 2));
 
       if (data.error) {
+        const errorMsg = data.error.message || "Invalid promo code";
         return res.status(400).json({
-          error: data.error.message || "Invalid promo code",
+          error: errorMsg,
           valid: false,
         });
       }
 
-      if (data.result) {
+      const result = data.result;
+      if (result && result.couponDiscount !== undefined && result.couponDiscount !== null) {
         res.json({
           valid: true,
-          discount: data.result,
+          discount: {
+            code: couponCode,
+            discountPercent: result.couponDiscount,
+            originalPrice: result.priceWithoutTax || result.price,
+            discountedPrice: result.priceWithoutTax != null
+              ? result.priceWithoutTax * (1 - result.couponDiscount / 100)
+              : result.price * (1 - result.couponDiscount / 100),
+            currency: result.currency,
+          },
         });
+      } else if (result) {
+        res.status(400).json({ error: "This promo code is not valid for this offer", valid: false });
       } else {
         res.status(400).json({ error: "Invalid promo code", valid: false });
       }

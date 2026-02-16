@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { ArrowLeft, Check, Loader2, Mail, AlertCircle, Lock, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, Check, Loader2, Mail, AlertCircle, Lock, Eye, EyeOff, User, ChevronDown } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import { getOffers, CleengOffer, formatPrice } from "@/lib/cleeng";
 
@@ -61,6 +61,11 @@ export default function Subscribe() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [gender, setGender] = useState("");
+  const [birthYear, setBirthYear] = useState("");
+  const [zipCode, setZipCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [loadingOffers, setLoadingOffers] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -159,7 +164,13 @@ export default function Subscribe() {
     setLoading(true);
     setError(null);
 
-    const result = await signUp(email.trim(), password);
+    const result = await signUp(email.trim(), password, {
+      firstName: firstName.trim() || undefined,
+      lastName: lastName.trim() || undefined,
+      gender: gender || undefined,
+      birthYear: birthYear || undefined,
+      zipCode: zipCode.trim() || undefined,
+    });
     
     if (result.success) {
       const pendingOffer = localStorage.getItem("pending_checkout_offer");
@@ -349,15 +360,15 @@ export default function Subscribe() {
               </p>
             </div>
 
-            <div className="bg-white/[0.04] rounded-2xl p-8 backdrop-blur-sm border border-white/10">
-              <form onSubmit={handleCreateAccount}>
-                {error && (
-                  <div className="flex items-center gap-2 bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg mb-6" data-testid="error-message">
-                    <AlertCircle className="w-5 h-5 flex-shrink-0" />
-                    <span className="text-sm">{error}</span>
-                  </div>
-                )}
+            <form onSubmit={handleCreateAccount}>
+              {error && (
+                <div className="flex items-center gap-2 bg-red-500/20 border border-red-500/50 text-red-200 px-4 py-3 rounded-lg mb-6" data-testid="error-message">
+                  <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                  <span className="text-sm">{error}</span>
+                </div>
+              )}
 
+              <div className="bg-white/[0.04] rounded-2xl p-8 backdrop-blur-sm border border-white/10">
                 <div className="mb-4">
                   <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
                     Email Address
@@ -403,7 +414,7 @@ export default function Subscribe() {
                   </div>
                 </div>
 
-                <div className="mb-6">
+                <div>
                   <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-300 mb-2">
                     Confirm Password
                   </label>
@@ -435,24 +446,122 @@ export default function Subscribe() {
                     <p className="text-red-400 text-xs mt-1">Passwords do not match</p>
                   )}
                 </div>
+              </div>
 
-                <button
-                  type="submit"
-                  disabled={loading || !email.trim() || !password || !confirmPassword || password !== confirmPassword}
-                  className="w-full py-3 bg-white hover:bg-white/90 disabled:bg-white/40 disabled:cursor-not-allowed text-black font-semibold rounded-lg transition cursor-pointer flex items-center justify-center gap-2"
-                  data-testid="button-create-account"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      Creating Account...
-                    </>
-                  ) : (
-                    "Create Account"
-                  )}
-                </button>
-              </form>
-            </div>
+              <div className="bg-white/[0.04] rounded-2xl p-8 backdrop-blur-sm border border-white/10 mt-6">
+                <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <User className="w-5 h-5" />
+                  About You
+                </h2>
+
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label htmlFor="first-name" className="block text-sm font-medium text-gray-300 mb-2">
+                      First Name
+                    </label>
+                    <input
+                      type="text"
+                      id="first-name"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      placeholder="First name"
+                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
+                      disabled={loading}
+                      data-testid="input-first-name"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="last-name" className="block text-sm font-medium text-gray-300 mb-2">
+                      Last Name
+                    </label>
+                    <input
+                      type="text"
+                      id="last-name"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      placeholder="Last name"
+                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
+                      disabled={loading}
+                      data-testid="input-last-name"
+                    />
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <label htmlFor="gender" className="block text-sm font-medium text-gray-300 mb-2">
+                    Gender
+                  </label>
+                  <div className="relative">
+                    <select
+                      id="gender"
+                      value={gender}
+                      onChange={(e) => setGender(e.target.value)}
+                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent appearance-none cursor-pointer"
+                      disabled={loading}
+                      data-testid="select-gender"
+                    >
+                      <option value="" className="bg-gray-900">Select</option>
+                      <option value="man" className="bg-gray-900">Man</option>
+                      <option value="woman" className="bg-gray-900">Woman</option>
+                      <option value="none_of_the_above" className="bg-gray-900">None of the Above</option>
+                      <option value="prefer_not_to_say" className="bg-gray-900">Prefer Not To Say</option>
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="birth-year" className="block text-sm font-medium text-gray-300 mb-2">
+                      Birth Year
+                    </label>
+                    <input
+                      type="text"
+                      id="birth-year"
+                      value={birthYear}
+                      onChange={(e) => setBirthYear(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                      placeholder="YYYY"
+                      maxLength={4}
+                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
+                      disabled={loading}
+                      data-testid="input-birth-year"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="zip-code" className="block text-sm font-medium text-gray-300 mb-2">
+                      Zip Code
+                    </label>
+                    <input
+                      type="text"
+                      id="zip-code"
+                      value={zipCode}
+                      onChange={(e) => setZipCode(e.target.value.replace(/[^0-9-]/g, "").slice(0, 10))}
+                      placeholder="12345"
+                      maxLength={10}
+                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
+                      disabled={loading}
+                      data-testid="input-zip-code"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading || !email.trim() || !password || !confirmPassword || password !== confirmPassword}
+                className="w-full mt-6 py-3 bg-white hover:bg-white/90 disabled:bg-white/40 disabled:cursor-not-allowed text-black font-semibold rounded-lg transition cursor-pointer flex items-center justify-center gap-2"
+                data-testid="button-create-account"
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Creating Account...
+                  </>
+                ) : (
+                  "Create Account"
+                )}
+              </button>
+            </form>
 
             <p className="text-center mt-6 text-gray-400 text-sm">
               Already have an account?{" "}
