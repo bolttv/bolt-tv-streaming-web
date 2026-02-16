@@ -590,21 +590,27 @@ export async function registerRoutes(
       }
 
       const result = data.result;
-      if (result && result.couponDiscount && result.couponDiscount > 0) {
-        res.json({
-          valid: true,
-          discount: {
-            code: couponCode,
-            discountPercent: result.couponDiscount,
-            originalPrice: result.priceWithoutTax || result.price,
-            discountedPrice: result.priceWithoutTax != null
-              ? result.priceWithoutTax * (1 - result.couponDiscount / 100)
-              : result.price * (1 - result.couponDiscount / 100),
-            currency: result.currency,
-          },
-        });
-      } else if (result) {
-        res.status(400).json({ error: "This promo code is not valid for this offer", valid: false });
+      if (result) {
+        const originalPrice = result.customerPriceExclTax ?? result.customerPriceInclTax ?? result.offerPrice;
+        const discountedPrice = result.discountedCustomerPriceExclTax ?? result.discountedCustomerPriceInclTax;
+
+        if (discountedPrice !== undefined && discountedPrice !== null && discountedPrice < originalPrice) {
+          const discountPercent = originalPrice > 0
+            ? Math.round(((originalPrice - discountedPrice) / originalPrice) * 100)
+            : 0;
+          res.json({
+            valid: true,
+            discount: {
+              code: couponCode,
+              discountPercent,
+              originalPrice,
+              discountedPrice,
+              currency: result.customerCurrency || result.offerCurrency || "USD",
+            },
+          });
+        } else {
+          res.status(400).json({ error: "This promo code is not valid for this offer", valid: false });
+        }
       } else {
         res.status(400).json({ error: "Invalid promo code", valid: false });
       }
