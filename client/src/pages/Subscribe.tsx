@@ -161,6 +161,14 @@ export default function Subscribe() {
       return;
     }
 
+    if (birthYear) {
+      const age = new Date().getFullYear() - parseInt(birthYear);
+      if (age < 18) {
+        setError("You must be at least 18 years old to create an account");
+        return;
+      }
+    }
+
     setLoading(true);
     setError(null);
 
@@ -515,17 +523,25 @@ export default function Subscribe() {
                     <label htmlFor="birth-year" className="block text-sm font-medium text-gray-300 mb-2">
                       Birth Year
                     </label>
-                    <input
-                      type="text"
+                    <select
                       id="birth-year"
                       value={birthYear}
-                      onChange={(e) => setBirthYear(e.target.value.replace(/\D/g, "").slice(0, 4))}
-                      placeholder="YYYY"
-                      maxLength={4}
-                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent"
+                      onChange={(e) => setBirthYear(e.target.value)}
+                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent appearance-none"
                       disabled={loading}
                       data-testid="input-birth-year"
-                    />
+                      style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239ca3af' d='M6 8L1 3h10z'/%3E%3C/svg%3E\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 12px center" }}
+                    >
+                      <option value="" className="bg-gray-900">Select year</option>
+                      {Array.from({ length: new Date().getFullYear() - 18 - 1919 }, (_, i) => {
+                        const year = new Date().getFullYear() - 18 - i;
+                        return (
+                          <option key={year} value={String(year)} className="bg-gray-900">
+                            {year}
+                          </option>
+                        );
+                      })}
+                    </select>
                   </div>
                   <div>
                     <label htmlFor="zip-code" className="block text-sm font-medium text-gray-300 mb-2">
