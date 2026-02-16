@@ -58,7 +58,9 @@ export default function Subscribe() {
     return params.get("email") || "";
   });
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingOffers, setLoadingOffers] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -146,6 +148,11 @@ export default function Subscribe() {
 
     if (!password) {
       setError("Please enter a password");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
       return;
     }
 
@@ -370,7 +377,7 @@ export default function Subscribe() {
                   </div>
                 </div>
 
-                <div className="mb-6">
+                <div className="mb-4">
                   <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
                     Password
                   </label>
@@ -396,9 +403,42 @@ export default function Subscribe() {
                   </div>
                 </div>
 
+                <div className="mb-6">
+                  <label htmlFor="confirm-password" className="block text-sm font-medium text-gray-300 mb-2">
+                    Confirm Password
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      id="confirm-password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Re-enter your password"
+                      className={`w-full pl-10 pr-12 py-3 bg-white/10 border rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent ${
+                        confirmPassword && confirmPassword !== password
+                          ? "border-red-500"
+                          : "border-white/20"
+                      }`}
+                      disabled={loading}
+                      data-testid="input-confirm-password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                    >
+                      {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                  {confirmPassword && confirmPassword !== password && (
+                    <p className="text-red-400 text-xs mt-1">Passwords do not match</p>
+                  )}
+                </div>
+
                 <button
                   type="submit"
-                  disabled={loading || !email.trim() || !password}
+                  disabled={loading || !email.trim() || !password || !confirmPassword || password !== confirmPassword}
                   className="w-full py-3 bg-white hover:bg-white/90 disabled:bg-white/40 disabled:cursor-not-allowed text-black font-semibold rounded-lg transition cursor-pointer flex items-center justify-center gap-2"
                   data-testid="button-create-account"
                 >
