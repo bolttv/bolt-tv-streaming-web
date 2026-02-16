@@ -708,9 +708,9 @@ export default function Checkout() {
                 </div>
 
                 <div className="mt-6 pt-4 border-t border-gray-800">
-                  <div className="flex items-center gap-2 text-sm text-gray-500 min-w-0">
-                    <span className="flex-shrink-0">Account:</span>
-                    <span className="text-gray-300 truncate">{user?.email || cleengCustomer?.email}</span>
+                  <div className="text-sm text-gray-500">
+                    <span>Account: </span>
+                    <span className="text-gray-300 break-all">{user?.email || cleengCustomer?.email}</span>
                   </div>
                 </div>
               </div>
