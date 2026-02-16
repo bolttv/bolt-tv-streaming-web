@@ -553,10 +553,57 @@ export async function registerRoutes(
     }
   });
 
+  app.post("/api/cleeng/coupon", async (req, res) => {
+    try {
+      const { couponCode, offerId } = req.body;
+
+      if (!couponCode || !offerId) {
+        return res.status(400).json({ error: "Coupon code and offer ID are required" });
+      }
+
+      const response = await fetch(`${CLEENG_CORE_API_URL}/3.0/json-rpc`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          method: "getCouponDetails",
+          params: {
+            publisherToken: CLEENG_API_SECRET,
+            couponCode: couponCode,
+            offerId: offerId,
+          },
+          jsonrpc: "2.0",
+          id: 1,
+        }),
+      });
+
+      const data = await response.json();
+      console.log("Cleeng coupon response:", JSON.stringify(data, null, 2));
+
+      if (data.error) {
+        return res.status(400).json({
+          error: data.error.message || "Invalid promo code",
+          valid: false,
+        });
+      }
+
+      if (data.result) {
+        res.json({
+          valid: true,
+          discount: data.result,
+        });
+      } else {
+        res.status(400).json({ error: "Invalid promo code", valid: false });
+      }
+    } catch (error) {
+      console.error("Cleeng coupon error:", error);
+      res.status(500).json({ error: "Failed to validate promo code", valid: false });
+    }
+  });
+
   // Create a subscription (free trial or immediate activation)
   app.post("/api/cleeng/subscribe", async (req, res) => {
     try {
-      const { offerId, customerToken, customerEmail } = req.body;
+      const { offerId, customerToken, customerEmail, couponCode } = req.body;
       
       if (!offerId) {
         return res.status(400).json({ error: "Offer ID is required" });
@@ -566,19 +613,24 @@ export async function registerRoutes(
         return res.status(401).json({ error: "Customer authentication required" });
       }
 
-      console.log("Cleeng subscribe request - offerId:", offerId, "email:", customerEmail);
+      console.log("Cleeng subscribe request - offerId:", offerId, "email:", customerEmail, "coupon:", couponCode || "none");
 
-      // Use Core API to create a subscription directly (for free trials or testing)
+      const params: any = {
+        publisherToken: CLEENG_API_SECRET,
+        customerEmail: customerEmail,
+        offerId: offerId,
+      };
+
+      if (couponCode) {
+        params.couponCode = couponCode;
+      }
+
       const subscribeResponse = await fetch(`${CLEENG_CORE_API_URL}/3.0/json-rpc`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           method: "registerSubscription",
-          params: {
-            publisherToken: CLEENG_API_SECRET,
-            customerEmail: customerEmail,
-            offerId: offerId,
-          },
+          params,
           jsonrpc: "2.0",
           id: 1
         }),

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { ArrowLeft, Check, CreditCard, Loader2, AlertCircle, Lock } from "lucide-react";
+import { ArrowLeft, Check, CreditCard, Loader2, AlertCircle, Lock, Tag, X } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import { getOffers, CleengOffer, formatPrice } from "@/lib/cleeng";
 import LoadingSpinner from "@/components/LoadingSpinner";
@@ -80,6 +80,12 @@ export default function Checkout() {
   const [cardErrors, setCardErrors] = useState<CardErrors>({});
   const [cardBrand, setCardBrand] = useState<string | null>(null);
   const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
+
+  const [showPromoField, setShowPromoField] = useState(false);
+  const [promoCode, setPromoCode] = useState("");
+  const [promoLoading, setPromoLoading] = useState(false);
+  const [promoError, setPromoError] = useState<string | null>(null);
+  const [appliedPromo, setAppliedPromo] = useState<{ code: string; discount: any } | null>(null);
 
   const offerId = new URLSearchParams(window.location.search).get("offerId");
 
@@ -252,6 +258,43 @@ export default function Checkout() {
     return valid;
   };
 
+  const handleApplyPromo = async () => {
+    if (!promoCode.trim()) return;
+
+    setPromoLoading(true);
+    setPromoError(null);
+
+    try {
+      const response = await fetch("/api/cleeng/coupon", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          couponCode: promoCode.trim(),
+          offerId: offerId || offer?.longId || offer?.id,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.valid) {
+        setPromoError(data.error || "Invalid promo code");
+      } else {
+        setAppliedPromo({ code: promoCode.trim(), discount: data.discount });
+        setPromoError(null);
+      }
+    } catch {
+      setPromoError("Failed to validate promo code");
+    } finally {
+      setPromoLoading(false);
+    }
+  };
+
+  const handleRemovePromo = () => {
+    setAppliedPromo(null);
+    setPromoCode("");
+    setPromoError(null);
+  };
+
   const handleSubscribe = async () => {
     if (!acceptTerms) {
       setError("Please accept the terms and conditions");
@@ -279,6 +322,7 @@ export default function Checkout() {
           offerId: offerId || offer?.longId || offer?.id,
           customerToken: cleengCustomer.jwt,
           customerEmail: user?.email || cleengCustomer.email,
+          couponCode: appliedPromo?.code || undefined,
         }),
       });
 
@@ -567,7 +611,81 @@ export default function Checkout() {
                   </>
                 )}
 
-                <div className="mt-6 pt-4 border-t border-gray-800">
+                <div className="mt-4 pt-4 border-t border-gray-800">
+                  {!appliedPromo ? (
+                    <>
+                      {!showPromoField ? (
+                        <button
+                          type="button"
+                          onClick={() => setShowPromoField(true)}
+                          className="text-sm text-white hover:text-white/80 font-medium cursor-pointer flex items-center gap-1.5"
+                          data-testid="button-promo-toggle"
+                        >
+                          <Tag className="w-3.5 h-3.5" />
+                          Have a promo code?
+                        </button>
+                      ) : (
+                        <div>
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              value={promoCode}
+                              onChange={(e) => {
+                                setPromoCode(e.target.value.toUpperCase());
+                                if (promoError) setPromoError(null);
+                              }}
+                              placeholder="Enter code"
+                              className={`flex-1 px-3 py-2 bg-gray-800 border rounded-lg text-white text-sm placeholder-gray-500 focus:outline-none transition-colors ${
+                                promoError ? "border-red-500" : "border-gray-700 focus:border-white"
+                              }`}
+                              disabled={promoLoading}
+                              data-testid="input-promo-code"
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  e.preventDefault();
+                                  handleApplyPromo();
+                                }
+                              }}
+                            />
+                            <button
+                              type="button"
+                              onClick={handleApplyPromo}
+                              disabled={promoLoading || !promoCode.trim()}
+                              className="px-4 py-2 bg-white text-black text-sm font-medium rounded-lg hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center gap-1"
+                              data-testid="button-apply-promo"
+                            >
+                              {promoLoading ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              ) : (
+                                "Apply"
+                              )}
+                            </button>
+                          </div>
+                          {promoError && (
+                            <p className="text-red-400 text-xs mt-1.5">{promoError}</p>
+                          )}
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <div className="flex items-center justify-between bg-green-500/10 border border-green-500/20 rounded-lg px-3 py-2">
+                      <div className="flex items-center gap-2">
+                        <Tag className="w-3.5 h-3.5 text-green-500" />
+                        <span className="text-sm text-green-400 font-medium">{appliedPromo.code}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleRemovePromo}
+                        className="text-gray-400 hover:text-white cursor-pointer"
+                        data-testid="button-remove-promo"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-4 pt-4 border-t border-gray-800">
                   <h3 className="text-sm font-medium mb-3">What's Included</h3>
                   <div className="space-y-2 text-sm text-gray-400">
                     <div className="flex items-center gap-2">
