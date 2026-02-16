@@ -563,8 +563,8 @@ export default function Checkout() {
               </div>
             </div>
 
-            <div className="md:col-span-2 min-w-0">
-              <div className="bg-gray-900 rounded-xl p-6 sticky top-8 overflow-hidden">
+            <div className="md:col-span-2">
+              <div className="bg-gray-900 rounded-xl p-6 sticky top-8">
                 <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
                 
                 {offer && (
@@ -708,9 +708,9 @@ export default function Checkout() {
                 </div>
 
                 <div className="mt-6 pt-4 border-t border-gray-800">
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm text-gray-500 whitespace-nowrap">
                     <span>Account: </span>
-                    <span className="text-gray-300 break-all">{user?.email || cleengCustomer?.email}</span>
+                    <span className="text-gray-300">{user?.email || cleengCustomer?.email}</span>
                   </div>
                 </div>
               </div>
