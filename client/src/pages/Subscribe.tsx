@@ -162,7 +162,7 @@ export default function Subscribe() {
         setLocation("/home");
       }
     } else if (result.existingUser) {
-      setLocation(`/login?returnTo=${encodeURIComponent("/subscribe")}`);
+      setError("An account with this email already exists. Please sign in instead.");
     } else {
       setError(result.error || "Failed to create account");
     }
@@ -227,7 +227,7 @@ export default function Subscribe() {
                   <div className="bg-white/10 p-1 rounded-full flex">
                     <button
                       onClick={() => setBillingPeriod("month")}
-                      className={`px-6 py-2 rounded-full text-sm font-medium transition ${
+                      className={`px-6 py-2 rounded-full text-sm font-medium transition cursor-pointer ${
                         billingPeriod === "month" 
                           ? "bg-white text-black" 
                           : "text-gray-400 hover:text-white"
@@ -238,7 +238,7 @@ export default function Subscribe() {
                     </button>
                     <button
                       onClick={() => setBillingPeriod("year")}
-                      className={`px-6 py-2 rounded-full text-sm font-medium transition ${
+                      className={`px-6 py-2 rounded-full text-sm font-medium transition cursor-pointer ${
                         billingPeriod === "year" 
                           ? "bg-white text-black" 
                           : "text-gray-400 hover:text-white"
@@ -308,7 +308,7 @@ export default function Subscribe() {
                   <button
                     onClick={handleContinue}
                     disabled={!selectedPlan}
-                    className="px-12 py-4 bg-white hover:bg-white/90 disabled:bg-white/40 disabled:cursor-not-allowed text-black font-bold text-lg rounded-full transition"
+                    className="px-12 py-4 bg-white hover:bg-white/90 disabled:bg-white/40 disabled:cursor-not-allowed text-black font-bold text-lg rounded-full transition cursor-pointer"
                     data-testid="button-continue"
                   >
                     Continue
@@ -323,7 +323,7 @@ export default function Subscribe() {
           <div className="max-w-md mx-auto">
             <button
               onClick={handleBack}
-              className="flex items-center gap-2 text-white hover:text-white/80 transition mb-8"
+              className="flex items-center gap-2 text-white hover:text-white/80 transition mb-8 cursor-pointer"
               data-testid="button-back-step"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -399,7 +399,7 @@ export default function Subscribe() {
                 <button
                   type="submit"
                   disabled={loading || !email.trim() || !password}
-                  className="w-full py-3 bg-white hover:bg-white/90 disabled:bg-white/40 disabled:cursor-not-allowed text-black font-semibold rounded-lg transition flex items-center justify-center gap-2"
+                  className="w-full py-3 bg-white hover:bg-white/90 disabled:bg-white/40 disabled:cursor-not-allowed text-black font-semibold rounded-lg transition cursor-pointer flex items-center justify-center gap-2"
                   data-testid="button-create-account"
                 >
                   {loading ? (
@@ -408,7 +408,7 @@ export default function Subscribe() {
                       Creating Account...
                     </>
                   ) : (
-                    "Create Account & Continue"
+                    "Create Account"
                   )}
                 </button>
               </form>
