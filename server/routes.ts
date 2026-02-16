@@ -590,7 +590,7 @@ export async function registerRoutes(
       }
 
       const result = data.result;
-      if (result && result.couponDiscount !== undefined && result.couponDiscount !== null) {
+      if (result && result.couponDiscount && result.couponDiscount > 0) {
         res.json({
           valid: true,
           discount: {

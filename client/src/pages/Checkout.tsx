@@ -631,7 +631,7 @@ export default function Checkout() {
                               type="text"
                               value={promoCode}
                               onChange={(e) => {
-                                setPromoCode(e.target.value.toUpperCase());
+                                setPromoCode(e.target.value);
                                 if (promoError) setPromoError(null);
                               }}
                               placeholder="Enter code"
