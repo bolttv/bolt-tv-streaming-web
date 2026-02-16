@@ -5,6 +5,63 @@ import { useAuth } from "@/lib/AuthContext";
 import { getOffers, CleengOffer, formatPrice } from "@/lib/cleeng";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
+function luhnCheck(cardNumber: string): boolean {
+  const digits = cardNumber.replace(/\s/g, "");
+  if (!/^\d{13,19}$/.test(digits)) return false;
+
+  let sum = 0;
+  let isEven = false;
+
+  for (let i = digits.length - 1; i >= 0; i--) {
+    let digit = parseInt(digits[i], 10);
+    if (isEven) {
+      digit *= 2;
+      if (digit > 9) digit -= 9;
+    }
+    sum += digit;
+    isEven = !isEven;
+  }
+
+  return sum % 10 === 0;
+}
+
+function detectCardBrand(cardNumber: string): string | null {
+  const digits = cardNumber.replace(/\s/g, "");
+  if (/^4/.test(digits)) return "Visa";
+  if (/^5[1-5]/.test(digits) || /^2[2-7]/.test(digits)) return "Mastercard";
+  if (/^3[47]/.test(digits)) return "Amex";
+  if (/^6(?:011|5)/.test(digits)) return "Discover";
+  return null;
+}
+
+function validateExpiry(expiry: string): { valid: boolean; error?: string } {
+  const match = expiry.match(/^(\d{2})\/(\d{2})$/);
+  if (!match) return { valid: false, error: "Invalid format (MM/YY)" };
+
+  const month = parseInt(match[1], 10);
+  const year = parseInt(match[2], 10) + 2000;
+
+  if (month < 1 || month > 12) return { valid: false, error: "Invalid month" };
+
+  const now = new Date();
+  const expiryDate = new Date(year, month);
+  if (expiryDate <= now) return { valid: false, error: "Card has expired" };
+
+  return { valid: true };
+}
+
+function validateCvv(cvv: string, brand: string | null): boolean {
+  if (brand === "Amex") return /^\d{4}$/.test(cvv);
+  return /^\d{3}$/.test(cvv);
+}
+
+interface CardErrors {
+  cardNumber?: string;
+  expiryDate?: string;
+  cvv?: string;
+  cardName?: string;
+}
+
 export default function Checkout() {
   const [, setLocation] = useLocation();
   const { isAuthenticated, cleengCustomer, isLinking, user, isLoading: authLoading } = useAuth();
@@ -20,21 +77,22 @@ export default function Checkout() {
   const [cardName, setCardName] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);
 
+  const [cardErrors, setCardErrors] = useState<CardErrors>({});
+  const [cardBrand, setCardBrand] = useState<string | null>(null);
+  const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set());
+
   const offerId = new URLSearchParams(window.location.search).get("offerId");
 
   useEffect(() => {
-    // Wait for auth to finish loading before checking authentication
     if (authLoading) {
       return;
     }
     
-    // If not authenticated at all, redirect to subscribe
     if (!isAuthenticated) {
       setLocation("/subscribe");
       return;
     }
 
-    // Wait for Cleeng SSO to complete before fetching offer
     if (isLinking) {
       setLoading(true);
       return;
@@ -42,7 +100,6 @@ export default function Checkout() {
 
     const fetchOffer = async () => {
       if (!offerId) {
-        // Check localStorage for pending checkout offer
         const pendingOffer = localStorage.getItem("pending_checkout_offer");
         if (pendingOffer) {
           setLocation(`/checkout?offerId=${encodeURIComponent(pendingOffer)}`);
@@ -58,7 +115,6 @@ export default function Checkout() {
         const selectedOffer = offers.find(o => o.id === offerId || o.longId === offerId);
         if (selectedOffer) {
           setOffer(selectedOffer);
-          // Clear pending checkout offer from localStorage
           localStorage.removeItem("pending_checkout_offer");
         } else {
           setError("Offer not found");
@@ -92,26 +148,158 @@ export default function Checkout() {
     return v;
   };
 
+  const handleCardNumberChange = (value: string) => {
+    const formatted = formatCardNumber(value);
+    setCardNumber(formatted);
+    const digits = formatted.replace(/\s/g, "");
+    setCardBrand(detectCardBrand(digits));
+
+    if (touchedFields.has("cardNumber") && digits.length >= 13) {
+      if (!luhnCheck(digits)) {
+        setCardErrors(prev => ({ ...prev, cardNumber: "Invalid card number" }));
+      } else {
+        setCardErrors(prev => ({ ...prev, cardNumber: undefined }));
+      }
+    }
+  };
+
+  const handleCardNumberBlur = () => {
+    setTouchedFields(prev => new Set(prev).add("cardNumber"));
+    const digits = cardNumber.replace(/\s/g, "");
+    if (digits.length > 0 && digits.length < 13) {
+      setCardErrors(prev => ({ ...prev, cardNumber: "Card number is too short" }));
+    } else if (digits.length >= 13 && !luhnCheck(digits)) {
+      setCardErrors(prev => ({ ...prev, cardNumber: "Invalid card number" }));
+    } else {
+      setCardErrors(prev => ({ ...prev, cardNumber: undefined }));
+    }
+  };
+
+  const handleExpiryBlur = () => {
+    setTouchedFields(prev => new Set(prev).add("expiryDate"));
+    if (expiryDate.length > 0) {
+      const result = validateExpiry(expiryDate);
+      if (!result.valid) {
+        setCardErrors(prev => ({ ...prev, expiryDate: result.error }));
+      } else {
+        setCardErrors(prev => ({ ...prev, expiryDate: undefined }));
+      }
+    }
+  };
+
+  const handleCvvBlur = () => {
+    setTouchedFields(prev => new Set(prev).add("cvv"));
+    if (cvv.length > 0 && !validateCvv(cvv, cardBrand)) {
+      setCardErrors(prev => ({ ...prev, cvv: cardBrand === "Amex" ? "Must be 4 digits" : "Must be 3 digits" }));
+    } else {
+      setCardErrors(prev => ({ ...prev, cvv: undefined }));
+    }
+  };
+
+  const handleCardNameBlur = () => {
+    setTouchedFields(prev => new Set(prev).add("cardName"));
+    if (cardName.trim().length === 0) {
+      setCardErrors(prev => ({ ...prev, cardName: "Name is required" }));
+    } else if (cardName.trim().length < 2) {
+      setCardErrors(prev => ({ ...prev, cardName: "Please enter your full name" }));
+    } else {
+      setCardErrors(prev => ({ ...prev, cardName: undefined }));
+    }
+  };
+
+  const validateAllFields = (): boolean => {
+    const errors: CardErrors = {};
+    let valid = true;
+
+    if (!cardName.trim()) {
+      errors.cardName = "Name is required";
+      valid = false;
+    }
+
+    const digits = cardNumber.replace(/\s/g, "");
+    if (!digits) {
+      errors.cardNumber = "Card number is required";
+      valid = false;
+    } else if (digits.length < 13) {
+      errors.cardNumber = "Card number is too short";
+      valid = false;
+    } else if (!luhnCheck(digits)) {
+      errors.cardNumber = "Invalid card number";
+      valid = false;
+    }
+
+    if (!expiryDate) {
+      errors.expiryDate = "Expiry date is required";
+      valid = false;
+    } else {
+      const expiryResult = validateExpiry(expiryDate);
+      if (!expiryResult.valid) {
+        errors.expiryDate = expiryResult.error;
+        valid = false;
+      }
+    }
+
+    if (!cvv) {
+      errors.cvv = "CVV is required";
+      valid = false;
+    } else if (!validateCvv(cvv, cardBrand)) {
+      errors.cvv = cardBrand === "Amex" ? "Must be 4 digits" : "Must be 3 digits";
+      valid = false;
+    }
+
+    setCardErrors(errors);
+    setTouchedFields(new Set(["cardNumber", "expiryDate", "cvv", "cardName"]));
+    return valid;
+  };
+
   const handleSubscribe = async () => {
     if (!acceptTerms) {
       setError("Please accept the terms and conditions");
       return;
     }
 
-    if (!cardNumber || !expiryDate || !cvv || !cardName) {
-      setError("Please fill in all payment details");
+    if (!validateAllFields()) {
+      setError("Please fix the card details highlighted above");
+      return;
+    }
+
+    if (!cleengCustomer?.jwt) {
+      setError("Account linking is still in progress. Please wait a moment and try again.");
       return;
     }
 
     setProcessing(true);
     setError(null);
 
-    // Simulate payment processing delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    try {
+      const response = await fetch("/api/cleeng/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          offerId: offerId || offer?.longId || offer?.id,
+          customerToken: cleengCustomer.jwt,
+          customerEmail: user?.email || cleengCustomer.email,
+        }),
+      });
 
-    // For testing: Show success without actual payment
-    setSuccess(true);
-    setProcessing(false);
+      const data = await response.json();
+
+      if (!response.ok || data.error) {
+        setError(data.error || "Payment could not be processed. Please check your card details and try again.");
+        setProcessing(false);
+        return;
+      }
+
+      if (data.success) {
+        setSuccess(true);
+      } else {
+        setError("Payment could not be processed. Please check your card details and try again.");
+      }
+    } catch (err) {
+      setError("Payment processing failed. Please try again.");
+    } finally {
+      setProcessing(false);
+    }
   };
 
   if (loading || isLinking || authLoading) {
@@ -141,7 +329,7 @@ export default function Checkout() {
           </p>
           <Link 
             href="/home"
-            className="inline-flex items-center justify-center px-10 py-4 bg-white text-black rounded-lg font-semibold text-lg hover:bg-white/90 transition-colors"
+            className="inline-flex items-center justify-center px-10 py-4 bg-white text-black rounded-lg font-semibold text-lg hover:bg-white/90 transition-colors cursor-pointer"
             data-testid="button-start-streaming"
           >
             Start Streaming
@@ -151,10 +339,12 @@ export default function Checkout() {
     );
   }
 
+  const hasFieldErrors = Object.values(cardErrors).some(e => !!e);
+
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="container mx-auto px-4 py-8">
-        <Link href="/subscribe" className="inline-flex items-center text-gray-400 hover:text-white mb-8">
+        <Link href="/subscribe" className="inline-flex items-center text-gray-400 hover:text-white mb-8 cursor-pointer">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to plans
         </Link>
@@ -170,7 +360,6 @@ export default function Checkout() {
           )}
 
           <div className="grid md:grid-cols-5 gap-6">
-            {/* Payment Form - Left Side */}
             <div className="md:col-span-3 space-y-6">
               <div className="bg-gray-900 rounded-xl p-6">
                 <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
@@ -184,24 +373,46 @@ export default function Checkout() {
                     <input
                       type="text"
                       value={cardName}
-                      onChange={(e) => setCardName(e.target.value)}
+                      onChange={(e) => {
+                        setCardName(e.target.value);
+                        if (touchedFields.has("cardName") && e.target.value.trim().length >= 2) {
+                          setCardErrors(prev => ({ ...prev, cardName: undefined }));
+                        }
+                      }}
+                      onBlur={handleCardNameBlur}
                       placeholder="John Smith"
-                      className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors"
+                      className={`w-full px-4 py-3 bg-gray-800 border rounded-lg text-white placeholder-gray-500 focus:outline-none transition-colors ${
+                        cardErrors.cardName ? "border-red-500 focus:border-red-500" : "border-gray-700 focus:border-white"
+                      }`}
                       data-testid="input-card-name"
                     />
+                    {cardErrors.cardName && (
+                      <p className="text-red-400 text-xs mt-1">{cardErrors.cardName}</p>
+                    )}
                   </div>
 
                   <div>
-                    <label className="block text-sm text-gray-400 mb-2">Card Number</label>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="block text-sm text-gray-400">Card Number</label>
+                      {cardBrand && (
+                        <span className="text-xs text-gray-500 font-medium">{cardBrand}</span>
+                      )}
+                    </div>
                     <input
                       type="text"
                       value={cardNumber}
-                      onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
+                      onChange={(e) => handleCardNumberChange(e.target.value)}
+                      onBlur={handleCardNumberBlur}
                       placeholder="1234 5678 9012 3456"
                       maxLength={19}
-                      className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors"
+                      className={`w-full px-4 py-3 bg-gray-800 border rounded-lg text-white placeholder-gray-500 focus:outline-none transition-colors ${
+                        cardErrors.cardNumber ? "border-red-500 focus:border-red-500" : "border-gray-700 focus:border-white"
+                      }`}
                       data-testid="input-card-number"
                     />
+                    {cardErrors.cardNumber && (
+                      <p className="text-red-400 text-xs mt-1">{cardErrors.cardNumber}</p>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
@@ -210,24 +421,51 @@ export default function Checkout() {
                       <input
                         type="text"
                         value={expiryDate}
-                        onChange={(e) => setExpiryDate(formatExpiry(e.target.value))}
+                        onChange={(e) => {
+                          setExpiryDate(formatExpiry(e.target.value));
+                          if (touchedFields.has("expiryDate")) {
+                            const formatted = formatExpiry(e.target.value);
+                            const result = validateExpiry(formatted);
+                            if (result.valid) {
+                              setCardErrors(prev => ({ ...prev, expiryDate: undefined }));
+                            }
+                          }
+                        }}
+                        onBlur={handleExpiryBlur}
                         placeholder="MM/YY"
                         maxLength={5}
-                        className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors"
+                        className={`w-full px-4 py-3 bg-gray-800 border rounded-lg text-white placeholder-gray-500 focus:outline-none transition-colors ${
+                          cardErrors.expiryDate ? "border-red-500 focus:border-red-500" : "border-gray-700 focus:border-white"
+                        }`}
                         data-testid="input-expiry"
                       />
+                      {cardErrors.expiryDate && (
+                        <p className="text-red-400 text-xs mt-1">{cardErrors.expiryDate}</p>
+                      )}
                     </div>
                     <div>
                       <label className="block text-sm text-gray-400 mb-2">CVV</label>
                       <input
                         type="text"
                         value={cvv}
-                        onChange={(e) => setCvv(e.target.value.replace(/\D/g, "").slice(0, 4))}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/\D/g, "").slice(0, 4);
+                          setCvv(val);
+                          if (touchedFields.has("cvv") && validateCvv(val, cardBrand)) {
+                            setCardErrors(prev => ({ ...prev, cvv: undefined }));
+                          }
+                        }}
+                        onBlur={handleCvvBlur}
                         placeholder="123"
                         maxLength={4}
-                        className="w-full px-4 py-3 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-primary transition-colors"
+                        className={`w-full px-4 py-3 bg-gray-800 border rounded-lg text-white placeholder-gray-500 focus:outline-none transition-colors ${
+                          cardErrors.cvv ? "border-red-500 focus:border-red-500" : "border-gray-700 focus:border-white"
+                        }`}
                         data-testid="input-cvv"
                       />
+                      {cardErrors.cvv && (
+                        <p className="text-red-400 text-xs mt-1">{cardErrors.cvv}</p>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -242,7 +480,7 @@ export default function Checkout() {
                       data-testid="checkbox-terms"
                     />
                     <span className="text-sm text-gray-400">
-                      I agree to the <a href="#" className="text-primary hover:underline">Terms of Service</a> and <a href="#" className="text-primary hover:underline">Privacy Policy</a>. 
+                      I agree to the <a href="#" className="text-white hover:underline">Terms of Service</a> and <a href="#" className="text-white hover:underline">Privacy Policy</a>. 
                       {offer?.freeDays && offer.freeDays > 0 && (
                         <span className="block mt-1 text-gray-500">
                           After the free trial, you will be charged {formatPrice(offer.price.amount, offer.price.currency)}/{offer.billingCycle?.periodUnit || "month"}.
@@ -255,14 +493,14 @@ export default function Checkout() {
 
               <button
                 onClick={handleSubscribe}
-                disabled={processing}
-                className="w-full py-4 bg-white text-black rounded-lg font-semibold text-lg hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors"
+                disabled={processing || hasFieldErrors}
+                className="w-full py-4 bg-white text-black rounded-lg font-semibold text-lg hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-colors cursor-pointer"
                 data-testid="button-subscribe"
               >
                 {processing ? (
                   <>
                     <Loader2 className="w-5 h-5 animate-spin" />
-                    Processing...
+                    Processing Payment...
                   </>
                 ) : (
                   <>
@@ -281,7 +519,6 @@ export default function Checkout() {
               </div>
             </div>
 
-            {/* Order Summary - Right Side */}
             <div className="md:col-span-2">
               <div className="bg-gray-900 rounded-xl p-6 sticky top-8">
                 <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
@@ -313,7 +550,7 @@ export default function Checkout() {
                       <span className="text-gray-400">
                         {offer.freeDays && offer.freeDays > 0 ? "Due today" : "Total"}
                       </span>
-                      <span className="text-2xl font-bold text-primary">
+                      <span className="text-2xl font-bold">
                         {offer.freeDays && offer.freeDays > 0 ? (
                           "$0.00"
                         ) : (
