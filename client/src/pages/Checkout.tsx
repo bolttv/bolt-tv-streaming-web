@@ -563,16 +563,16 @@ export default function Checkout() {
               </div>
             </div>
 
-            <div className="md:col-span-2">
-              <div className="bg-gray-900 rounded-xl p-6 sticky top-8">
+            <div className="md:col-span-2 min-w-0">
+              <div className="bg-gray-900 rounded-xl p-6 sticky top-8 overflow-hidden">
                 <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
                 
                 {offer && (
                   <>
                     <div className="space-y-3 mb-6">
-                      <div className="flex justify-between items-center py-2 border-b border-gray-800">
-                        <span className="text-gray-400">Plan</span>
-                        <span className="font-medium">{offer.title}</span>
+                      <div className="flex justify-between items-center gap-2 py-2 border-b border-gray-800 min-w-0">
+                        <span className="text-gray-400 flex-shrink-0">Plan</span>
+                        <span className="font-medium truncate">{offer.title}</span>
                       </div>
                       
                       <div className="flex justify-between items-center py-2 border-b border-gray-800">
@@ -708,9 +708,9 @@ export default function Checkout() {
                 </div>
 
                 <div className="mt-6 pt-4 border-t border-gray-800">
-                  <div className="flex items-center gap-2 text-sm text-gray-500">
-                    <span>Account:</span>
-                    <span className="text-gray-300">{user?.email || cleengCustomer?.email}</span>
+                  <div className="flex items-center gap-2 text-sm text-gray-500 min-w-0">
+                    <span className="flex-shrink-0">Account:</span>
+                    <span className="text-gray-300 truncate">{user?.email || cleengCustomer?.email}</span>
                   </div>
                 </div>
               </div>
