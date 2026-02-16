@@ -170,7 +170,7 @@ export async function registerRoutes(
   // First registers the customer if they don't exist, then gets a JWT from MediaStore API
   app.post("/api/cleeng/sso", async (req, res) => {
     try {
-      const { email, externalId } = req.body;
+      const { email, externalId, firstName, lastName } = req.body;
       
       if (!email) {
         return res.status(400).json({ errors: ["Email is required"] });
@@ -181,6 +181,17 @@ export async function registerRoutes(
       // Generate a secure random password for SSO customers
       const randomPassword = `SSO_${crypto.randomUUID()}_${Date.now()}!`;
       
+      const customerData: any = {
+        email,
+        password: randomPassword,
+        locale: "en_US",
+        country: "US",
+        currency: "USD",
+        externalId: externalId || email,
+      };
+      if (firstName) customerData.firstName = firstName;
+      if (lastName) customerData.lastName = lastName;
+
       // Step 1: Try to register customer with Core API (bypasses reCAPTCHA)
       const registerResponse = await fetch(`${CLEENG_CORE_API_URL}/3.0/json-rpc`, {
         method: "POST",
@@ -189,14 +200,7 @@ export async function registerRoutes(
           method: "registerCustomer",
           params: {
             publisherToken: CLEENG_API_SECRET,
-            customerData: {
-              email,
-              password: randomPassword,
-              locale: "en_US",
-              country: "US",
-              currency: "USD",
-              externalId: externalId || email,
-            }
+            customerData,
           },
           jsonrpc: "2.0",
           id: 1
@@ -550,6 +554,61 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Error registering webhooks:", error);
       res.status(500).json({ error: "Failed to register webhooks" });
+    }
+  });
+
+  app.post("/api/cleeng/tax", async (req, res) => {
+    try {
+      const { offerId } = req.body;
+      if (!offerId) {
+        return res.status(400).json({ error: "Offer ID is required" });
+      }
+
+      const clientIp = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim()
+        || req.socket.remoteAddress || "";
+
+      const response = await fetch(`${CLEENG_CORE_API_URL}/3.0/json-rpc`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          method: "getOfferDetails",
+          params: {
+            publisherToken: CLEENG_API_SECRET,
+            offerId,
+            ipAddress: clientIp,
+          },
+          jsonrpc: "2.0",
+          id: 1,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.error) {
+        return res.status(400).json({ error: data.error.message || "Failed to get tax info" });
+      }
+
+      const result = data.result;
+      if (result) {
+        const taxRate = result.applicableTaxRate || 0;
+        const priceExclTax = result.customerPriceExclTax ?? result.offerPrice;
+        const priceInclTax = result.customerPriceInclTax ?? priceExclTax;
+        const taxAmount = priceInclTax - priceExclTax;
+
+        res.json({
+          taxRate,
+          taxAmount: Math.round(taxAmount * 100) / 100,
+          priceExclTax,
+          priceInclTax,
+          currency: result.customerCurrency || result.offerCurrency || "USD",
+          country: result.customerCountry || "US",
+        });
+      } else {
+        res.status(400).json({ error: "Unable to determine tax" });
+      }
+    } catch (error) {
+      console.error("Tax lookup error:", error);
+      res.status(500).json({ error: "Failed to get tax information" });
     }
   });
 

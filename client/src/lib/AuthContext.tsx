@@ -51,7 +51,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLinking(true);
 
     try {
-      const response = await ssoLogin(currentUser.email, currentUser.id);
+      const metadata = currentUser.user_metadata || {};
+      const response = await ssoLogin(currentUser.email, currentUser.id, metadata.first_name, metadata.last_name);
       console.log("Cleeng SSO response:", response);
       
       if (response.jwt) {
@@ -108,15 +109,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         if (cleengId) {
+          const profileFields: Partial<Profile> = {
+            cleeng_customer_id: cleengId,
+            subscription_tier: subscriptionTier,
+            billing_period: billingPeriod,
+          };
+          if (metadata.first_name) profileFields.first_name = metadata.first_name;
+          if (metadata.last_name) profileFields.last_name = metadata.last_name;
+          if (metadata.gender) profileFields.gender = metadata.gender;
+          if (metadata.birth_year) profileFields.birth_year = metadata.birth_year;
+          if (metadata.zip_code) profileFields.zip_code = metadata.zip_code;
+          if (metadata.first_name || metadata.last_name) {
+            profileFields.display_name = [metadata.first_name, metadata.last_name].filter(Boolean).join(" ");
+          }
+
           console.log("Upserting profile with Cleeng customer ID:", cleengId, "tier:", subscriptionTier, "billing:", billingPeriod);
           const updatedProfile = await upsertProfile(
             currentUser.id, 
             currentUser.email, 
-            { 
-              cleeng_customer_id: cleengId,
-              subscription_tier: subscriptionTier,
-              billing_period: billingPeriod
-            }
+            profileFields
           );
           console.log("Profile upsert result:", updatedProfile);
           if (updatedProfile) {

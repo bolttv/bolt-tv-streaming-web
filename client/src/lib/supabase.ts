@@ -25,6 +25,9 @@ export type Profile = {
   subscription_tier: "free" | "basic" | "premium";
   billing_period: "none" | "monthly" | "annual" | null;
   cleeng_customer_id: string | null;
+  gender: string | null;
+  birth_year: string | null;
+  zip_code: string | null;
   created_at: string;
   updated_at: string;
 };

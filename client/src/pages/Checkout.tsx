@@ -87,6 +87,8 @@ export default function Checkout() {
   const [promoError, setPromoError] = useState<string | null>(null);
   const [appliedPromo, setAppliedPromo] = useState<{ code: string; discount: any } | null>(null);
 
+  const [taxInfo, setTaxInfo] = useState<{ taxRate: number; taxAmount: number; priceExclTax: number; priceInclTax: number; currency: string } | null>(null);
+
   const offerId = new URLSearchParams(window.location.search).get("offerId");
 
   useEffect(() => {
@@ -122,6 +124,19 @@ export default function Checkout() {
         if (selectedOffer) {
           setOffer(selectedOffer);
           localStorage.removeItem("pending_checkout_offer");
+
+          fetch("/api/cleeng/tax", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ offerId }),
+          })
+            .then(r => r.json())
+            .then(data => {
+              if (data.taxAmount > 0 || (data.priceInclTax > data.priceExclTax)) {
+                setTaxInfo(data);
+              }
+            })
+            .catch(() => {});
         } else {
           setError("Offer not found");
         }
@@ -590,6 +605,27 @@ export default function Checkout() {
                       )}
                     </div>
 
+                    {taxInfo && !(offer.freeDays && offer.freeDays > 0) && (
+                      <>
+                        <div className="flex justify-between items-center py-2 border-b border-gray-800">
+                          <span className="text-gray-400">Subtotal</span>
+                          <span className="font-medium">
+                            {appliedPromo?.discount?.discountedPrice !== undefined
+                              ? formatPrice(appliedPromo.discount.discountedPrice, offer.price.currency)
+                              : formatPrice(taxInfo.priceExclTax, taxInfo.currency)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center py-2 border-b border-gray-800">
+                          <span className="text-gray-400">
+                            Tax{taxInfo.taxRate > 0 ? ` (${taxInfo.taxRate}%)` : ""}
+                          </span>
+                          <span className="font-medium">
+                            {formatPrice(taxInfo.taxAmount, taxInfo.currency)}
+                          </span>
+                        </div>
+                      </>
+                    )}
+
                     <div className="flex justify-between items-center py-3 border-t border-gray-700">
                       <span className="text-gray-400">
                         {offer.freeDays && offer.freeDays > 0 ? "Due today" : "Total"}
@@ -597,8 +633,17 @@ export default function Checkout() {
                       <span className="text-2xl font-bold">
                         {offer.freeDays && offer.freeDays > 0 ? (
                           "$0.00"
+                        ) : taxInfo ? (
+                          appliedPromo?.discount?.discountedPrice !== undefined
+                            ? formatPrice(
+                                appliedPromo.discount.discountedPrice + taxInfo.taxAmount,
+                                offer.price.currency
+                              )
+                            : formatPrice(taxInfo.priceInclTax, taxInfo.currency)
                         ) : (
-                          formatPrice(offer.price.amount, offer.price.currency)
+                          appliedPromo?.discount?.discountedPrice !== undefined
+                            ? formatPrice(appliedPromo.discount.discountedPrice, offer.price.currency)
+                            : formatPrice(offer.price.amount, offer.price.currency)
                         )}
                       </span>
                     </div>

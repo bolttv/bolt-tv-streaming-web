@@ -94,11 +94,11 @@ export async function loginCustomer(email: string, password: string) {
   return response.json();
 }
 
-export async function ssoLogin(email: string, externalId?: string) {
+export async function ssoLogin(email: string, externalId?: string, firstName?: string, lastName?: string) {
   const response = await fetch("/api/cleeng/sso", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, externalId }),
+    body: JSON.stringify({ email, externalId, firstName, lastName }),
   });
   return response.json();
 }
