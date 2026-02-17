@@ -16,6 +16,8 @@ interface AuthContextType {
   hasActiveSubscription: boolean;
   cleengCustomer: CleengCustomer | null;
   isLinking: boolean;
+  linkFailed: boolean;
+  retryLink: () => void;
   signUp: (email: string, password: string, profileData?: { firstName?: string; lastName?: string; gender?: string; birthYear?: string; zipCode?: string }) => Promise<{ success: boolean; error?: string; existingUser?: boolean }>;
   signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
@@ -298,6 +300,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         hasActiveSubscription,
         cleengCustomer,
         isLinking,
+        linkFailed: linkAttempted && !cleengCustomer,
+        retryLink: () => {
+          setLinkAttempted(false);
+        },
         signUp,
         signIn,
         logout,

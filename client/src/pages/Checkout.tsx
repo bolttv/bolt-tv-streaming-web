@@ -79,7 +79,7 @@ function CleengPurchaseWrapper({ offerId, onSuccess }: { offerId: string; onSucc
 
 export default function Checkout() {
   const [, setLocation] = useLocation();
-  const { isAuthenticated, cleengCustomer, isLinking, user, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, cleengCustomer, isLinking, linkFailed, retryLink, user, isLoading: authLoading } = useAuth();
   const [sdkReady, setSdkReady] = useState(false);
   const [sdkError, setSdkError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -235,11 +235,37 @@ export default function Checkout() {
           <div className="cleeng-checkout-container" data-testid="cleeng-checkout">
             {sdkReady && offerId ? (
               <CleengPurchaseWrapper offerId={offerId} onSuccess={handleSuccess} />
+            ) : linkFailed ? (
+              <div className="text-center py-12">
+                <div className="w-14 h-14 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-5">
+                  <AlertCircle className="w-7 h-7 text-red-500" />
+                </div>
+                <h3 className="text-lg font-semibold text-white mb-2">Unable to connect to payment system</h3>
+                <p className="text-gray-400 text-sm mb-6 max-w-sm mx-auto">
+                  We couldn't link your account to the payment provider. This is usually a temporary issue.
+                </p>
+                <div className="flex items-center justify-center gap-4">
+                  <button
+                    onClick={() => retryLink()}
+                    className="px-8 py-3 bg-white text-black rounded-full font-semibold hover:bg-white/90 transition cursor-pointer"
+                    data-testid="button-retry-link"
+                  >
+                    Try Again
+                  </button>
+                  <Link
+                    href="/subscribe"
+                    className="px-6 py-3 text-gray-400 hover:text-white transition"
+                    data-testid="button-back-to-plans"
+                  >
+                    Back to Plans
+                  </Link>
+                </div>
+              </div>
             ) : (
-              <div className="flex items-center justify-center py-16">
-                <Loader2 className="w-8 h-8 animate-spin text-white" />
-                <span className="ml-3 text-gray-400">
-                  {!cleengCustomer?.jwt ? "Linking your account..." : "Preparing checkout..."}
+              <div className="flex flex-col items-center justify-center py-16">
+                <Loader2 className="w-8 h-8 animate-spin text-white mb-3" />
+                <span className="text-gray-400">
+                  {isLinking ? "Linking your account..." : "Preparing checkout..."}
                 </span>
               </div>
             )}
