@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.72.1",
+    "@cleeng/mediastore-sdk": "^5.25.0",
     "@hookform/resolvers": "^3.10.0",
     "@jridgewell/trace-mapping": "^0.3.25",
     "@radix-ui/react-accordion": "^1.2.12",
@@ -74,6 +75,7 @@
     "react-resizable-panels": "^2.1.9",
     "recharts": "^2.15.4",
     "sonner": "^2.0.7",
+    "styled-components": "^6.3.9",
     "tailwind-merge": "^3.3.1",
     "tailwindcss-animate": "^1.0.7",
     "tsx": "^4.21.0",
