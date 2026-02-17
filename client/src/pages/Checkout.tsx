@@ -102,25 +102,38 @@ export default function Checkout() {
 
     async function initSDK() {
       try {
-        const { Config } = await import("@cleeng/mediastore-sdk");
+        console.log("Checkout: Starting SDK import...");
+        let sdk: any;
+        try {
+          sdk = await import("@cleeng/mediastore-sdk");
+          console.log("Checkout: SDK imported, available exports:", Object.keys(sdk));
+        } catch (importErr: any) {
+          console.error("Checkout: SDK import failed:", importErr?.message || importErr, importErr?.stack);
+          throw new Error(`SDK import failed: ${importErr?.message || "Unknown import error"}`);
+        }
+
+        const { Config } = sdk;
 
         if (!sdkConfigured) {
           const config = await getCleengConfig();
+          console.log("Checkout: Setting SDK environment:", config.environment, "publisher:", config.publisherId);
           Config.setEnvironment(config.environment);
           Config.setPublisher(config.publisherId);
           sdkConfigured = true;
         }
 
+        console.log("Checkout: Setting JWT (length:", cleengCustomer!.jwt!.length, ")");
         Config.setJWT(cleengCustomer!.jwt!);
         if (cleengCustomer!.refreshToken) {
           Config.setRefreshToken(cleengCustomer!.refreshToken);
         }
 
         if (!cancelled) {
+          console.log("Checkout: SDK ready");
           setSdkReady(true);
         }
-      } catch (err) {
-        console.error("Failed to initialize Cleeng SDK:", err);
+      } catch (err: any) {
+        console.error("Failed to initialize Cleeng SDK:", err?.message || err, err?.stack || "");
         if (!cancelled) {
           setSdkError("Failed to initialize payment system. Please refresh and try again.");
         }
