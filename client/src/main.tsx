@@ -3,6 +3,8 @@ import { AuthProvider } from "./lib/AuthContext";
 import { supabase } from "./lib/supabase";
 import App from "./App";
 import "./index.css";
+import '@adyen/adyen-web/dist/adyen.css';
+import 'react-loading-skeleton/dist/skeleton.css';
 
 window.addEventListener("error", (e) => {
   if (e.message === "(unknown runtime error)" || !e.message) {
