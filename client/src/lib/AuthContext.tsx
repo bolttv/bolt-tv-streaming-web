@@ -212,13 +212,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          data: {
-            password_set: true,
-            first_name: profileData?.firstName || undefined,
-            last_name: profileData?.lastName || undefined,
-          },
-        },
       });
 
       if (error) {
@@ -227,8 +220,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return { success: false, error: "An account with this email already exists. Please sign in instead.", existingUser: true };
         }
         if (error.message.toLowerCase().includes("database error")) {
-          console.error("Supabase signup database error (likely missing profile columns):", error.message);
-          return { success: false, error: "Database error saving new user" };
+          console.error("Supabase signup database error:", error.message);
+          return { success: false, error: "Database error saving new user. Please try again." };
         }
         return { success: false, error: error.message };
       }
@@ -242,15 +235,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(data.session.user);
         setAuthStep("authenticated");
 
-        if (profileData?.gender || profileData?.birthYear || profileData?.zipCode) {
-          supabase.auth.updateUser({
-            data: {
-              gender: profileData.gender || undefined,
-              birth_year: profileData.birthYear || undefined,
-              zip_code: profileData.zipCode || undefined,
-            },
-          }).catch((err) => console.error("Failed to save extra profile metadata:", err));
-        }
+        const metadataToSave: Record<string, string | boolean> = { password_set: true };
+        if (profileData?.firstName) metadataToSave.first_name = profileData.firstName;
+        if (profileData?.lastName) metadataToSave.last_name = profileData.lastName;
+        if (profileData?.gender) metadataToSave.gender = profileData.gender;
+        if (profileData?.birthYear) metadataToSave.birth_year = profileData.birthYear;
+        if (profileData?.zipCode) metadataToSave.zip_code = profileData.zipCode;
+
+        supabase.auth.updateUser({ data: metadataToSave })
+          .catch((err) => console.error("Failed to save profile metadata:", err));
       }
 
       return { success: true };
