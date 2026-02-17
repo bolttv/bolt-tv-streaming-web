@@ -195,12 +195,10 @@ export async function registerRoutes(
           console.log("No supabaseAdmin client, cannot store password");
           return;
         }
-        const { data, error } = await supabaseAdmin
+        await supabaseAdmin
           .from("profiles")
           .update({ cleeng_password: password })
-          .eq("email", email)
-          .select();
-        console.log("Store password result:", { data, error, email });
+          .eq("email", email);
       };
       
       const loginWithMediaStore = async (password: string) => {

@@ -6,6 +6,7 @@ import { getCleengConfig } from "@/lib/cleeng";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
 let sdkConfigured = false;
+let cssLoaded = false;
 
 function CleengPurchaseWrapper({ offerId, onSuccess }: { offerId: string; onSuccess: () => void }) {
   const [SdkComponents, setSdkComponents] = useState<{
@@ -19,6 +20,14 @@ function CleengPurchaseWrapper({ offerId, onSuccess }: { offerId: string; onSucc
     let cancelled = false;
     async function loadSdk() {
       try {
+        if (!cssLoaded) {
+          await Promise.all([
+            import('@adyen/adyen-web/dist/adyen.css'),
+            import('react-loading-skeleton/dist/skeleton.css'),
+            import('@cleeng/mediastore-sdk/dist/styles/msdFont.css'),
+          ]);
+          cssLoaded = true;
+        }
         const [sdk, redux] = await Promise.all([
           import("@cleeng/mediastore-sdk"),
           import("react-redux"),
