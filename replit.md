@@ -196,7 +196,7 @@ Cleeng is integrated for subscription management and payment processing. The int
 - `POST /api/cleeng/login`: Customer login (MediaStore API)
 - `POST /api/cleeng/sso`: SSO login to link Supabase users (Core API JSON-RPC with publisherToken)
 - `GET /api/cleeng/subscriptions/:customerId`: Get customer subscriptions (MediaStore API)
-- `POST /api/cleeng/checkout`: Create checkout order for subscription (MediaStore API)
+- `POST /api/cleeng/webhook`: Receives Cleeng subscription lifecycle events and syncs to Supabase
 
 ### SSO Flow (Supabase → Cleeng)
 1. User authenticates with Supabase (email OTP)
@@ -209,27 +209,31 @@ Cleeng is integrated for subscription management and payment processing. The int
 - `client/src/lib/AuthContext.tsx`: Context that links Supabase users to Cleeng customers via SSO
 - `client/src/pages/Subscribe.tsx`: Subscription page with checkout flow
 
-### Checkout Flow
+### Checkout Flow (MediaStore SDK)
 1. User selects a plan on `/subscribe` page
-2. If not authenticated, redirects to `/login` with returnTo URL
+2. Account is created first (Supabase), then plan selection, then checkout
 3. After Supabase authentication, SSO creates/links Cleeng customer via `registerCustomer` method
 4. User is redirected to in-app checkout page at `/checkout?offerId=...`
-5. Checkout page shows order summary and account information
+5. Checkout page renders Cleeng MediaStore SDK `Purchase` component
+6. SDK handles payment form (Adyen), order creation, and payment processing client-side (PCI compliant)
+7. On success, user is shown confirmation and redirected to streaming
 
 ### Pages
-- `/login`: Email OTP login page
-- `/subscribe`: Plan selection page with pricing cards
-- `/checkout`: In-app checkout page showing order summary and subscription details
+- `/login`: Email + password login page
+- `/subscribe`: Account creation → plan selection flow
+- `/checkout`: Cleeng MediaStore SDK Purchase component (handles payment via Adyen)
 
 ### Important Notes
 - Subscription offers must be created in the Cleeng Dashboard before they appear
-- Payment methods must be configured in Cleeng Dashboard (Settings → Payment Methods)
+- Payment methods must be configured in Cleeng Dashboard (Settings → Payment Methods) and Adyen must be enabled
 - Supabase users are automatically registered/linked as Cleeng customers on login via SSO
+- Payment is handled entirely client-side by Cleeng's MediaStore SDK (no card data passes through our server)
+- Webhook endpoint syncs subscription events to Supabase profiles
 
-### Payment Integration Status
-The current implementation registers customers via Cleeng SSO but does not include payment collection. To complete the integration:
-1. Configure Adyen or PayPal in Cleeng Dashboard
-2. Integrate Adyen Web Drop-in or PayPal SDK in the checkout page
-3. Or downgrade to React 18 to use Cleeng's MediaStore SDK components
-
-**Known limitation**: Cleeng MediaStore SDK requires React 18 (this project uses React 19)
+### Payment Integration
+- **SDK**: `@cleeng/mediastore-sdk` (installed with `legacy-peer-deps=true` for React 19 compatibility)
+- **CSS Dependencies**: `@adyen/adyen-web/dist/adyen.css`, `react-loading-skeleton/dist/skeleton.css`, `@cleeng/mediastore-sdk/dist/styles/msdFont.css` (imported in `main.tsx`)
+- **SDK Config**: Environment and publisher ID fetched from `/api/cleeng/config`, JWT set from Cleeng SSO
+- **Dark Theme**: CSS overrides in `index.css` under `.cleeng-checkout-container` class
+- **Sandbox Testing**: Use Adyen test cards (Visa 4111 1111 1111 1111, any future expiry, any 3-digit CVV)
+- **Production**: Contact Cleeng support to enable payment methods and whitelist domains for Adyen

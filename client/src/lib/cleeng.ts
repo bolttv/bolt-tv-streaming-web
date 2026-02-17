@@ -120,35 +120,6 @@ export function formatPrice(price: number, currency: string): string {
   }).format(price);
 }
 
-export interface CheckoutResponse {
-  checkoutUrl: string;
-  offerId: string;
-  publisherId: string;
-  environment: string;
-}
-
-export async function createCheckout(offerId: string, customerJwt: string): Promise<CheckoutResponse> {
-  const response = await fetch("/api/cleeng/checkout", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ offerId, customerJwt }),
-  });
-  
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.error || "Failed to create checkout");
-  }
-  
-  return response.json();
-}
-
-export function getCleengCheckoutUrl(orderId: string | number, publisherId: string, environment: string): string {
-  const baseUrl = environment === "sandbox" 
-    ? "https://checkout.sandbox.cleeng.com"
-    : "https://checkout.cleeng.com";
-  return `${baseUrl}/?orderId=${orderId}&publisherId=${publisherId}`;
-}
-
 export interface TaxInfo {
   taxRate: number;
   taxAmount: number;

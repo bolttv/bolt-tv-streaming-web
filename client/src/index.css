@@ -179,3 +179,145 @@ body {
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
+
+/* Cleeng MediaStore SDK - Dark Theme Overrides */
+.cleeng-checkout-container {
+  --msd-background-color: #0a0a0a;
+  --msd-text-color: #eaeaea;
+  --msd-primary-color: #ffffff;
+  --msd-secondary-color: #1a1a1a;
+  --msd-border-color: #333333;
+}
+
+.cleeng-checkout-container * {
+  font-family: 'Inter', sans-serif !important;
+}
+
+.cleeng-checkout-container [class*="wrapper"],
+.cleeng-checkout-container [class*="Wrapper"],
+.cleeng-checkout-container [class*="container"],
+.cleeng-checkout-container [class*="Container"] {
+  background-color: #0a0a0a !important;
+  color: #eaeaea !important;
+}
+
+.cleeng-checkout-container [class*="header"],
+.cleeng-checkout-container [class*="Header"],
+.cleeng-checkout-container h1,
+.cleeng-checkout-container h2,
+.cleeng-checkout-container h3 {
+  color: #ffffff !important;
+}
+
+.cleeng-checkout-container p,
+.cleeng-checkout-container span,
+.cleeng-checkout-container label,
+.cleeng-checkout-container div {
+  color: #d4d4d4;
+}
+
+.cleeng-checkout-container input,
+.cleeng-checkout-container select {
+  background-color: #1a1a1a !important;
+  border-color: #333333 !important;
+  color: #ffffff !important;
+}
+
+.cleeng-checkout-container input:focus,
+.cleeng-checkout-container select:focus {
+  border-color: #ffffff !important;
+  outline: none !important;
+}
+
+.cleeng-checkout-container button[class*="primary"],
+.cleeng-checkout-container button[type="submit"] {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border-radius: 0.5rem !important;
+  font-weight: 600 !important;
+}
+
+.cleeng-checkout-container button[class*="primary"]:hover,
+.cleeng-checkout-container button[type="submit"]:hover {
+  background-color: #e5e5e5 !important;
+}
+
+.cleeng-checkout-container [class*="price"],
+.cleeng-checkout-container [class*="Price"] {
+  color: #ffffff !important;
+}
+
+.cleeng-checkout-container [class*="offer"],
+.cleeng-checkout-container [class*="Offer"],
+.cleeng-checkout-container [class*="order"],
+.cleeng-checkout-container [class*="Order"] {
+  background-color: #111111 !important;
+  border-color: #222222 !important;
+}
+
+.cleeng-checkout-container [class*="card"],
+.cleeng-checkout-container [class*="Card"],
+.cleeng-checkout-container [class*="section"],
+.cleeng-checkout-container [class*="Section"] {
+  background-color: #111111 !important;
+  border-color: #222222 !important;
+  border-radius: 0.75rem !important;
+}
+
+.cleeng-checkout-container [class*="error"],
+.cleeng-checkout-container [class*="Error"] {
+  color: #ef4444 !important;
+}
+
+.cleeng-checkout-container a {
+  color: #ffffff !important;
+}
+
+.cleeng-checkout-container a:hover {
+  color: #d4d4d4 !important;
+}
+
+/* Adyen payment form dark overrides */
+.cleeng-checkout-container .adyen-checkout__payment-method {
+  background-color: #111111 !important;
+  border-color: #222222 !important;
+}
+
+.cleeng-checkout-container .adyen-checkout__label__text {
+  color: #d4d4d4 !important;
+}
+
+.cleeng-checkout-container .adyen-checkout__input {
+  background-color: #1a1a1a !important;
+  border-color: #333333 !important;
+  color: #ffffff !important;
+}
+
+.cleeng-checkout-container .adyen-checkout__input--focus,
+.cleeng-checkout-container .adyen-checkout__input:focus {
+  border-color: #ffffff !important;
+}
+
+.cleeng-checkout-container .adyen-checkout__button {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border-radius: 0.5rem !important;
+}
+
+.cleeng-checkout-container .adyen-checkout__button:hover {
+  background-color: #e5e5e5 !important;
+}
+
+.cleeng-checkout-container .adyen-checkout__payment-method__header {
+  color: #eaeaea !important;
+}
+
+.cleeng-checkout-container .adyen-checkout__payment-method--selected {
+  background-color: #1a1a1a !important;
+}
+
+/* Skeleton loader dark theme */
+.cleeng-checkout-container .react-loading-skeleton {
+  --base-color: #1a1a1a !important;
+  --highlight-color: #333333 !important;
+}
