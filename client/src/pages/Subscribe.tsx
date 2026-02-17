@@ -49,6 +49,7 @@ type Step = "account" | "plan";
 export default function Subscribe() {
   const [, setLocation] = useLocation();
   const { isAuthenticated, authStep, signUp } = useAuth();
+  const isChangingPlan = new URLSearchParams(window.location.search).get("changePlan") === "true";
   const [step, setStep] = useState<Step>(() => {
     return isAuthenticated ? "plan" : "account";
   });
@@ -78,14 +79,16 @@ export default function Subscribe() {
 
   useEffect(() => {
     if (isAuthenticated && authStep === "authenticated") {
-      const pendingOffer = localStorage.getItem("pending_checkout_offer");
-      if (pendingOffer) {
-        setLocation(`/checkout?offerId=${encodeURIComponent(pendingOffer)}`);
-      } else {
-        setStep("plan");
+      if (!isChangingPlan) {
+        const pendingOffer = localStorage.getItem("pending_checkout_offer");
+        if (pendingOffer) {
+          setLocation(`/checkout?offerId=${encodeURIComponent(pendingOffer)}`);
+          return;
+        }
       }
+      setStep("plan");
     }
-  }, [isAuthenticated, authStep, setLocation]);
+  }, [isAuthenticated, authStep, setLocation, isChangingPlan]);
 
   useEffect(() => {
     const fetchOffers = async () => {
@@ -100,12 +103,21 @@ export default function Subscribe() {
           const mappedPlans = mapOffersToPlan(activeOffers);
           setPlans(mappedPlans);
           
-          const monthlyPlans = mappedPlans.filter(p => p.period === "/month");
-          if (monthlyPlans.length > 0) {
-            setSelectedPlan(monthlyPlans[0].id);
-          } else if (mappedPlans.length > 0) {
-            setSelectedPlan(mappedPlans[0].id);
-            setBillingPeriod("year");
+          const pendingOffer = localStorage.getItem("pending_checkout_offer");
+          const currentPlan = pendingOffer ? mappedPlans.find(p => p.offerId === pendingOffer) : null;
+
+          if (currentPlan) {
+            setSelectedPlan(currentPlan.id);
+            const currentPeriod = currentPlan.period === "/year" ? "year" : "month";
+            setBillingPeriod(currentPeriod);
+          } else {
+            const monthlyPlans = mappedPlans.filter(p => p.period === "/month");
+            if (monthlyPlans.length > 0) {
+              setSelectedPlan(monthlyPlans[0].id);
+            } else if (mappedPlans.length > 0) {
+              setSelectedPlan(mappedPlans[0].id);
+              setBillingPeriod("year");
+            }
           }
         } else {
           setError("No subscription plans are currently available. Please check back later.");
@@ -198,9 +210,16 @@ export default function Subscribe() {
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="p-4 md:p-8 flex justify-between items-center">
-        <Link href="/" className="flex items-center gap-2 text-white/70 hover:text-white transition" data-testid="button-back">
+        <Link
+          href={isChangingPlan
+            ? `/checkout?offerId=${encodeURIComponent(localStorage.getItem("pending_checkout_offer") || "")}`
+            : "/"
+          }
+          className="flex items-center gap-2 text-white/70 hover:text-white transition"
+          data-testid="button-back"
+        >
           <ArrowLeft className="w-5 h-5" />
-          <span>Back to Home</span>
+          <span>{isChangingPlan ? "Back to Checkout" : "Back to Home"}</span>
         </Link>
         
         {step === "account" && (
@@ -220,9 +239,9 @@ export default function Subscribe() {
                 alt="Bolt TV" 
                 className="h-10 mx-auto mb-6"
               />
-              <h1 className="text-3xl md:text-4xl font-bold mb-4">Choose Your Plan</h1>
+              <h1 className="text-3xl md:text-4xl font-bold mb-4">{isChangingPlan ? "Change Your Plan" : "Choose Your Plan"}</h1>
               <p className="text-gray-400 text-lg max-w-2xl mx-auto">
-                Start streaming today. Cancel anytime.
+                {isChangingPlan ? "Select a new plan and return to checkout." : "Start streaming today. Cancel anytime."}
               </p>
             </div>
 
@@ -329,7 +348,7 @@ export default function Subscribe() {
                     className="px-12 py-4 bg-white hover:bg-white/90 disabled:bg-white/40 disabled:cursor-not-allowed text-black font-bold text-lg rounded-full transition cursor-pointer"
                     data-testid="button-continue"
                   >
-                    Continue
+                    {isChangingPlan ? "Update Plan" : "Continue"}
                   </button>
                 </div>
               </>

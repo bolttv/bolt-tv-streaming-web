@@ -246,7 +246,7 @@ export default function Checkout() {
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-sm font-semibold text-white uppercase tracking-wide">Your Plan</h3>
                       <Link
-                        href="/subscribe"
+                        href="/subscribe?changePlan=true"
                         className="text-sm font-semibold text-white/70 hover:text-white transition cursor-pointer"
                         data-testid="button-change-plan"
                       >
