@@ -340,6 +340,7 @@ export default function Checkout() {
     setError(null);
 
     try {
+      const digits = cardNumber.replace(/\s/g, "");
       const response = await fetch("/api/cleeng/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -347,7 +348,14 @@ export default function Checkout() {
           offerId: offerId || offer?.longId || offer?.id,
           customerToken: cleengCustomer.jwt,
           customerEmail: user?.email || cleengCustomer.email,
+          customerId: cleengCustomer.id,
           couponCode: appliedPromo?.code || undefined,
+          cardDetails: {
+            cardName: cardName,
+            lastFour: digits.slice(-4),
+            brand: cardBrand || "card",
+            expiryDate: expiryDate,
+          },
         }),
       });
 

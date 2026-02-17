@@ -691,7 +691,7 @@ export async function registerRoutes(
   // Create a subscription (free trial or immediate activation)
   app.post("/api/cleeng/subscribe", async (req, res) => {
     try {
-      const { offerId, customerToken, customerEmail, couponCode } = req.body;
+      const { offerId, customerToken, customerEmail, customerId, couponCode, cardDetails } = req.body;
       
       if (!offerId) {
         return res.status(400).json({ error: "Offer ID is required" });
@@ -701,42 +701,94 @@ export async function registerRoutes(
         return res.status(401).json({ error: "Customer authentication required" });
       }
 
-      console.log("Cleeng subscribe request - offerId:", offerId, "email:", customerEmail, "coupon:", couponCode || "none");
+      console.log("Cleeng subscribe request - offerId:", offerId, "email:", customerEmail, "customerId:", customerId, "coupon:", couponCode || "none");
 
-      const params: any = {
-        publisherToken: CLEENG_API_SECRET,
-        customerEmail: customerEmail,
+      const orderBody: any = {
         offerId: offerId,
+        customerId: customerId,
+        currency: "USD",
+        country: "US",
       };
 
       if (couponCode) {
-        params.couponCode = couponCode;
+        orderBody.couponCode = couponCode;
       }
 
-      const subscribeResponse = await fetch(`${CLEENG_CORE_API_URL}/3.0/json-rpc`, {
+      const orderResponse = await fetch(`${CLEENG_CORE_API_URL}/3.1/orders`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          method: "registerSubscription",
-          params,
-          jsonrpc: "2.0",
-          id: 1
-        }),
+        headers: {
+          "Content-Type": "application/json",
+          "X-Publisher-Token": CLEENG_API_SECRET,
+        },
+        body: JSON.stringify(orderBody),
       });
 
-      const subscribeData = await subscribeResponse.json();
-      console.log("Cleeng subscribe response:", JSON.stringify(subscribeData, null, 2));
+      const orderData = await orderResponse.json();
+      console.log("Cleeng create order response:", JSON.stringify(orderData, null, 2));
 
-      if (subscribeData.error) {
-        return res.status(400).json({ 
-          error: subscribeData.error.message || "Subscription failed",
-          details: subscribeData.error
+      if (!orderResponse.ok || orderData.error) {
+        return res.status(400).json({
+          error: orderData.message || orderData.error || "Failed to create order",
+          details: orderData,
+        });
+      }
+
+      const orderId = orderData.id || orderData.orderId;
+      const orderTotalPrice = orderData.totalPrice ?? orderData.priceBreakdown?.offerPrice ?? 0;
+
+      console.log("Order created - orderId:", orderId, "totalPrice:", orderTotalPrice);
+
+      const paymentBody: any = {
+        orderId: orderId,
+        status: "captured",
+        paymentOperation: "initial-payment",
+      };
+
+      if (orderTotalPrice === 0) {
+        paymentBody.paymentDetails = {
+          paymentMethodSpecificParams: {},
+        };
+        paymentBody.externalPaymentId = `free_${orderId}_${Date.now()}`;
+      } else {
+        if (!cardDetails) {
+          return res.status(400).json({ error: "Payment details are required for paid subscriptions" });
+        }
+        paymentBody.paymentDetails = {
+          paymentMethodSpecificParams: {
+            holderName: cardDetails.cardName,
+            lastCardFourDigits: cardDetails.lastFour,
+            variant: (cardDetails.brand || "card").toLowerCase(),
+            cardExpirationDate: cardDetails.expiryDate,
+          },
+        };
+        paymentBody.externalPaymentId = `card_${orderId}_${Date.now()}`;
+      }
+
+      const paymentResponse = await fetch(`${CLEENG_CORE_API_URL}/3.1/payments`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Publisher-Token": CLEENG_API_SECRET,
+        },
+        body: JSON.stringify(paymentBody),
+      });
+
+      const paymentData = await paymentResponse.json();
+      console.log("Cleeng create payment response:", JSON.stringify(paymentData, null, 2));
+
+      if (!paymentResponse.ok || paymentData.error) {
+        return res.status(400).json({
+          error: paymentData.message || paymentData.error || "Payment processing failed",
+          details: paymentData,
         });
       }
 
       res.json({
         success: true,
-        subscription: subscribeData.result,
+        subscription: {
+          orderId: orderId,
+          payment: paymentData,
+        },
       });
     } catch (error) {
       console.error("Cleeng subscribe error:", error);
