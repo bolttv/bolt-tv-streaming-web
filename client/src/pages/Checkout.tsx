@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
-import { ArrowLeft, Check, Loader2, AlertCircle, Lock } from "lucide-react";
+import { ArrowLeft, Check, Loader2, AlertCircle, Lock, Shield } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import { getCleengConfig, getOffers, CleengOffer, formatPrice } from "@/lib/cleeng";
 import LoadingSpinner from "@/components/LoadingSpinner";
@@ -83,7 +83,7 @@ export default function Checkout() {
   const [sdkReady, setSdkReady] = useState(false);
   const [sdkError, setSdkError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [offerDetails, setOfferDetails] = useState<{ name: string; price: string; period: string } | null>(null);
+  const [offerDetails, setOfferDetails] = useState<{ name: string; price: string; period: string; description?: string } | null>(null);
 
   const offerId = new URLSearchParams(window.location.search).get("offerId");
 
@@ -99,23 +99,20 @@ export default function Checkout() {
             name: match.title,
             price: formatPrice(match.price.amount, match.price.currency),
             period: `/${periodUnit.toLowerCase()}`,
+            description: match.description,
           });
         }
-      } catch (err) {
-        // Non-critical, just won't show plan details
-      }
+      } catch (err) {}
     }
     fetchOffer();
   }, [offerId]);
 
   useEffect(() => {
     if (authLoading) return;
-
     if (!isAuthenticated) {
       setLocation("/subscribe");
       return;
     }
-
     if (!offerId) {
       const pendingOffer = localStorage.getItem("pending_checkout_offer");
       if (pendingOffer) {
@@ -128,9 +125,7 @@ export default function Checkout() {
 
   useEffect(() => {
     if (authLoading || isLinking || !isAuthenticated || !cleengCustomer?.jwt || !offerId) return;
-
     let cancelled = false;
-
     async function initSDK() {
       try {
         let sdk: any;
@@ -139,21 +134,17 @@ export default function Checkout() {
         } catch (importErr: any) {
           throw new Error(`SDK import failed: ${importErr?.message || "Unknown import error"}`);
         }
-
         const { Config } = sdk;
-
         if (!sdkConfigured) {
           const config = await getCleengConfig();
           Config.setEnvironment(config.environment);
           Config.setPublisher(config.publisherId);
           sdkConfigured = true;
         }
-
         Config.setJWT(cleengCustomer!.jwt!);
         if (cleengCustomer!.refreshToken) {
           Config.setRefreshToken(cleengCustomer!.refreshToken);
         }
-
         if (!cancelled) {
           setSdkReady(true);
         }
@@ -164,7 +155,6 @@ export default function Checkout() {
         }
       }
     }
-
     initSDK();
     return () => { cancelled = true; };
   }, [authLoading, isLinking, isAuthenticated, cleengCustomer, offerId]);
@@ -207,11 +197,13 @@ export default function Checkout() {
   if (sdkError) {
     return (
       <div className="min-h-screen bg-black text-white">
-        <div className="p-4 md:p-8 flex justify-between items-center">
+        <div className="p-4 md:p-6 flex justify-between items-center border-b border-white/5">
           <Link href="/subscribe" className="flex items-center gap-2 text-white/70 hover:text-white transition" data-testid="button-back-error">
             <ArrowLeft className="w-5 h-5" />
-            <span>Back to Plans</span>
+            <span>Back</span>
           </Link>
+          <img src="/assets/bolt-logo-white.png" alt="Bolt TV" className="h-7" />
+          <div className="w-16" />
         </div>
         <div className="max-w-md mx-auto text-center px-4 py-16">
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-5" />
@@ -228,88 +220,116 @@ export default function Checkout() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <div className="p-4 md:p-8 flex justify-between items-center">
+    <div className="min-h-screen bg-black text-white flex flex-col">
+      <div className="px-4 md:px-8 py-4 flex justify-between items-center border-b border-white/5 flex-shrink-0">
         <Link href="/subscribe" className="flex items-center gap-2 text-white/70 hover:text-white transition" data-testid="button-back">
           <ArrowLeft className="w-5 h-5" />
-          <span>Back</span>
+          <span className="text-sm">Back</span>
         </Link>
-        <img
-          src="/assets/bolt-logo-white.png"
-          alt="Bolt TV"
-          className="h-7"
-        />
+        <img src="/assets/bolt-logo-white.png" alt="Bolt TV" className="h-7" />
         <div className="w-16" />
       </div>
 
-      <div className="max-w-lg mx-auto px-4 pt-4 pb-16">
-        <p className="text-xs text-gray-500 uppercase tracking-widest mb-3" data-testid="text-step-indicator">
-          Step 3 of 3
-        </p>
-        <h1 className="text-2xl md:text-3xl font-bold mb-2" data-testid="text-checkout-title">
-          Set up your payment
-        </h1>
-        <div className="flex items-center gap-2 mb-8">
-          <Lock className="w-4 h-4 text-gray-500" />
-          <span className="text-sm text-gray-500">Secure checkout</span>
-        </div>
+      <div className="flex-1 flex items-start justify-center px-4 md:px-8 py-6 md:py-10">
+        <div className="w-full max-w-5xl">
+          <div className="mb-6 md:mb-8">
+            <p className="text-xs text-gray-500 uppercase tracking-widest mb-2" data-testid="text-step-indicator">
+              Step 3 of 3
+            </p>
+            <h1 className="text-2xl md:text-3xl font-bold" data-testid="text-checkout-title">
+              Set up your payment
+            </h1>
+          </div>
 
-        <div className="cleeng-checkout-container" data-testid="cleeng-checkout">
-          {sdkReady && offerId ? (
-            <CleengPurchaseWrapper offerId={offerId} onSuccess={handleSuccess} />
-          ) : linkFailed ? (
-            <div className="text-center py-12">
-              <AlertCircle className="w-10 h-10 text-red-500 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-white mb-2">Unable to connect to payment system</h3>
-              <p className="text-gray-400 text-sm mb-6 max-w-sm mx-auto">
-                We couldn't link your account to the payment provider. This is usually a temporary issue.
-              </p>
-              <div className="flex items-center justify-center gap-4">
-                <button
-                  onClick={() => retryLink()}
-                  className="px-8 py-3 bg-white text-black rounded-full font-semibold hover:bg-white/90 transition cursor-pointer"
-                  data-testid="button-retry-link"
-                >
-                  Try Again
-                </button>
-                <Link
-                  href="/subscribe"
-                  className="px-6 py-3 text-gray-400 hover:text-white transition"
-                  data-testid="button-back-to-plans"
-                >
-                  Back to Plans
-                </Link>
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
+            <div className="lg:col-span-2 order-2 lg:order-1">
+              <div className="lg:sticky lg:top-8 space-y-6">
+                {offerDetails && (
+                  <div className="border border-white/10 rounded-lg p-5" data-testid="plan-summary">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-sm font-semibold text-white uppercase tracking-wide">Your Plan</h3>
+                      <Link
+                        href="/subscribe"
+                        className="text-sm font-semibold text-white/70 hover:text-white transition cursor-pointer"
+                        data-testid="button-change-plan"
+                      >
+                        Change
+                      </Link>
+                    </div>
+                    <div className="space-y-3">
+                      <p className="text-white font-bold text-2xl">
+                        {offerDetails.price}
+                        <span className="text-base font-normal text-gray-400">{offerDetails.period}</span>
+                      </p>
+                      <p className="text-white text-sm font-medium">{offerDetails.name}</p>
+                      {offerDetails.description && (
+                        <p className="text-gray-500 text-xs leading-relaxed">{offerDetails.description}</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-4 py-2">
+                  <div className="flex items-start gap-3">
+                    <Lock className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+                    <p className="text-xs text-gray-500 leading-relaxed">
+                      Your payment is encrypted and processed securely.
+                    </p>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <Shield className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+                    <p className="text-xs text-gray-500 leading-relaxed">
+                      Cancel anytime. No commitments, no cancellation fees.
+                    </p>
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-gray-600 leading-relaxed">
+                  By completing your purchase, you agree to our Terms of Use and Privacy Policy. Your subscription will automatically renew and you will be charged the subscription fee until you cancel.
+                </p>
               </div>
             </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-white mb-3" />
-              <span className="text-gray-400 text-sm">
-                {isLinking ? "Linking your account..." : "Preparing checkout..."}
-              </span>
-            </div>
-          )}
-        </div>
 
-        {offerDetails && (
-          <div className="mt-6 flex items-center justify-between py-4 px-5 border border-white/10 rounded-lg" data-testid="plan-summary">
-            <div>
-              <p className="text-white font-semibold text-sm">{offerDetails.price}{offerDetails.period}</p>
-              <p className="text-gray-500 text-xs">{offerDetails.name}</p>
+            <div className="lg:col-span-3 order-1 lg:order-2">
+              <div className="cleeng-checkout-container" data-testid="cleeng-checkout">
+                {sdkReady && offerId ? (
+                  <CleengPurchaseWrapper offerId={offerId} onSuccess={handleSuccess} />
+                ) : linkFailed ? (
+                  <div className="text-center py-12">
+                    <AlertCircle className="w-10 h-10 text-red-500 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-white mb-2">Unable to connect to payment system</h3>
+                    <p className="text-gray-400 text-sm mb-6 max-w-sm mx-auto">
+                      We couldn't link your account to the payment provider. This is usually a temporary issue.
+                    </p>
+                    <div className="flex items-center justify-center gap-4">
+                      <button
+                        onClick={() => retryLink()}
+                        className="px-8 py-3 bg-white text-black rounded-full font-semibold hover:bg-white/90 transition cursor-pointer"
+                        data-testid="button-retry-link"
+                      >
+                        Try Again
+                      </button>
+                      <Link
+                        href="/subscribe"
+                        className="px-6 py-3 text-gray-400 hover:text-white transition"
+                        data-testid="button-back-to-plans"
+                      >
+                        Back to Plans
+                      </Link>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-16">
+                    <Loader2 className="w-8 h-8 animate-spin text-white mb-3" />
+                    <span className="text-gray-400 text-sm">
+                      {isLinking ? "Linking your account..." : "Preparing checkout..."}
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
-            <Link
-              href="/subscribe"
-              className="text-sm font-semibold text-white hover:text-white/80 transition cursor-pointer"
-              data-testid="button-change-plan"
-            >
-              Change
-            </Link>
           </div>
-        )}
-
-        <p className="mt-6 text-xs text-gray-600 leading-relaxed">
-          By completing your purchase, you agree to our Terms of Use and Privacy Policy. Your subscription will automatically renew and you will be charged the subscription fee until you cancel. You may cancel at any time to avoid future charges.
-        </p>
+        </div>
       </div>
     </div>
   );
