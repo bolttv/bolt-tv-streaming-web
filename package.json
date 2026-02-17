@@ -116,7 +116,9 @@
     "node": ">=20.18.0"
   },
   "overrides": {
-    "react": "$react",
-    "react-dom": "$react-dom"
+    "@cleeng/mediastore-sdk": {
+      "react": "$react",
+      "react-dom": "$react-dom"
+    }
   }
 }

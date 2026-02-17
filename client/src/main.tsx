@@ -1,7 +1,7 @@
 import { createRoot } from "react-dom/client";
-import { AuthProvider } from "./lib/AuthContext";
-import { supabase } from "./lib/supabase";
-import App from "./App";
+import { AuthProvider } from "@/lib/AuthContext";
+import { supabase } from "@/lib/supabase";
+import App from "@/App";
 import "./index.css";
 
 window.addEventListener("error", (e) => {
