@@ -229,16 +229,13 @@ export default function Checkout() {
         <img src="/assets/bolt-logo-white.png" alt="Bolt TV" className="h-7" />
         <div className="w-16" />
       </div>
-
       <div className="flex-1 flex items-start justify-center px-4 md:px-8 py-6 md:py-10">
         <div className="w-full max-w-5xl">
           <div className="mb-6 md:mb-8">
             <p className="text-xs text-gray-500 uppercase tracking-widest mb-2" data-testid="text-step-indicator">
               Step 3 of 3
             </p>
-            <h1 className="text-2xl md:text-3xl font-bold" data-testid="text-checkout-title">
-              Set up your payment
-            </h1>
+            <h1 className="text-2xl md:text-3xl font-bold" data-testid="text-checkout-title">Add Your Billing Info</h1>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
