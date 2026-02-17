@@ -111,13 +111,10 @@ export default function Checkout() {
 
     async function initSDK() {
       try {
-        console.log("Checkout: Starting SDK import...");
         let sdk: any;
         try {
           sdk = await import("@cleeng/mediastore-sdk");
-          console.log("Checkout: SDK imported, available exports:", Object.keys(sdk));
         } catch (importErr: any) {
-          console.error("Checkout: SDK import failed:", importErr?.message || importErr, importErr?.stack);
           throw new Error(`SDK import failed: ${importErr?.message || "Unknown import error"}`);
         }
 
@@ -125,24 +122,21 @@ export default function Checkout() {
 
         if (!sdkConfigured) {
           const config = await getCleengConfig();
-          console.log("Checkout: Setting SDK environment:", config.environment, "publisher:", config.publisherId);
           Config.setEnvironment(config.environment);
           Config.setPublisher(config.publisherId);
           sdkConfigured = true;
         }
 
-        console.log("Checkout: Setting JWT (length:", cleengCustomer!.jwt!.length, ")");
         Config.setJWT(cleengCustomer!.jwt!);
         if (cleengCustomer!.refreshToken) {
           Config.setRefreshToken(cleengCustomer!.refreshToken);
         }
 
         if (!cancelled) {
-          console.log("Checkout: SDK ready");
           setSdkReady(true);
         }
       } catch (err: any) {
-        console.error("Failed to initialize Cleeng SDK:", err?.message || err, err?.stack || "");
+        console.error("Failed to initialize Cleeng SDK:", err?.message || err);
         if (!cancelled) {
           setSdkError("Failed to initialize payment system. Please refresh and try again.");
         }
@@ -170,7 +164,7 @@ export default function Checkout() {
           <p className="text-gray-500 text-sm mb-10">You now have full access to all premium content.</p>
           <Link
             href="/home"
-            className="inline-flex items-center justify-center px-10 py-4 bg-white text-black rounded-lg font-semibold text-lg hover:bg-white/90 transition-colors cursor-pointer"
+            className="inline-flex items-center justify-center px-10 py-4 bg-white text-black rounded-full font-bold text-lg hover:bg-white/90 transition-colors cursor-pointer"
             data-testid="button-start-streaming"
           >
             Start Streaming
@@ -190,19 +184,26 @@ export default function Checkout() {
 
   if (sdkError) {
     return (
-      <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <div className="max-w-md mx-auto text-center p-8">
-          <div className="flex items-center gap-3 mb-6 justify-center">
-            <AlertCircle className="w-5 h-5 text-red-500" />
-            <p className="text-red-400">{sdkError}</p>
-          </div>
-          <Link
-            href="/subscribe"
-            className="inline-flex items-center text-gray-400 hover:text-white cursor-pointer"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to plans
+      <div className="min-h-screen bg-black text-white">
+        <div className="p-4 md:p-8">
+          <Link href="/subscribe" className="flex items-center gap-2 text-white/70 hover:text-white transition" data-testid="button-back-error">
+            <ArrowLeft className="w-5 h-5" />
+            <span>Back to Plans</span>
           </Link>
+        </div>
+        <div className="max-w-md mx-auto text-center px-4 py-16">
+          <div className="bg-white/[0.04] rounded-2xl p-8 border border-white/10">
+            <div className="flex items-center gap-3 mb-4 justify-center">
+              <AlertCircle className="w-6 h-6 text-red-500" />
+            </div>
+            <p className="text-red-400 mb-6">{sdkError}</p>
+            <Link
+              href="/subscribe"
+              className="inline-flex items-center justify-center px-8 py-3 bg-white text-black rounded-full font-semibold hover:bg-white/90 transition cursor-pointer"
+            >
+              Choose a Plan
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -210,28 +211,44 @@ export default function Checkout() {
 
   return (
     <div className="min-h-screen bg-black text-white">
-      <div className="container mx-auto px-4 py-8">
-        <Link href="/subscribe" className="inline-flex items-center text-gray-400 hover:text-white mb-8 cursor-pointer">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to plans
+      <div className="p-4 md:p-8">
+        <Link href="/subscribe" className="flex items-center gap-2 text-white/70 hover:text-white transition" data-testid="button-back">
+          <ArrowLeft className="w-5 h-5" />
+          <span>Back to Plans</span>
         </Link>
+      </div>
 
-        <div className="max-w-2xl mx-auto">
-          <h1 className="text-3xl font-bold mb-8 text-center">Complete Your Subscription</h1>
+      <div className="max-w-2xl mx-auto px-4 py-8">
+        <div className="text-center mb-10">
+          <img
+            src="/assets/bolt-logo-white.png"
+            alt="Bolt TV"
+            className="h-10 mx-auto mb-6"
+          />
+          <h1 className="text-3xl md:text-4xl font-bold mb-4">Complete Your Subscription</h1>
+          <p className="text-gray-400 text-lg">
+            Enter your payment details to start streaming.
+          </p>
+        </div>
 
+        <div className="bg-white/[0.04] rounded-2xl p-6 md:p-8 border border-white/10">
           <div className="cleeng-checkout-container" data-testid="cleeng-checkout">
             {sdkReady && offerId ? (
               <CleengPurchaseWrapper offerId={offerId} onSuccess={handleSuccess} />
             ) : (
               <div className="flex items-center justify-center py-16">
-                <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+                <Loader2 className="w-8 h-8 animate-spin text-white" />
                 <span className="ml-3 text-gray-400">
-                  {!cleengCustomer?.jwt ? "Linking your account..." : "Loading payment form..."}
+                  {!cleengCustomer?.jwt ? "Linking your account..." : "Preparing checkout..."}
                 </span>
               </div>
             )}
           </div>
         </div>
+
+        <p className="text-center mt-6 text-gray-500 text-xs">
+          Your payment is processed securely. You can cancel anytime.
+        </p>
       </div>
     </div>
   );
