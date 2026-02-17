@@ -75,8 +75,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const subscriptionsResponse = await getSubscriptions(cleengId || currentUser.email, response.jwt);
           console.log("Cleeng subscriptions response:", subscriptionsResponse);
           
-          if (subscriptionsResponse.items && subscriptionsResponse.items.length > 0) {
-            const activeSubscription = subscriptionsResponse.items.find(
+          const items = subscriptionsResponse.responseData?.items || subscriptionsResponse.items || [];
+          if (items.length > 0) {
+            const activeSubscription = items.find(
               (sub: any) => sub.status === "active" || sub.status === "paid"
             );
             

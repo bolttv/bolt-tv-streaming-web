@@ -178,12 +178,73 @@ export async function registerRoutes(
       
       console.log("Cleeng SSO request for email:", email, "firstName:", firstName, "lastName:", lastName);
       
-      // Generate a secure random password for SSO customers
-      const randomPassword = `SSO_${crypto.randomUUID()}_${Date.now()}!`;
+      const generatePassword = () => `CL_${crypto.randomUUID().replace(/-/g, '').slice(0, 20)}!A1`;
+      
+      const getStoredPassword = async (): Promise<string | null> => {
+        if (!supabaseAdmin) return null;
+        const { data } = await supabaseAdmin
+          .from("profiles")
+          .select("cleeng_password")
+          .eq("email", email)
+          .maybeSingle();
+        return data?.cleeng_password || null;
+      };
+      
+      const storePassword = async (password: string) => {
+        if (!supabaseAdmin) {
+          console.log("No supabaseAdmin client, cannot store password");
+          return;
+        }
+        const { data, error } = await supabaseAdmin
+          .from("profiles")
+          .update({ cleeng_password: password })
+          .eq("email", email)
+          .select();
+        console.log("Store password result:", { data, error, email });
+      };
+      
+      const loginWithMediaStore = async (password: string) => {
+        const loginResponse = await fetch(`${CLEENG_MEDIASTORE_URL}/auths`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email,
+            password,
+            publisherId: CLEENG_PUBLISHER_ID,
+          }),
+        });
+        return loginResponse.json();
+      };
+
+      const storedPassword = await getStoredPassword();
+      
+      const extractJwtFromLogin = (loginData: any) => {
+        const jwt = loginData.responseData?.jwt || loginData.jwt;
+        const refreshToken = loginData.responseData?.refreshToken || loginData.refreshToken;
+        const rawCustomerId = loginData.responseData?.customerId || loginData.customerId;
+        if (!jwt) return null;
+        const extractedCustomerId = extractCustomerIdFromJwt(jwt);
+        return { jwt, refreshToken, customerId: extractedCustomerId || rawCustomerId };
+      };
+      
+      if (storedPassword) {
+        console.log("Found stored Cleeng password, attempting MediaStore login...");
+        const loginData = await loginWithMediaStore(storedPassword);
+        console.log("Cleeng MediaStore login response:", JSON.stringify(loginData, null, 2));
+        
+        const result = extractJwtFromLogin(loginData);
+        if (result) {
+          console.log("Cleeng customer ID from MediaStore login:", result.customerId);
+          return res.json({ ...result, email });
+        }
+        console.log("Stored password login failed, will try re-registering...");
+      }
+      
+      const newPassword = generatePassword();
       
       const customerData: any = {
         email,
-        password: randomPassword,
+        password: newPassword,
         locale: "en_US",
         country: "US",
         currency: "USD",
@@ -191,8 +252,7 @@ export async function registerRoutes(
       };
       if (firstName) customerData.firstName = firstName;
       if (lastName) customerData.lastName = lastName;
-
-      // Step 1: Try to register customer with Core API (bypasses reCAPTCHA)
+      
       const registerResponse = await fetch(`${CLEENG_CORE_API_URL}/3.0/json-rpc`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -208,64 +268,33 @@ export async function registerRoutes(
       });
       
       const registerData = await registerResponse.json();
-      console.log("Cleeng registration response:", JSON.stringify(registerData, null, 2));
+      console.log("Cleeng Core API register response:", JSON.stringify(registerData, null, 2));
       
-      // Step 2: Get JWT from MediaStore API's SSO endpoint
-      // This works for both new and existing customers
-      const getJwt = async () => {
-        const ssoResponse = await fetch(`${CLEENG_MEDIASTORE_URL}/sso/auths`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            publisherToken: CLEENG_API_SECRET,
-            publisherId: parseInt(CLEENG_PUBLISHER_ID),
-            customerEmail: email,
-          }),
-        });
-        
-        const ssoData = await ssoResponse.json();
-        console.log("Cleeng SSO JWT response:", JSON.stringify(ssoData, null, 2));
-        return ssoData;
-      };
+      const customerExists = registerData.error?.message?.includes("already") || 
+                              registerData.error?.message?.includes("exists") ||
+                              registerData.error?.code === 13;
       
-      // If registration succeeded or customer already exists, get JWT
-      if (registerData.result?.token || 
-          registerData.error?.message?.includes("already") || 
-          registerData.error?.message?.includes("exists") ||
-          registerData.error?.code === -1) {
-        
-        const jwtData = await getJwt();
-        
-        if (jwtData.jwt) {
-          // Extract the real customer ID from the JWT token
-          const extractedCustomerId = extractCustomerIdFromJwt(jwtData.jwt);
-          const customerId = extractedCustomerId || jwtData.customerId;
-          console.log("Cleeng customer ID extracted:", customerId);
-          
-          return res.json({
-            jwt: jwtData.jwt,
-            refreshToken: jwtData.refreshToken,
-            customerId: customerId,
-            email: email
-          });
+      if (registerData.result || customerExists) {
+        if (registerData.result) {
+          await storePassword(newPassword);
+          console.log("New customer registered, password stored. Logging in via MediaStore...");
         }
         
-        // If SSO JWT fails, try using the customerToken from registration
-        if (registerData.result?.token) {
-          console.log("SSO JWT failed, using customerToken as fallback");
-          const extractedCustomerId = extractCustomerIdFromJwt(registerData.result.token);
-          const customerId = extractedCustomerId || registerData.result.customerId;
-          console.log("Cleeng customer ID from registration:", customerId);
+        const passwordToUse = registerData.result ? newPassword : newPassword;
+        
+        if (!customerExists) {
+          const loginData = await loginWithMediaStore(newPassword);
+          console.log("Cleeng MediaStore login (new customer):", JSON.stringify(loginData, null, 2));
           
-          return res.json({ 
-            jwt: registerData.result.token,
-            customerId: customerId,
-            email: email
-          });
+          const result = extractJwtFromLogin(loginData);
+          if (result) {
+            console.log("Cleeng customer ID from MediaStore login:", result.customerId);
+            return res.json({ ...result, email });
+          }
         }
         
-        // Last resort: generate customerToken via Core API
-        console.log("Trying generateCustomerToken...");
+        console.log("Customer exists, updating password via Core API 3.1...");
+        
         const tokenResponse = await fetch(`${CLEENG_CORE_API_URL}/3.0/json-rpc`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -273,43 +302,57 @@ export async function registerRoutes(
             method: "generateCustomerToken",
             params: {
               publisherToken: CLEENG_API_SECRET,
-              customerEmail: email
+              customerEmail: email,
             },
             jsonrpc: "2.0",
-            id: 1
+            id: 1,
           }),
         });
-        
         const tokenData = await tokenResponse.json();
-        console.log("Cleeng token generation response:", JSON.stringify(tokenData, null, 2));
+        const cleengCustomerId = tokenData.result?.customerId;
+        console.log("Cleeng customer ID for password update:", cleengCustomerId);
         
-        if (tokenData.result?.token) {
-          const extractedCustomerId = extractCustomerIdFromJwt(tokenData.result.token);
-          const customerId = extractedCustomerId || tokenData.result.customerId;
-          console.log("Cleeng customer ID from token generation:", customerId);
-          
-          return res.json({
-            jwt: tokenData.result.token,
-            customerId: customerId,
-            email: email
+        if (cleengCustomerId) {
+          const updateResponse = await fetch(`${CLEENG_CORE_API_URL}/3.1/customers/${cleengCustomerId}`, {
+            method: "PATCH",
+            headers: { 
+              "Content-Type": "application/json",
+              "X-Publisher-Token": CLEENG_API_SECRET,
+            },
+            body: JSON.stringify({ password: newPassword }),
           });
+          
+          const updateData = await updateResponse.json();
+          console.log("Cleeng password update response:", JSON.stringify(updateData, null, 2));
+          
+          if (updateData.success) {
+            await storePassword(newPassword);
+            
+            const loginData = await loginWithMediaStore(newPassword);
+            console.log("Cleeng MediaStore login after password update:", JSON.stringify(loginData, null, 2));
+            
+            const result = extractJwtFromLogin(loginData);
+            if (result) {
+              console.log("Cleeng customer ID from login:", result.customerId);
+              return res.json({ ...result, email });
+            }
+          }
         }
         
-        console.error("All token methods failed:", jwtData, tokenData);
+        console.error("Password update + login failed for existing customer");
         return res.status(400).json({ 
-          errors: ["Failed to generate authentication token"],
+          errors: ["Failed to authenticate with payment system. Please try again."],
         });
       }
       
-      // Some other registration error
       console.error("Cleeng registration error:", registerData);
       return res.status(400).json({ 
-        errors: [registerData.error?.message || "Registration failed"] 
+        errors: [registerData.error?.message || "Registration with payment system failed"] 
       });
       
     } catch (error) {
       console.error("Cleeng SSO error:", error);
-      res.status(500).json({ errors: ["SSO login failed"] });
+      res.status(500).json({ errors: ["Payment system login failed"] });
     }
   });
 
