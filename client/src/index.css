@@ -182,8 +182,8 @@ body {
 
 /* =====================================================
    Cleeng MediaStore SDK - Dark Theme Overrides
-   Matches the signup flow: black bg, white/[0.04] cards,
-   white/10 borders, rounded-2xl, Inter font
+   Netflix-style: clean stacked inputs, minimal borders,
+   black bg, white text, Inter font
    ===================================================== */
 
 /* --- Global resets --- */
@@ -199,14 +199,9 @@ body {
   color-scheme: dark !important;
 }
 
-/* --- SDK wrapper backgrounds transparent --- */
+/* --- All SDK wrappers: transparent backgrounds --- */
 .cleeng-checkout-container,
-.cleeng-checkout-container > div {
-  background-color: transparent !important;
-  background: transparent !important;
-  color: #d4d4d4 !important;
-}
-
+.cleeng-checkout-container > div,
 .cleeng-checkout-container .msd__checkout-wrapper,
 .cleeng-checkout-container .msd__payment,
 .cleeng-checkout-container .msd__payment__wrapper,
@@ -219,22 +214,21 @@ body {
 .cleeng-checkout-container .msd__capture,
 .cleeng-checkout-container .msd__custom-dropin--wrapper,
 .cleeng-checkout-container .msd__coupon-input__wrapper,
-.cleeng-checkout-container .msd__footer--transparent {
+.cleeng-checkout-container .msd__footer--transparent,
+.cleeng-checkout-container .msd__payment-method__wrapper,
+.cleeng-checkout-container > div > [class*="msd__"] {
   background-color: transparent !important;
   background: transparent !important;
   color: #d4d4d4 !important;
 }
 
-/* --- Checkout wrapper (main SDK container) --- */
 .cleeng-checkout-container .msd__checkout-wrapper {
-  background: transparent !important;
   padding: 0 !important;
 }
 
-/* --- Header / logo area --- */
+/* --- Hide SDK header/logo (we show our own) --- */
 .cleeng-checkout-container .msd__header,
 .cleeng-checkout-container .msd__header__logo {
-  background: transparent !important;
   display: none !important;
 }
 
@@ -258,7 +252,7 @@ body {
   color: #9ca3af !important;
 }
 
-/* Scoped div color for known SDK layout divs */
+/* Scoped div color for known SDK layout containers */
 .cleeng-checkout-container .msd__checkout-wrapper div,
 .cleeng-checkout-container .msd__payment div,
 .cleeng-checkout-container .msd__consents div,
@@ -266,23 +260,23 @@ body {
   color: #d4d4d4 !important;
 }
 
-/* --- Checkout card (order summary) --- */
+/* --- Checkout card / offer card (order summary) --- */
 .cleeng-checkout-container .msd__checkout-card,
 .cleeng-checkout-container .msd__offer-card,
 .cleeng-checkout-container [class*="msd__checkout-card"] {
-  background-color: rgba(255, 255, 255, 0.06) !important;
-  background: rgba(255, 255, 255, 0.06) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  border-radius: 1rem !important;
-  padding: 1.25rem !important;
+  background-color: transparent !important;
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 0.5rem !important;
+  padding: 1rem 1.25rem !important;
   color: #eaeaea !important;
 }
 
 .cleeng-checkout-container .msd__checkout-card__title,
 .cleeng-checkout-container .msd__checkout-card-text__title {
   color: #ffffff !important;
-  font-weight: 700 !important;
-  font-size: 1.125rem !important;
+  font-weight: 600 !important;
+  font-size: 0.9375rem !important;
 }
 
 .cleeng-checkout-container .msd__checkout-card__description,
@@ -305,7 +299,7 @@ body {
 .cleeng-checkout-container .msd__subscription-price__currency,
 .cleeng-checkout-container .msd__subscription-price__period {
   color: #ffffff !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
 }
 
 .cleeng-checkout-container .msd__price-summary {
@@ -331,10 +325,10 @@ body {
 
 /* --- Info box / step indicators --- */
 .cleeng-checkout-container .msd__info-box {
-  background-color: rgba(255, 255, 255, 0.04) !important;
-  background: rgba(255, 255, 255, 0.04) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  border-radius: 0.75rem !important;
+  background-color: transparent !important;
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 0.5rem !important;
 }
 
 .cleeng-checkout-container .msd__info-box__title {
@@ -349,27 +343,13 @@ body {
   filter: brightness(0) invert(1) !important;
 }
 
-/* --- Section header (step numbers) --- */
+/* --- Section header --- */
 .cleeng-checkout-container .msd__section-header {
   color: #ffffff !important;
   font-weight: 600 !important;
 }
 
-/* --- Payment method wrapper --- */
-.cleeng-checkout-container .msd__payment,
-.cleeng-checkout-container .msd__payment__wrapper,
-.cleeng-checkout-container .msd__payment__adyen {
-  background: transparent !important;
-}
-
-.cleeng-checkout-container .msd__payment-method__wrapper {
-  background-color: rgba(255, 255, 255, 0.04) !important;
-  background: rgba(255, 255, 255, 0.04) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  border-radius: 0.75rem !important;
-  padding: 1rem !important;
-}
-
+/* --- Payment method name --- */
 .cleeng-checkout-container .msd__payment-method__name,
 .cleeng-checkout-container .msd__payment-method__nameWrapper {
   color: #ffffff !important;
@@ -381,23 +361,13 @@ body {
   color: #9ca3af !important;
 }
 
-.cleeng-checkout-container .msd__payment-method__button {
-  color: #ffffff !important;
-  border-color: rgba(255, 255, 255, 0.2) !important;
-}
-
-/* --- Custom drop-in (payment selection) --- */
-.cleeng-checkout-container .msd__custom-dropin--wrapper,
-.cleeng-checkout-container [class*="msd__custom-dropin"] {
-  background: transparent !important;
-}
-
+/* --- Custom drop-in --- */
 .cleeng-checkout-container .msd__custom-dropin-title,
 .cleeng-checkout-container .msd__custom-dropin-text {
   color: #ffffff !important;
 }
 
-/* --- Inputs (SDK internal) --- */
+/* --- Inputs: Netflix-style clean bordered fields --- */
 .cleeng-checkout-container .msd__input,
 .cleeng-checkout-container .msd__select,
 .cleeng-checkout-container .msd__input__wrapper input,
@@ -405,13 +375,14 @@ body {
 .cleeng-checkout-container input:not([type="checkbox"]):not([type="radio"]),
 .cleeng-checkout-container select,
 .cleeng-checkout-container textarea {
-  background-color: rgba(255, 255, 255, 0.1) !important;
-  background: rgba(255, 255, 255, 0.1) !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  border-radius: 0.5rem !important;
+  background-color: transparent !important;
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  border-radius: 0.25rem !important;
   color: #ffffff !important;
-  padding: 0.75rem 1rem !important;
-  font-size: 0.875rem !important;
+  padding: 0.875rem 1rem !important;
+  font-size: 0.9375rem !important;
+  width: 100% !important;
   transition: border-color 0.2s ease !important;
 }
 
@@ -423,8 +394,8 @@ body {
 .cleeng-checkout-container .msd__input__label,
 .cleeng-checkout-container .msd__account-input__label {
   color: #9ca3af !important;
-  font-size: 0.875rem !important;
-  font-weight: 500 !important;
+  font-size: 0.8125rem !important;
+  font-weight: 400 !important;
 }
 
 .cleeng-checkout-container input:focus,
@@ -432,7 +403,7 @@ body {
 .cleeng-checkout-container textarea:focus {
   border-color: #ffffff !important;
   outline: none !important;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.15) !important;
+  box-shadow: none !important;
 }
 
 /* --- Buttons --- */
@@ -473,25 +444,19 @@ body {
 .cleeng-checkout-container .msd__coupon-input__wrapper,
 .cleeng-checkout-container .msd__coupon-input__wrapper--inner {
   background: transparent !important;
-  border-color: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
 }
 
 .cleeng-checkout-container .msd__coupon-input__input {
-  background-color: rgba(255, 255, 255, 0.1) !important;
-  background: rgba(255, 255, 255, 0.1) !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  border-radius: 0.5rem !important;
+  background-color: transparent !important;
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  border-radius: 0.25rem !important;
   color: #ffffff !important;
 }
 
-.cleeng-checkout-container .msd__coupon-input__close {
-  color: #9ca3af !important;
-}
-
-.cleeng-checkout-container .msd__coupon-input__message {
-  color: #9ca3af !important;
-}
-
+.cleeng-checkout-container .msd__coupon-input__close,
+.cleeng-checkout-container .msd__coupon-input__message,
 .cleeng-checkout-container .msd__price-coupon__note {
   color: #9ca3af !important;
 }
@@ -500,13 +465,7 @@ body {
   color: #ef4444 !important;
 }
 
-/* --- Consents (checkboxes / terms) --- */
-.cleeng-checkout-container .msd__consents,
-.cleeng-checkout-container .msd__consents__wrapper,
-.cleeng-checkout-container .msd__consents__list {
-  background: transparent !important;
-}
-
+/* --- Consents --- */
 .cleeng-checkout-container .msd__consents__title {
   color: #ffffff !important;
   font-weight: 600 !important;
@@ -540,7 +499,7 @@ body {
   padding: 0 !important;
 }
 
-/* --- Error states --- */
+/* --- Error / Success states --- */
 .cleeng-checkout-container .msd__error,
 .cleeng-checkout-container .msd__error-page,
 .cleeng-checkout-container .msd__checkout-card__message--error,
@@ -552,7 +511,6 @@ body {
   color: #ef4444 !important;
 }
 
-/* --- Success states --- */
 .cleeng-checkout-container .msd__message--success,
 .cleeng-checkout-container .msd__form__message--success {
   color: #22c55e !important;
@@ -560,10 +518,10 @@ body {
 
 /* --- Message box --- */
 .cleeng-checkout-container .msd__message-box {
-  background-color: rgba(255, 255, 255, 0.04) !important;
-  background: rgba(255, 255, 255, 0.04) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  border-radius: 0.75rem !important;
+  background-color: transparent !important;
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 0.5rem !important;
 }
 
 .cleeng-checkout-container .msd__message-box__text {
@@ -585,7 +543,7 @@ body {
   color: rgba(255, 255, 255, 0.8) !important;
 }
 
-/* --- Footer (Powered by Cleeng etc) --- */
+/* --- Footer --- */
 .cleeng-checkout-container .msd__footer--transparent,
 .cleeng-checkout-container [class*="footer"],
 .cleeng-checkout-container [class*="Footer"] {
@@ -598,7 +556,7 @@ body {
   font-size: 0.75rem !important;
 }
 
-/* --- Spinner / Skeleton loader --- */
+/* --- Spinner / Skeleton --- */
 .cleeng-checkout-container .msd__spinner {
   border-color: rgba(255, 255, 255, 0.1) !important;
   border-top-color: #ffffff !important;
@@ -633,21 +591,21 @@ body {
 }
 
 /* =====================================================
-   Adyen payment form dark overrides
+   Adyen payment form - Netflix-style clean inputs
    ===================================================== */
 .cleeng-checkout-container .adyen-checkout__payment-method {
-  background-color: rgba(255, 255, 255, 0.04) !important;
-  background: rgba(255, 255, 255, 0.04) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  border-radius: 0.75rem !important;
-  margin-bottom: 0.5rem !important;
+  background-color: transparent !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  margin-bottom: 0 !important;
   color: #eaeaea !important;
 }
 
 .cleeng-checkout-container .adyen-checkout__payment-method--selected {
-  background-color: rgba(255, 255, 255, 0.08) !important;
-  background: rgba(255, 255, 255, 0.08) !important;
-  border-color: rgba(255, 255, 255, 0.2) !important;
+  background-color: transparent !important;
+  background: transparent !important;
+  border-color: transparent !important;
 }
 
 .cleeng-checkout-container .adyen-checkout__payment-method__header {
@@ -661,22 +619,25 @@ body {
 
 .cleeng-checkout-container .adyen-checkout__label__text {
   color: #9ca3af !important;
-  font-size: 0.875rem !important;
-  font-weight: 500 !important;
+  font-size: 0.8125rem !important;
+  font-weight: 400 !important;
 }
 
+/* Adyen inputs: clean bordered, transparent bg, stacked */
 .cleeng-checkout-container .adyen-checkout__input {
-  background-color: rgba(255, 255, 255, 0.1) !important;
-  background: rgba(255, 255, 255, 0.1) !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  border-radius: 0.5rem !important;
+  background-color: transparent !important;
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  border-radius: 0.25rem !important;
   color: #ffffff !important;
+  padding: 0.875rem 1rem !important;
+  font-size: 0.9375rem !important;
 }
 
 .cleeng-checkout-container .adyen-checkout__input--focus,
 .cleeng-checkout-container .adyen-checkout__input:focus {
   border-color: #ffffff !important;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.15) !important;
+  box-shadow: none !important;
 }
 
 .cleeng-checkout-container .adyen-checkout__input--error {
@@ -713,7 +674,7 @@ body {
   color: #ef4444 !important;
 }
 
-/* Adyen card input iframe backgrounds */
+/* Adyen card form transparent backgrounds */
 .cleeng-checkout-container .adyen-checkout__card__form,
 .cleeng-checkout-container .adyen-checkout__field,
 .cleeng-checkout-container .adyen-checkout__card__exp-cvc,
@@ -723,16 +684,16 @@ body {
 
 /* Adyen dropdown */
 .cleeng-checkout-container .adyen-checkout__dropdown__button {
-  background-color: rgba(255, 255, 255, 0.1) !important;
-  background: rgba(255, 255, 255, 0.1) !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  background-color: transparent !important;
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
   color: #ffffff !important;
 }
 
 .cleeng-checkout-container .adyen-checkout__dropdown__list {
   background-color: #1a1a1a !important;
   background: #1a1a1a !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
 }
 
 .cleeng-checkout-container .adyen-checkout__dropdown__element {
@@ -743,20 +704,14 @@ body {
   background-color: rgba(255, 255, 255, 0.1) !important;
 }
 
-/* Adyen stored payment card details */
+/* Adyen stored payment details */
 .cleeng-checkout-container .adyen-checkout__payment-method__details {
   background: transparent !important;
 }
 
-/* Adyen brand logo icons - ensure visibility on dark bg */
+/* Adyen brand logo icons */
 .cleeng-checkout-container .adyen-checkout__payment-method__image__wrapper {
   background: rgba(255, 255, 255, 0.9) !important;
   border-radius: 4px !important;
   padding: 2px !important;
-}
-
-/* Targeted override for SDK's own top-level wrapper divs */
-.cleeng-checkout-container > div > [class*="msd__"] {
-  background-color: transparent !important;
-  background: transparent !important;
 }
