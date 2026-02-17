@@ -148,3 +148,25 @@ export function getCleengCheckoutUrl(orderId: string | number, publisherId: stri
     : "https://checkout.cleeng.com";
   return `${baseUrl}/?orderId=${orderId}&publisherId=${publisherId}`;
 }
+
+export interface TaxInfo {
+  taxRate: number;
+  taxAmount: number;
+  priceExclTax: number;
+  priceInclTax: number;
+  currency: string;
+}
+
+export async function getTaxInfo(offerId: string): Promise<TaxInfo | null> {
+  try {
+    const response = await fetch("/api/cleeng/tax", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ offerId }),
+    });
+    if (!response.ok) return null;
+    return response.json();
+  } catch {
+    return null;
+  }
+}

@@ -176,7 +176,7 @@ export async function registerRoutes(
         return res.status(400).json({ errors: ["Email is required"] });
       }
       
-      console.log("Cleeng SSO request for email:", email);
+      console.log("Cleeng SSO request for email:", email, "firstName:", firstName, "lastName:", lastName);
       
       // Generate a secure random password for SSO customers
       const randomPassword = `SSO_${crypto.randomUUID()}_${Date.now()}!`;
@@ -557,15 +557,24 @@ export async function registerRoutes(
     }
   });
 
+  // Tax calculation endpoint - gets offer details with IP-based tax from Cleeng
   app.post("/api/cleeng/tax", async (req, res) => {
     try {
       const { offerId } = req.body;
+
       if (!offerId) {
         return res.status(400).json({ error: "Offer ID is required" });
       }
 
+      if (!CLEENG_API_SECRET) {
+        return res.status(500).json({ error: "Cleeng API not configured" });
+      }
+
       const clientIp = (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim()
-        || req.socket.remoteAddress || "";
+        || req.socket.remoteAddress
+        || "";
+
+      console.log("Tax calculation request - offerId:", offerId, "clientIp:", clientIp);
 
       const response = await fetch(`${CLEENG_CORE_API_URL}/3.0/json-rpc`, {
         method: "POST",
@@ -574,8 +583,8 @@ export async function registerRoutes(
           method: "getOfferDetails",
           params: {
             publisherToken: CLEENG_API_SECRET,
-            offerId,
-            ipAddress: clientIp,
+            offerId: offerId,
+            customerIP: clientIp,
           },
           jsonrpc: "2.0",
           id: 1,
@@ -583,32 +592,32 @@ export async function registerRoutes(
       });
 
       const data = await response.json();
+      console.log("Cleeng tax/offer response:", JSON.stringify(data, null, 2));
 
       if (data.error) {
-        return res.status(400).json({ error: data.error.message || "Failed to get tax info" });
+        return res.status(400).json({ error: data.error.message || "Failed to get offer details" });
       }
 
       const result = data.result;
       if (result) {
-        const taxRate = result.applicableTaxRate || 0;
-        const priceExclTax = result.customerPriceExclTax ?? result.offerPrice;
-        const priceInclTax = result.customerPriceInclTax ?? priceExclTax;
+        const priceExclTax = result.customerPriceExclTax ?? result.offerPrice ?? 0;
+        const priceInclTax = result.customerPriceInclTax ?? result.offerPrice ?? 0;
         const taxAmount = priceInclTax - priceExclTax;
+        const taxRate = result.taxRate ?? 0;
 
         res.json({
           taxRate,
-          taxAmount: Math.round(taxAmount * 100) / 100,
-          priceExclTax,
-          priceInclTax,
+          taxAmount: Math.max(0, parseFloat(taxAmount.toFixed(2))),
+          priceExclTax: parseFloat(priceExclTax.toFixed(2)),
+          priceInclTax: parseFloat(priceInclTax.toFixed(2)),
           currency: result.customerCurrency || result.offerCurrency || "USD",
-          country: result.customerCountry || "US",
         });
       } else {
-        res.status(400).json({ error: "Unable to determine tax" });
+        res.status(400).json({ error: "No offer details returned" });
       }
     } catch (error) {
-      console.error("Tax lookup error:", error);
-      res.status(500).json({ error: "Failed to get tax information" });
+      console.error("Tax calculation error:", error);
+      res.status(500).json({ error: "Failed to calculate tax" });
     }
   });
 

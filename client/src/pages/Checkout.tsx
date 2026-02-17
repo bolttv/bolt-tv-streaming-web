@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { ArrowLeft, Check, CreditCard, Loader2, AlertCircle, Lock, Tag, X } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
-import { getOffers, CleengOffer, formatPrice } from "@/lib/cleeng";
+import { getOffers, CleengOffer, formatPrice, getTaxInfo, TaxInfo } from "@/lib/cleeng";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
 function luhnCheck(cardNumber: string): boolean {
@@ -87,9 +87,11 @@ export default function Checkout() {
   const [promoError, setPromoError] = useState<string | null>(null);
   const [appliedPromo, setAppliedPromo] = useState<{ code: string; discount: any } | null>(null);
 
-  const [taxInfo, setTaxInfo] = useState<{ taxRate: number; taxAmount: number; priceExclTax: number; priceInclTax: number; currency: string } | null>(null);
+  const [taxInfo, setTaxInfo] = useState<TaxInfo | null>(null);
+  const [taxLoading, setTaxLoading] = useState(false);
 
   const offerId = new URLSearchParams(window.location.search).get("offerId");
+  const showTax = taxInfo && (taxInfo.taxAmount > 0 || taxInfo.priceInclTax > taxInfo.priceExclTax);
 
   useEffect(() => {
     if (authLoading) {
@@ -124,19 +126,6 @@ export default function Checkout() {
         if (selectedOffer) {
           setOffer(selectedOffer);
           localStorage.removeItem("pending_checkout_offer");
-
-          fetch("/api/cleeng/tax", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ offerId }),
-          })
-            .then(r => r.json())
-            .then(data => {
-              if (data.taxAmount > 0 || (data.priceInclTax > data.priceExclTax)) {
-                setTaxInfo(data);
-              }
-            })
-            .catch(() => {});
         } else {
           setError("Offer not found");
         }
@@ -149,6 +138,27 @@ export default function Checkout() {
 
     fetchOffer();
   }, [offerId, isAuthenticated, isLinking, authLoading, user, setLocation]);
+
+  useEffect(() => {
+    if (!offer || !offerId) return;
+
+    const fetchTax = async () => {
+      setTaxLoading(true);
+      try {
+        const resolvedOfferId = offer.longId || offer.id || offerId;
+        const info = await getTaxInfo(resolvedOfferId);
+        if (info) {
+          setTaxInfo(info);
+        }
+      } catch (err) {
+        console.error("Failed to fetch tax info:", err);
+      } finally {
+        setTaxLoading(false);
+      }
+    };
+
+    fetchTax();
+  }, [offer, offerId]);
 
   const formatCardNumber = (value: string) => {
     const v = value.replace(/\s+/g, "").replace(/[^0-9]/gi, "");
@@ -400,6 +410,13 @@ export default function Checkout() {
 
   const hasFieldErrors = Object.values(cardErrors).some(e => !!e);
 
+  const displayCurrency = taxInfo?.currency || offer?.price.currency || "USD";
+  const subtotalPrice = appliedPromo?.discount?.discountedPrice ?? (taxInfo?.priceExclTax ?? offer?.price.amount ?? 0);
+  const taxAmount = taxInfo?.taxAmount ?? 0;
+  const totalPrice = showTax
+    ? subtotalPrice + taxAmount
+    : (appliedPromo?.discount?.discountedPrice ?? offer?.price.amount ?? 0);
+
   return (
     <div className="min-h-screen bg-black text-white">
       <div className="container mx-auto px-4 py-8">
@@ -566,7 +583,7 @@ export default function Checkout() {
                     <Lock className="w-4 h-4" />
                     {offer?.freeDays && offer.freeDays > 0 
                       ? `Start ${offer.freeDays}-Day Free Trial`
-                      : `Subscribe - ${offer ? formatPrice(offer.price.amount, offer.price.currency) : ""}`
+                      : `Subscribe - ${formatPrice(totalPrice, displayCurrency)}`
                     }
                   </>
                 )}
@@ -605,26 +622,52 @@ export default function Checkout() {
                       )}
                     </div>
 
-                    {taxInfo && !(offer.freeDays && offer.freeDays > 0) && (
-                      <>
-                        <div className="flex justify-between items-center py-2 border-b border-gray-800">
+                    <div className="space-y-2 mb-2">
+                      {(showTax || appliedPromo) && (
+                        <div className="flex justify-between items-center text-sm">
                           <span className="text-gray-400">Subtotal</span>
-                          <span className="font-medium">
-                            {appliedPromo?.discount?.discountedPrice !== undefined
-                              ? formatPrice(appliedPromo.discount.discountedPrice, offer.price.currency)
-                              : formatPrice(taxInfo.priceExclTax, taxInfo.currency)}
+                          <span className="text-gray-300">
+                            {appliedPromo ? (
+                              <>
+                                <span className="line-through text-gray-500 mr-2">
+                                  {formatPrice(taxInfo?.priceExclTax ?? offer.price.amount, displayCurrency)}
+                                </span>
+                                {formatPrice(appliedPromo.discount.discountedPrice, displayCurrency)}
+                              </>
+                            ) : (
+                              formatPrice(taxInfo?.priceExclTax ?? offer.price.amount, displayCurrency)
+                            )}
                           </span>
                         </div>
-                        <div className="flex justify-between items-center py-2 border-b border-gray-800">
+                      )}
+
+                      {showTax && (
+                        <div className="flex justify-between items-center text-sm">
                           <span className="text-gray-400">
-                            Tax{taxInfo.taxRate > 0 ? ` (${taxInfo.taxRate}%)` : ""}
+                            Tax{taxInfo?.taxRate ? ` (${(taxInfo.taxRate * 100).toFixed(1)}%)` : ""}
                           </span>
-                          <span className="font-medium">
-                            {formatPrice(taxInfo.taxAmount, taxInfo.currency)}
+                          <span className="text-gray-300">
+                            {taxLoading ? (
+                              <Loader2 className="w-3 h-3 animate-spin inline" />
+                            ) : (
+                              formatPrice(taxAmount, displayCurrency)
+                            )}
                           </span>
                         </div>
-                      </>
-                    )}
+                      )}
+
+                      {appliedPromo && !showTax && (
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-gray-400">Discount ({appliedPromo.discount.discountPercent}%)</span>
+                          <span className="text-green-400">
+                            -{formatPrice(
+                              (taxInfo?.priceExclTax ?? offer.price.amount) - appliedPromo.discount.discountedPrice,
+                              displayCurrency
+                            )}
+                          </span>
+                        </div>
+                      )}
+                    </div>
 
                     <div className="flex justify-between items-center py-3 border-t border-gray-700">
                       <span className="text-gray-400">
@@ -633,24 +676,16 @@ export default function Checkout() {
                       <span className="text-2xl font-bold">
                         {offer.freeDays && offer.freeDays > 0 ? (
                           "$0.00"
-                        ) : taxInfo ? (
-                          appliedPromo?.discount?.discountedPrice !== undefined
-                            ? formatPrice(
-                                appliedPromo.discount.discountedPrice + taxInfo.taxAmount,
-                                offer.price.currency
-                              )
-                            : formatPrice(taxInfo.priceInclTax, taxInfo.currency)
                         ) : (
-                          appliedPromo?.discount?.discountedPrice !== undefined
-                            ? formatPrice(appliedPromo.discount.discountedPrice, offer.price.currency)
-                            : formatPrice(offer.price.amount, offer.price.currency)
+                          formatPrice(totalPrice, displayCurrency)
                         )}
                       </span>
                     </div>
 
                     {offer.freeDays && offer.freeDays > 0 && (
                       <p className="text-xs text-gray-500 mt-2">
-                        Then {formatPrice(offer.price.amount, offer.price.currency)}/{offer.billingCycle?.periodUnit || "month"} after trial ends
+                        Then {formatPrice(showTax ? (taxInfo?.priceInclTax ?? offer.price.amount) : offer.price.amount, displayCurrency)}/{offer.billingCycle?.periodUnit || "month"} after trial ends
+                        {showTax && " (tax included)"}
                       </p>
                     )}
                   </>
