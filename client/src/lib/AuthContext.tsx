@@ -209,9 +209,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signUp = async (email: string, password: string, profileData?: { firstName?: string; lastName?: string; gender?: string; birthYear?: string; zipCode?: string }): Promise<{ success: boolean; error?: string; existingUser?: boolean }> => {
     try {
+      const metadata: Record<string, string | boolean> = { password_set: true };
+      if (profileData?.firstName) metadata.first_name = profileData.firstName;
+      if (profileData?.lastName) metadata.last_name = profileData.lastName;
+      if (profileData?.gender) metadata.gender = profileData.gender;
+      if (profileData?.birthYear) metadata.birth_year = profileData.birthYear;
+      if (profileData?.zipCode) metadata.zip_code = profileData.zipCode;
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
+        options: { data: metadata },
       });
 
       if (error) {
@@ -221,7 +229,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         if (error.message.toLowerCase().includes("database error")) {
           console.error("Supabase signup database error:", error.message);
-          return { success: false, error: "Database error saving new user. Please try again." };
+          return { success: false, error: "Unable to create account. Please try again." };
         }
         return { success: false, error: error.message };
       }
@@ -234,16 +242,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(data.session);
         setUser(data.session.user);
         setAuthStep("authenticated");
-
-        const metadataToSave: Record<string, string | boolean> = { password_set: true };
-        if (profileData?.firstName) metadataToSave.first_name = profileData.firstName;
-        if (profileData?.lastName) metadataToSave.last_name = profileData.lastName;
-        if (profileData?.gender) metadataToSave.gender = profileData.gender;
-        if (profileData?.birthYear) metadataToSave.birth_year = profileData.birthYear;
-        if (profileData?.zipCode) metadataToSave.zip_code = profileData.zipCode;
-
-        supabase.auth.updateUser({ data: metadataToSave })
-          .catch((err) => console.error("Failed to save profile metadata:", err));
       }
 
       return { success: true };
