@@ -217,9 +217,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             password_set: true,
             first_name: profileData?.firstName || undefined,
             last_name: profileData?.lastName || undefined,
-            gender: profileData?.gender || undefined,
-            birth_year: profileData?.birthYear || undefined,
-            zip_code: profileData?.zipCode || undefined,
           },
         },
       });
@@ -228,6 +225,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (error.message.toLowerCase().includes("already registered") || 
             error.message.toLowerCase().includes("user already exists")) {
           return { success: false, error: "An account with this email already exists. Please sign in instead.", existingUser: true };
+        }
+        if (error.message.toLowerCase().includes("database error")) {
+          console.error("Supabase signup database error (likely missing profile columns):", error.message);
+          return { success: false, error: "Database error saving new user" };
         }
         return { success: false, error: error.message };
       }
@@ -240,6 +241,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(data.session);
         setUser(data.session.user);
         setAuthStep("authenticated");
+
+        if (profileData?.gender || profileData?.birthYear || profileData?.zipCode) {
+          supabase.auth.updateUser({
+            data: {
+              gender: profileData.gender || undefined,
+              birth_year: profileData.birthYear || undefined,
+              zip_code: profileData.zipCode || undefined,
+            },
+          }).catch((err) => console.error("Failed to save extra profile metadata:", err));
+        }
       }
 
       return { success: true };
