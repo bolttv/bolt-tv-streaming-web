@@ -44,12 +44,14 @@ function mapOffersToPlan(offers: CleengOffer[]): PricingPlan[] {
   });
 }
 
-type Step = "plan" | "account";
+type Step = "account" | "plan";
 
 export default function Subscribe() {
   const [, setLocation] = useLocation();
   const { isAuthenticated, authStep, signUp } = useAuth();
-  const [step, setStep] = useState<Step>("plan");
+  const [step, setStep] = useState<Step>(() => {
+    return isAuthenticated ? "plan" : "account";
+  });
   const [plans, setPlans] = useState<PricingPlan[]>([]);
   const [billingPeriod, setBillingPeriod] = useState<"month" | "year">("month");
   const [selectedPlan, setSelectedPlan] = useState<string>("");
@@ -79,6 +81,8 @@ export default function Subscribe() {
       const pendingOffer = localStorage.getItem("pending_checkout_offer");
       if (pendingOffer) {
         setLocation(`/checkout?offerId=${encodeURIComponent(pendingOffer)}`);
+      } else {
+        setStep("plan");
       }
     }
   }, [isAuthenticated, authStep, setLocation]);
@@ -131,16 +135,8 @@ export default function Subscribe() {
       return;
     }
 
-    if (isAuthenticated && authStep === "authenticated") {
-      localStorage.setItem("pending_checkout_offer", selectedPlanData.offerId);
-      setLocation(`/checkout?offerId=${encodeURIComponent(selectedPlanData.offerId)}`);
-      return;
-    }
-
     localStorage.setItem("pending_checkout_offer", selectedPlanData.offerId);
-    
-    setStep("account");
-    setError(null);
+    setLocation(`/checkout?offerId=${encodeURIComponent(selectedPlanData.offerId)}`);
   };
 
   const handleCreateAccount = async (e: React.FormEvent) => {
@@ -181,12 +177,8 @@ export default function Subscribe() {
     });
     
     if (result.success) {
-      const pendingOffer = localStorage.getItem("pending_checkout_offer");
-      if (pendingOffer) {
-        setLocation(`/checkout?offerId=${encodeURIComponent(pendingOffer)}`);
-      } else {
-        setLocation("/home");
-      }
+      setStep("plan");
+      setError(null);
     } else if (result.existingUser) {
       setError("An account with this email already exists. Please sign in instead.");
     } else {
@@ -197,8 +189,8 @@ export default function Subscribe() {
   };
 
   const handleBack = () => {
-    if (step === "account") {
-      setStep("plan");
+    if (step === "plan") {
+      setStep("account");
     }
     setError(null);
   };
@@ -211,7 +203,7 @@ export default function Subscribe() {
           <span>Back to Home</span>
         </Link>
         
-        {step !== "plan" && (
+        {step === "account" && (
           <Link href="/login" className="text-white hover:text-white/80 font-medium">
             Sign In
           </Link>
@@ -345,17 +337,8 @@ export default function Subscribe() {
           </>
         )}
 
-        {step === "account" && (
+        {step === "account" && !isAuthenticated && (
           <div className="max-w-md mx-auto">
-            <button
-              onClick={handleBack}
-              className="flex items-center gap-2 text-white hover:text-white/80 transition mb-8 cursor-pointer"
-              data-testid="button-back-step"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to plans
-            </button>
-
             <div className="text-center mb-8">
               <img 
                 src="/assets/bolt-logo-white.png" 
