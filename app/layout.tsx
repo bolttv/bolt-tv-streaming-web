@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 
@@ -41,8 +40,6 @@ export default function RootLayout({
       </head>
       <body suppressHydrationWarning>
         <Providers>{children}</Providers>
-        <Script src="https://cdn.jwplayer.com/libraries/EBg26wOK.js" strategy="afterInteractive" />
-        <Script src="https://widgets.prod.cleeng.com/cleeng.js" strategy="lazyOnload" />
       </body>
     </html>
   );

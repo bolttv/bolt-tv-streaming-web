@@ -6,11 +6,21 @@ import { queryClient } from "@/lib/queryClient";
 import { AuthProvider } from "@/lib/auth-context";
 import { Toaster } from "@/components/ui/toaster";
 
+function loadScript(src: string) {
+  if (document.querySelector(`script[src="${src}"]`)) return;
+  const script = document.createElement("script");
+  script.src = src;
+  script.async = true;
+  document.body.appendChild(script);
+}
+
 export function Providers({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+    loadScript("https://cdn.jwplayer.com/libraries/EBg26wOK.js");
+    loadScript("https://widgets.prod.cleeng.com/cleeng.js");
   }, []);
 
   if (!mounted) {
