@@ -40,16 +40,9 @@ export default function RootLayout({
         />
       </head>
       <body suppressHydrationWarning>
-        <Script
-          src="https://cdn.jwplayer.com/libraries/EBg26wOK.js"
-          strategy="afterInteractive"
-        />
-        <Script
-          src="https://widgets.prod.cleeng.com/cleeng.js"
-          strategy="afterInteractive"
-          type="module"
-        />
         <Providers>{children}</Providers>
+        <Script src="https://cdn.jwplayer.com/libraries/EBg26wOK.js" strategy="afterInteractive" />
+        <Script src="https://widgets.prod.cleeng.com/cleeng.js" strategy="lazyOnload" />
       </body>
     </html>
   );

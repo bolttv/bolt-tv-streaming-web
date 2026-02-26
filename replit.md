@@ -142,8 +142,11 @@ hooks/
   - Environment variables: `JWPLAYER_SITE_ID`, `JWPLAYER_API_SECRET`, `JWPLAYER_PLAYER_KEY`
 
 ### Deployment
-- **Replit**: Production build with `next build`, served with `next start --port 5000`
+- **Build**: `NODE_OPTIONS='--max-old-space-size=2048' npx next build` (run manually from bash if .next/ is missing)
+- **Serve**: `bash start.sh` (uses `node server.mjs` custom server on port 5000)
+- **Custom Server**: `server.mjs` — ESM Node.js HTTP server wrapping Next.js request handler
 - **Health check**: `/api/health`
+- **Note**: Build requires ~5GB peak memory. Run build from bash, not from workflow, to avoid OOM.
 - **Required env vars**: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `JWPLAYER_SITE_ID`, `JWPLAYER_API_SECRET`
 - **Optional**: `CLEENG_PUBLISHER_ID`, `CLEENG_API_SECRET`, `CLEENG_SANDBOX`, `JWPLAYER_PLAYER_KEY`
 

@@ -38,13 +38,13 @@ args = "Start application"
 name = "Start application"
 author = "agent"
 
-[workflows.workflow.metadata]
-outputType = "webview"
-
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "NEXT_TELEMETRY_DISABLED=1 NODE_OPTIONS='--max-old-space-size=2048' npx next build && npx next start --port 5000"
+args = "bash start.sh"
 waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
 
 [agent]
 stack = "MOCKUP_JS"

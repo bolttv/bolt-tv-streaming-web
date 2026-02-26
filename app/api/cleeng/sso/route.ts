@@ -19,7 +19,7 @@ const extractCustomerIdFromJwt = (jwt: string): string | null => {
     const decoded = Buffer.from(payload, "base64url").toString("utf-8");
     const data = JSON.parse(decoded);
     const customerId = data.customerId || data.cid || data.sub || data.customer_id;
-    console.log("Decoded JWT - customerId:", customerId || "not found");
+    
     return customerId ? String(customerId) : null;
   } catch (error) {
     console.error("Error decoding JWT:", error);
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ errors: ["Email is required"] }, { status: 400 });
     }
 
-    console.log("Cleeng SSO request for email:", email, "firstName:", firstName, "lastName:", lastName);
+    console.log("Cleeng SSO request received");
 
     const generatePassword = () =>
       `CL_${crypto.randomUUID().replace(/-/g, "").slice(0, 20)}!A1`;
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
 
     const storePassword = async (password: string) => {
       if (!supabaseAdmin) {
-        console.log("No supabaseAdmin client, cannot store password");
+        console.log("No supabaseAdmin client available");
         return;
       }
       await supabaseAdmin
@@ -93,7 +93,6 @@ export async function POST(request: NextRequest) {
 
       const result = extractJwtFromLogin(loginData);
       if (result) {
-        console.log("Cleeng customer ID from MediaStore login:", result.customerId);
         return NextResponse.json({ ...result, email });
       }
       console.log("Stored password login failed, will try re-registering...");
@@ -142,11 +141,10 @@ export async function POST(request: NextRequest) {
 
       if (!customerExists) {
         const loginData = await loginWithMediaStore(newPassword);
-        console.log("Cleeng MediaStore login (new customer):", JSON.stringify(loginData, null, 2));
+        console.log("Cleeng MediaStore login (new customer): received");
 
         const result = extractJwtFromLogin(loginData);
         if (result) {
-          console.log("Cleeng customer ID from MediaStore login:", result.customerId);
           return NextResponse.json({ ...result, email });
         }
       }
@@ -168,7 +166,7 @@ export async function POST(request: NextRequest) {
       });
       const tokenData = await tokenResponse.json();
       const cleengCustomerId = tokenData.result?.customerId;
-      console.log("Cleeng customer ID for password update:", cleengCustomerId);
+      
 
       if (cleengCustomerId) {
         const updateResponse = await fetch(
@@ -194,7 +192,7 @@ export async function POST(request: NextRequest) {
 
           const result = extractJwtFromLogin(loginData);
           if (result) {
-            console.log("Cleeng customer ID from login:", result.customerId);
+            
             return NextResponse.json({ ...result, email });
           }
         }
