@@ -1,0 +1,48 @@
+TASK: Fix Next.js Hydration Error #418
+
+I'm getting hydration mismatch errors after migrating from Vite to Next.js. 
+
+DIAGNOSE BY CHECKING THESE COMMON CAUSES IN ORDER:
+
+1. INVALID HTML NESTING — Search the entire codebase for:
+   - <p> tags wrapping <div>, <p>, <ul>, <ol>, or other block elements
+   - <a> tags nested inside other <a> tags
+   - <button> inside <button>
+   - Any Radix/shadcn component that renders a <p> or <button> being wrapped in another <p> or <button>
+   Fix: Change outer <p> to <div> or <span> as appropriate
+
+2. BROWSER-ONLY CODE IN SERVER COMPONENTS — Search for any component WITHOUT "use client" that references:
+   - window
+   - document
+   - localStorage
+   - sessionStorage
+   - navigator
+   - matchMedia
+   Fix: Either add "use client" to that component, or wrap the browser code in useEffect
+
+3. COMPONENTS THAT RENDER DIFFERENTLY ON SERVER VS CLIENT — Search for:
+   - typeof window !== 'undefined' used in render logic (not in useEffect)
+   - Date.now() or new Date() used directly in JSX
+   - Math.random() in render
+   - Any conditional that would be true on client but false/undefined on server
+   Fix: Move these into useEffect + useState pattern:
+     const [mounted, setMounted] = useState(false);
+     useEffect(() => setMounted(true), []);
+     if (!mounted) return null; // or a skeleton
+
+4. SUPABASE AUTH STATE — If AuthContext reads auth state during initial render,
+   the server has no session but the client does. This causes mismatch.
+   Fix: AuthContext MUST have "use client" and should not render auth-dependent 
+   UI until after mount. Use a loading state that matches on both server and client.
+
+5. NEXT-THEMES — If using next-themes for dark mode, it causes hydration mismatch 
+   because the server doesn't know the user's theme preference.
+   Fix: Add suppressHydrationWarning to the <html> tag in layout.tsx:
+     <html lang="en" suppressHydrationWarning>
+   AND wrap ThemeProvider usage in a mounted check.
+
+6. REPLIT-SPECIFIC — Replit may inject dev scripts or banners into the page.
+   Check if the error ONLY happens in Replit's webview vs opening the preview 
+   URL in a separate browser tab.
+
+After identifying the cause, fix it and tell me which issue(s) you found.

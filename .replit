@@ -38,9 +38,12 @@ args = "Start application"
 name = "Start application"
 author = "agent"
 
+[workflows.workflow.metadata]
+outputType = "webview"
+
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npm run dev"
+args = "NEXT_TELEMETRY_DISABLED=1 NODE_OPTIONS='--max-old-space-size=2048' npx next build && npx next start --port 5000"
 waitForPort = 5000
 
 [agent]
@@ -53,3 +56,7 @@ mockupState = "FULLSTACK"
 VITE_SUPABASE_URL = "https://dmbnsvghqluajdvdsmvu.supabase.co"
 VITE_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtYm5zdmdocWx1YWpkdmRzbXZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxNDMxNTMsImV4cCI6MjA4NTcxOTE1M30.inNKGD8H3AEbYENVE8eyX64YkbK7r4ruG4xQXTFGoQw"
 CLEENG_SANDBOX = "false"
+NEXT_PUBLIC_SUPABASE_URL = "https://dmbnsvghqluajdvdsmvu.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtYm5zdmdocWx1YWpkdmRzbXZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxNDMxNTMsImV4cCI6MjA4NTcxOTE1M30.inNKGD8H3AEbYENVE8eyX64YkbK7r4ruG4xQXTFGoQw"
+NEXT_TELEMETRY_DISABLED = "1"
+NEXT_FAST_REFRESH = "false"

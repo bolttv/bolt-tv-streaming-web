@@ -1,0 +1,114 @@
+{
+  "app/account/page.tsx -> @/components/AccountPageContent": {
+    "id": 7822,
+    "files": [
+      "static/chunks/6167-ca76471957b95ff6.js",
+      "static/chunks/4909-0215c6ffa29504d6.js",
+      "static/chunks/176.b1374ab33d855c73.js",
+      "static/chunks/6707-caa66165a87f1dff.js",
+      "static/chunks/7822.f91316876ff98054.js"
+    ]
+  },
+  "app/checkout/page.tsx -> @/components/CheckoutContent": {
+    "id": 1602,
+    "files": [
+      "static/chunks/6167-ca76471957b95ff6.js",
+      "static/chunks/4909-0215c6ffa29504d6.js",
+      "static/chunks/176.b1374ab33d855c73.js",
+      "static/chunks/6707-caa66165a87f1dff.js",
+      "static/chunks/1602.a4822388c3d5aa5e.js"
+    ]
+  },
+  "app/content/[id]/page.tsx -> @/components/ContentDetailContent": {
+    "id": 4181,
+    "files": [
+      "static/chunks/6167-ca76471957b95ff6.js",
+      "static/chunks/4909-0215c6ffa29504d6.js",
+      "static/chunks/176.b1374ab33d855c73.js",
+      "static/chunks/6743-de81a00713a03152.js",
+      "static/chunks/2454.d21f56dbbcd62c6e.js",
+      "static/chunks/6707-caa66165a87f1dff.js",
+      "static/chunks/8084.901300d51c9eef5b.js",
+      "static/chunks/1739.7dd63ca83e29fa30.js"
+    ]
+  },
+  "app/home/page.tsx -> @/components/HomePageContent": {
+    "id": 3127,
+    "files": [
+      "static/chunks/6167-ca76471957b95ff6.js",
+      "static/chunks/4909-0215c6ffa29504d6.js",
+      "static/chunks/176.b1374ab33d855c73.js",
+      "static/chunks/6743-de81a00713a03152.js",
+      "static/chunks/2454.d21f56dbbcd62c6e.js",
+      "static/chunks/4535.727a1e462260a999.js",
+      "static/chunks/6707-caa66165a87f1dff.js",
+      "static/chunks/8084.901300d51c9eef5b.js",
+      "static/chunks/3127.8e6987a063184fdc.js"
+    ]
+  },
+  "app/login/page.tsx -> @/components/LoginPageContent": {
+    "id": 1379,
+    "files": [
+      "static/chunks/6167-ca76471957b95ff6.js",
+      "static/chunks/4909-0215c6ffa29504d6.js",
+      "static/chunks/176.b1374ab33d855c73.js",
+      "static/chunks/6707-caa66165a87f1dff.js",
+      "static/chunks/1379.d8abc057a64f2726.js"
+    ]
+  },
+  "app/page.tsx -> @/components/LandingPageContent": {
+    "id": 6266,
+    "files": [
+      "static/chunks/6167-ca76471957b95ff6.js",
+      "static/chunks/176.b1374ab33d855c73.js",
+      "static/chunks/6707-caa66165a87f1dff.js",
+      "static/chunks/6266.550b0370fce642da.js"
+    ]
+  },
+  "app/search/page.tsx -> @/components/SearchContent": {
+    "id": 81,
+    "files": [
+      "static/chunks/6167-ca76471957b95ff6.js",
+      "static/chunks/4909-0215c6ffa29504d6.js",
+      "static/chunks/176.b1374ab33d855c73.js",
+      "static/chunks/6743-de81a00713a03152.js",
+      "static/chunks/2454.d21f56dbbcd62c6e.js",
+      "static/chunks/6707-caa66165a87f1dff.js",
+      "static/chunks/81.6c51a486717c52c4.js"
+    ]
+  },
+  "app/sport/[playlistId]/page.tsx -> @/components/SportCategoryContent": {
+    "id": 6311,
+    "files": [
+      "static/chunks/6167-ca76471957b95ff6.js",
+      "static/chunks/4909-0215c6ffa29504d6.js",
+      "static/chunks/176.b1374ab33d855c73.js",
+      "static/chunks/6743-de81a00713a03152.js",
+      "static/chunks/2454.d21f56dbbcd62c6e.js",
+      "static/chunks/6707-caa66165a87f1dff.js",
+      "static/chunks/8084.901300d51c9eef5b.js",
+      "static/chunks/635.27782e1149386ad6.js"
+    ]
+  },
+  "app/subscribe/page.tsx -> @/components/SubscribePageContent": {
+    "id": 3630,
+    "files": [
+      "static/chunks/6167-ca76471957b95ff6.js",
+      "static/chunks/176.b1374ab33d855c73.js",
+      "static/chunks/6707-caa66165a87f1dff.js",
+      "static/chunks/3630.7659e8e56a1ff911.js"
+    ]
+  },
+  "app/watch/[id]/page.tsx -> @/components/WatchContent": {
+    "id": 6070,
+    "files": [
+      "static/chunks/6167-ca76471957b95ff6.js",
+      "static/chunks/4909-0215c6ffa29504d6.js",
+      "static/chunks/176.b1374ab33d855c73.js",
+      "static/chunks/6743-de81a00713a03152.js",
+      "static/chunks/2454.d21f56dbbcd62c6e.js",
+      "static/chunks/6707-caa66165a87f1dff.js",
+      "static/chunks/6070.00a6cedcbc9c68d3.js"
+    ]
+  }
+}

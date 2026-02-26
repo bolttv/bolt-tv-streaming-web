@@ -1,0 +1,73 @@
+## Migration: Replace Auth0 with Supabase Auth
+
+Remove all Auth0 authentication and replace it with Supabase Auth using email OTP (one-time password) verification.
+
+### Supabase Credentials
+
+NEXT_PUBLIC_SUPABASE_URL=https://dmbnsvghqluajdvdsmvu.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRtYm5zdmdocWx1YWpkdmRzbXZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxNDMxNTMsImV4cCI6MjA4NTcxOTE1M30.inNKGD8H3AEbYENVE8eyX64YkbK7r4ruG4xQXTFGoQw
+
+### Tasks
+
+1. **Remove Auth0**
+   - Uninstall @auth0/auth0-react and any Auth0 dependencies
+   - Remove Auth0Provider wrapper
+   - Delete all Auth0-related hooks, utilities, and components
+   - Remove Auth0 environment variables
+
+2. **Install Supabase**
+   - Install @supabase/supabase-js
+   - Create a Supabase client in lib/supabase.ts (or similar)
+   - Add environment variables to .env
+
+3. **Implement Email OTP Authentication Flow**
+   
+   The flow should be:
+   - User enters email address
+   - App calls: `supabase.auth.signInWithOtp({ email })`
+   - User receives 6-digit code via email
+   - User enters code
+   - App calls: `supabase.auth.verifyOtp({ email, token, type: 'email' })`
+   - User is authenticated
+
+4. **Create Auth Context/Provider**
+   - Track auth state (session, user, loading)
+   - Provide login, logout, and verification functions
+   - Handle session persistence and refresh
+
+5. **Update UI Components**
+   - Create/update login form with email input
+   - Create OTP verification screen with 6-digit code input
+   - Update any protected routes to use Supabase session
+   - Update header/nav to show auth state
+
+6. **User Profile Integration**
+   
+   A `profiles` table already exists in Supabase with these columns:
+   - id (UUID, links to auth user)
+   - email
+   - display_name
+   - avatar_url
+   - subscription_tier ('free', 'basic', 'premium')
+   - cleeng_customer_id
+   - created_at, updated_at
+   
+   Profiles are auto-created on signup via database trigger. Fetch profile data after authentication if needed.
+
+### Authentication Requirements
+
+- No passwords - email OTP only
+- No magic links - user should stay in the app and enter a code
+- Session should persist across page refreshes
+- Provide a logout function that calls `supabase.auth.signOut()`
+
+### Before You Begin
+
+Please review the current codebase and tell me:
+
+1. What Auth0 files/components currently exist that need to be removed?
+2. Are there any other environment variables or API keys you need from me?
+3. Are there any protected routes or components that check auth state I should know about?
+4. What is the current file structure for auth-related code?
+
+List everything you need before starting the migration.
