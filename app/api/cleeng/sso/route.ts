@@ -15,14 +15,10 @@ const extractCustomerIdFromJwt = (jwt: string): string | null => {
   try {
     const parts = jwt.split(".");
     if (parts.length !== 3) return null;
-    const payload = parts[1];
-    const decoded = Buffer.from(payload, "base64url").toString("utf-8");
+    const decoded = Buffer.from(parts[1], "base64url").toString("utf-8");
     const data = JSON.parse(decoded);
-    const customerId = data.customerId || data.cid || data.sub || data.customer_id;
-    
-    return customerId ? String(customerId) : null;
-  } catch (error) {
-    console.error("Error decoding JWT:", error);
+    return String(data.customerId || data.cid || data.sub || data.customer_id || "");
+  } catch {
     return null;
   }
 };
@@ -36,73 +32,54 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ errors: ["Email is required"] }, { status: 400 });
     }
 
-    console.log("Cleeng SSO request received");
-
-    const generatePassword = () =>
-      `CL_${crypto.randomUUID().replace(/-/g, "").slice(0, 20)}!A1`;
-
-    const getStoredPassword = async (): Promise<string | null> => {
-      if (!supabaseAdmin) return null;
-      const { data } = await supabaseAdmin
-        .from("profiles")
-        .select("cleeng_password")
-        .eq("email", email)
-        .maybeSingle();
-      return data?.cleeng_password || null;
-    };
-
-    const storePassword = async (password: string) => {
-      if (!supabaseAdmin) {
-        console.log("No supabaseAdmin client available");
-        return;
-      }
-      await supabaseAdmin
-        .from("profiles")
-        .update({ cleeng_password: password })
-        .eq("email", email);
-    };
-
-    const loginWithMediaStore = async (password: string) => {
-      const loginResponse = await fetch(`${CLEENG_MEDIASTORE_URL}/auths`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email,
-          password,
-          publisherId: CLEENG_PUBLISHER_ID,
-        }),
-      });
-      return loginResponse.json();
-    };
-
-    const storedPassword = await getStoredPassword();
-
-    const extractJwtFromLogin = (loginData: any) => {
-      const jwt = loginData.responseData?.jwt || loginData.jwt;
-      const refreshToken = loginData.responseData?.refreshToken || loginData.refreshToken;
-      const rawCustomerId = loginData.responseData?.customerId || loginData.customerId;
-      if (!jwt) return null;
-      const extractedCustomerId = extractCustomerIdFromJwt(jwt);
-      return { jwt, refreshToken, customerId: extractedCustomerId || rawCustomerId };
-    };
-
-    if (storedPassword) {
-      console.log("Found stored Cleeng password, attempting MediaStore login...");
-      const loginData = await loginWithMediaStore(storedPassword);
-      console.log("Cleeng MediaStore login response: received");
-
-      const result = extractJwtFromLogin(loginData);
-      if (result) {
-        return NextResponse.json({ ...result, email });
-      }
-      console.log("Stored password login failed, will try re-registering...");
+    if (!CLEENG_API_SECRET || !CLEENG_PUBLISHER_ID) {
+      return NextResponse.json({ errors: ["Cleeng not configured"] }, { status: 500 });
     }
 
-    const newPassword = generatePassword();
+    console.log("Cleeng SSO request received");
 
-    const customerData: any = {
+    const tokenResponse = await fetch(`${CLEENG_CORE_API_URL}/3.0/json-rpc`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        method: "generateCustomerToken",
+        params: {
+          publisherToken: CLEENG_API_SECRET,
+          customerEmail: email,
+        },
+        jsonrpc: "2.0",
+        id: 1,
+      }),
+    });
+    const tokenData = await tokenResponse.json();
+
+    if (tokenData.result?.token) {
+      const customerId = tokenData.result.customerId;
+      console.log("Existing Cleeng customer found, token generated");
+
+      const jwt = tokenData.result.token;
+      const extractedId = extractCustomerIdFromJwt(jwt) || String(customerId);
+
+      if (supabaseAdmin && customerId) {
+        await supabaseAdmin
+          .from("profiles")
+          .update({ cleeng_customer_id: String(customerId) })
+          .eq("email", email);
+      }
+
+      return NextResponse.json({
+        jwt,
+        refreshToken: tokenData.result.refreshToken || "",
+        customerId: extractedId,
+        email,
+      });
+    }
+
+    const registrationPassword = `CL_${crypto.randomUUID().replace(/-/g, "").slice(0, 20)}!A1`;
+
+    const customerData: Record<string, string> = {
       email,
-      password: newPassword,
+      password: registrationPassword,
       locale: "en_US",
       country: "US",
       currency: "USD",
@@ -116,17 +93,13 @@ export async function POST(request: NextRequest) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         method: "registerCustomer",
-        params: {
-          publisherToken: CLEENG_API_SECRET,
-          customerData,
-        },
+        params: { publisherToken: CLEENG_API_SECRET, customerData },
         jsonrpc: "2.0",
         id: 1,
       }),
     });
-
     const registerData = await registerResponse.json();
-    console.log("Cleeng Core API register response: received");
+    console.log("Cleeng registration response received");
 
     const customerExists =
       registerData.error?.message?.includes("already") ||
@@ -134,24 +107,7 @@ export async function POST(request: NextRequest) {
       registerData.error?.code === 13;
 
     if (registerData.result || customerExists) {
-      if (registerData.result) {
-        await storePassword(newPassword);
-        console.log("New customer registered, password stored. Logging in via MediaStore...");
-      }
-
-      if (!customerExists) {
-        const loginData = await loginWithMediaStore(newPassword);
-        console.log("Cleeng MediaStore login (new customer): received");
-
-        const result = extractJwtFromLogin(loginData);
-        if (result) {
-          return NextResponse.json({ ...result, email });
-        }
-      }
-
-      console.log("Customer exists, updating password via Core API 3.1...");
-
-      const tokenResponse = await fetch(`${CLEENG_CORE_API_URL}/3.0/json-rpc`, {
+      const retryTokenResponse = await fetch(`${CLEENG_CORE_API_URL}/3.0/json-rpc`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -164,41 +120,54 @@ export async function POST(request: NextRequest) {
           id: 1,
         }),
       });
-      const tokenData = await tokenResponse.json();
-      const cleengCustomerId = tokenData.result?.customerId;
-      
+      const retryTokenData = await retryTokenResponse.json();
 
-      if (cleengCustomerId) {
-        const updateResponse = await fetch(
-          `${CLEENG_CORE_API_URL}/3.1/customers/${cleengCustomerId}`,
-          {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-              "X-Publisher-Token": CLEENG_API_SECRET,
-            },
-            body: JSON.stringify({ password: newPassword }),
+      if (retryTokenData.result?.token) {
+        const customerId = retryTokenData.result.customerId;
+        const jwt = retryTokenData.result.token;
+        const extractedId = extractCustomerIdFromJwt(jwt) || String(customerId);
+
+        if (supabaseAdmin && customerId) {
+          await supabaseAdmin
+            .from("profiles")
+            .update({ cleeng_customer_id: String(customerId) })
+            .eq("email", email);
+        }
+
+        return NextResponse.json({
+          jwt,
+          refreshToken: retryTokenData.result.refreshToken || "",
+          customerId: extractedId,
+          email,
+        });
+      }
+
+      if (registerData.result) {
+        const loginResponse = await fetch(`${CLEENG_MEDIASTORE_URL}/auths`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password: registrationPassword, publisherId: CLEENG_PUBLISHER_ID }),
+        });
+        const loginData = await loginResponse.json();
+        const jwt = loginData.responseData?.jwt || loginData.jwt;
+
+        if (jwt) {
+          const customerId = extractCustomerIdFromJwt(jwt) || loginData.responseData?.customerId;
+          if (supabaseAdmin && customerId) {
+            await supabaseAdmin
+              .from("profiles")
+              .update({ cleeng_customer_id: String(customerId) })
+              .eq("email", email);
           }
-        );
-
-        const updateData = await updateResponse.json();
-        console.log("Cleeng password update response: received");
-
-        if (updateData.success) {
-          await storePassword(newPassword);
-
-          const loginData = await loginWithMediaStore(newPassword);
-          console.log("Cleeng MediaStore login after password update: received");
-
-          const result = extractJwtFromLogin(loginData);
-          if (result) {
-            
-            return NextResponse.json({ ...result, email });
-          }
+          return NextResponse.json({
+            jwt,
+            refreshToken: loginData.responseData?.refreshToken || loginData.refreshToken || "",
+            customerId: customerId || email,
+            email,
+          });
         }
       }
 
-      console.error("Password update + login failed for existing customer");
       return NextResponse.json(
         { errors: ["Failed to authenticate with payment system. Please try again."] },
         { status: 400 }

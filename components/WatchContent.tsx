@@ -33,7 +33,7 @@ interface NextEpisode {
   mediaId: string;
 }
 
-const DEFAULT_PLAYER_LIBRARY_URL = "https://cdn.jwplayer.com/libraries/EBg26wOK.js";
+const DEFAULT_PLAYER_LIBRARY_URL = "https://cdn.jwplayer.com/libraries/xQRl7M0d.js";
 
 export default function Watch() {
   const params = useParams();

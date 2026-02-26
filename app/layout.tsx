@@ -3,20 +3,20 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 
 export const metadata: Metadata = {
-  title: "StreamMax - Premium Entertainment",
-  description: "Watch the latest series, movies, and exclusive originals on StreamMax.",
+  title: "Bolt TV — Premium Sports Documentaries",
+  description: "Stream exclusive sports documentaries, athlete stories, and behind-the-scenes originals on Bolt TV.",
   openGraph: {
-    title: "StreamMax - Premium Entertainment",
-    description: "Watch the latest series, movies, and exclusive originals on StreamMax.",
+    title: "Bolt TV — Premium Sports Documentaries",
+    description: "Stream exclusive sports documentaries, athlete stories, and behind-the-scenes originals on Bolt TV.",
     type: "website",
-    images: ["https://replit.com/public/images/opengraph.png"],
+    siteName: "Bolt TV",
+    images: ["/opengraph.jpg"],
   },
   twitter: {
     card: "summary_large_image",
-    site: "@replit",
-    title: "StreamMax",
-    description: "Watch the latest series, movies, and exclusive originals on StreamMax.",
-    images: ["https://replit.com/public/images/opengraph.png"],
+    title: "Bolt TV — Premium Sports Documentaries",
+    description: "Stream exclusive sports documentaries, athlete stories, and behind-the-scenes originals on Bolt TV.",
+    images: ["/opengraph.jpg"],
   },
   icons: {
     icon: "/favicon.png",

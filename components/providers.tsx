@@ -17,7 +17,7 @@ function useExternalScript(src: string) {
 }
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  useExternalScript("https://cdn.jwplayer.com/libraries/EBg26wOK.js");
+  useExternalScript("https://cdn.jwplayer.com/libraries/xQRl7M0d.js");
   useExternalScript("https://widgets.prod.cleeng.com/cleeng.js");
 
   return (

@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     }
 
     const host = request.headers.get("host") || "";
-    const publicDomain = process.env.REPLIT_DEV_DOMAIN || process.env.REPLIT_DOMAINS?.split(",")[0] || host;
+    const publicDomain = process.env.VERCEL_URL || process.env.REPLIT_DEV_DOMAIN || process.env.REPLIT_DOMAINS?.split(",")[0] || host;
     const webhookUrl = `https://${publicDomain}/api/cleeng/webhook`;
     console.log("Registering Cleeng webhook URL:", webhookUrl);
 
