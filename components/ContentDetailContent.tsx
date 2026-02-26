@@ -50,6 +50,7 @@ interface NextEpisode {
 }
 
 function getSessionId(): string {
+  if (typeof window === "undefined") return "";
   let sessionId = localStorage.getItem("session_id");
   if (!sessionId) {
     sessionId = crypto.randomUUID();

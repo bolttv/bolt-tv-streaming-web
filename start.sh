@@ -7,4 +7,4 @@ if [ ! -d ".next" ]; then
 fi
 
 echo "Starting production server..."
-exec node server.mjs
+exec npx next start --port 5000 --hostname 0.0.0.0
