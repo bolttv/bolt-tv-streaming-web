@@ -32,7 +32,8 @@ export default function PosterCard({ item, width = "w-[160px] md:w-[220px]", isW
             src={isWide ? item.posterImage : (item.verticalPosterImage || item.posterImage)}
             alt={item.title}
             className="h-full w-full object-cover transition-opacity duration-300 group-hover:opacity-80"
-            loading="lazy"
+            loading="eager"
+            decoding="async"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
               if (target.src !== item.posterImage) {

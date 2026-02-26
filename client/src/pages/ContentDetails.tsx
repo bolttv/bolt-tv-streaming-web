@@ -176,6 +176,8 @@ export default function ContentDetails() {
                 src={displayImage} 
                 alt={content.title}
                 className="w-full h-full object-cover"
+                loading="eager"
+                decoding="async"
               />
             )}
             {/* Complex Gradient Overlays for Cinematic Feel */}
@@ -191,6 +193,8 @@ export default function ContentDetails() {
                    src={content.logoImage} 
                    alt={content.title} 
                    className="h-[97px] sm:h-32 md:h-52 max-w-[280px] sm:max-w-none object-contain" 
+                   loading="eager"
+                   decoding="async"
                    onError={() => setLogoFailed(true)}
                  />
               ) : (
@@ -287,7 +291,7 @@ export default function ContentDetails() {
                       <Link key={ep.id} href={`/watch/${ep.mediaId}${category ? `?category=${category}` : ''}`}>
                         <div className="group cursor-pointer space-y-3" data-testid={`episode-card-${ep.id}`}>
                             <div className="relative aspect-video bg-zinc-800 rounded-md overflow-hidden border-2 border-transparent transition-all duration-300 group-hover:border-white">
-                                <img src={ep.image} alt={ep.title} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition" />
+                                <img src={ep.image} alt={ep.title} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition" loading="eager" decoding="async" />
                                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition bg-black/40">
                                     <div className="bg-white/20 p-3 rounded-full backdrop-blur-sm">
                                         <Play className="w-6 h-6 fill-white text-white" />

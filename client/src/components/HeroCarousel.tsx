@@ -88,6 +88,8 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
                     src={item.heroImage}
                     alt={item.title}
                     className="w-full h-full object-cover object-center"
+                    loading="eager"
+                    decoding="async"
                   />
                 )}
                 {/* Complex Gradient Overlays for Cinematic Feel */}
@@ -104,6 +106,8 @@ export default function HeroCarousel({ items }: HeroCarouselProps) {
                     src={item.logoImage} 
                     alt={item.title} 
                     className="h-[97px] sm:h-32 md:h-52 max-w-[320px] sm:max-w-none object-contain mx-auto sm:mx-0" 
+                    loading="eager"
+                    decoding="async"
                     onError={() => handleLogoError(item.id)}
                   />
                 ) : (

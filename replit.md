@@ -98,11 +98,18 @@ Preferred communication style: Simple, everyday language.
 
 1. **Regular content cards** (Featured rows, Popular, New Movies, etc.): Use `Vertical-Poster.jpg` label
    - URL pattern: `https://cdn.jwplayer.com/v2/media/{mediaId}/images/Vertical-Poster.jpg`
-   - Fallback: Standard poster image (`poster.jpg?width=720`)
+   - Fallback: Standard poster image (`poster.jpg?width=480`)
 
 2. **Continue Watching rail**: Use `Horizontal-Poster-Logo.jpg` label
    - URL pattern: `https://cdn.jwplayer.com/v2/media/{mediaId}/images/Horizontal-Poster-Logo.jpg`
    - Fallback: Standard poster image (`poster.jpg?width=480`)
+
+### Image Optimization
+- **Poster thumbnails**: Default width reduced from 640px to 480px for faster loading
+- **Hero images**: Width reduced from 1920px to 1280px for faster loading
+- **Loading strategy**: All images use `loading="eager"` (no lazy loading) so pages render all content at once
+- **Decoding**: All images use `decoding="async"` for non-blocking image decode
+- **No progressive loading**: Pages display all content simultaneously rather than images popping in one at a time
 
 **Important**: JW Player image labels are case-sensitive. Use exact capitalization.
 

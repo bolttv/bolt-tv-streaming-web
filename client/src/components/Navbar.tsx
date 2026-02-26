@@ -77,7 +77,9 @@ export default function Navbar() {
           <img 
             src="/assets/bolt-logo-white.png" 
             alt="Bolt Logo" 
-            className="h-[29px] md:h-9 w-auto hover:opacity-90 transition cursor-pointer" 
+            className="h-[29px] md:h-9 w-auto hover:opacity-90 transition cursor-pointer"
+            loading="eager"
+            decoding="async"
           />
         </Link>
 

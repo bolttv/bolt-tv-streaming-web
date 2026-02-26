@@ -375,7 +375,7 @@ async function fetchFromManagementAPI(): Promise<JWPlayerPlaylistItem[]> {
         description: item.metadata?.description || item.description,
         duration: item.duration || 0,
         pubdate: new Date(item.created).getTime() / 1000,
-        image: `https://cdn.jwplayer.com/v2/media/${item.id}/poster.jpg?width=640`,
+        image: `https://cdn.jwplayer.com/v2/media/${item.id}/poster.jpg?width=480`,
         sources: [],
         tags: item.metadata?.tags?.join(",") || "",
       }));
@@ -388,7 +388,7 @@ async function fetchFromManagementAPI(): Promise<JWPlayerPlaylistItem[]> {
   }
 }
 
-export function getJWPlayerThumbnail(mediaId: string, width: number = 640): string {
+export function getJWPlayerThumbnail(mediaId: string, width: number = 480): string {
   return `https://cdn.jwplayer.com/v2/media/${mediaId}/poster.jpg?width=${width}`;
 }
 
@@ -401,7 +401,7 @@ export function getJWPlayerHorizontalPosterLogo(mediaId: string): string {
 }
 
 export function getJWPlayerHeroImage(mediaId: string): string {
-  return `https://cdn.jwplayer.com/v2/media/${mediaId}/poster.jpg?width=1920`;
+  return `https://cdn.jwplayer.com/v2/media/${mediaId}/poster.jpg?width=1280`;
 }
 
 export function getJWPlayerHeroBannerLogo(mediaId: string): string {

@@ -138,7 +138,8 @@ const ScrollingPosterBackground = memo(function ScrollingPosterBackground({ post
                   src={poster.img}
                   alt={poster.title}
                   className="w-full h-full object-cover"
-                  loading={rowIdx < 2 ? "eager" : "lazy"}
+                  loading="eager"
+                  decoding="async"
                 />
               </div>
             ))}
@@ -169,6 +170,8 @@ function OriginalsBanner() {
           src={originalsBannerBg}
           alt="Exclusive Originals background"
           className="absolute inset-0 w-full h-full object-cover object-center"
+          loading="eager"
+          decoding="async"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
@@ -181,6 +184,8 @@ function OriginalsBanner() {
             src={originalsBannerFront}
             alt="Exclusive Originals athletes"
             className="absolute bottom-[178px] sm:bottom-[350px] right-[-50px] sm:right-[115px] md:right-[145px] w-[341px] sm:w-[392px] md:w-[548px] lg:w-[680px] max-h-[161%] sm:max-h-[118%] object-contain object-bottom block sm:opacity-100 md:opacity-100"
+            loading="eager"
+            decoding="async"
           />
         </div>
       </div>
@@ -214,7 +219,8 @@ function OriginalsBanner() {
                   src={poster.img}
                   alt={poster.title}
                   className="w-full h-full object-cover rounded-xl"
-                  loading="lazy"
+                  loading="eager"
+                  decoding="async"
                 />
               </div>
             ))}
@@ -383,6 +389,8 @@ export default function LandingPage() {
               src="/assets/bolt-logo-white.png"
               alt="Bolt TV"
               className="h-[29px] md:h-9 w-auto hover:opacity-90 transition cursor-pointer"
+              loading="eager"
+              decoding="async"
               data-testid="img-logo"
             />
           </Link>
@@ -598,7 +606,8 @@ export default function LandingPage() {
                       src={item.img}
                       alt={item.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      loading="lazy"
+                      loading="eager"
+                      decoding="async"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                     <div className="absolute bottom-0 left-0 right-0 p-3">
@@ -655,7 +664,8 @@ export default function LandingPage() {
                   src={sport.img}
                   alt={sport.label}
                   className="w-full h-auto object-contain"
-                  loading="lazy"
+                  loading="eager"
+                  decoding="async"
                 />
               </div>
             ))}
@@ -681,23 +691,23 @@ export default function LandingPage() {
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-8 md:gap-x-14 md:gap-y-10 mb-10">
-            <img src={logoSamsung} alt="Samsung" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" />
-            <img src={logoAppleTV} alt="Apple TV" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" />
-            <img src={logoPanasonic} alt="Panasonic" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" />
-            <img src={logoChromecast} alt="Chromecast" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" />
-            <img src={logoSony} alt="Sony" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" />
-            <img src={logoLG} alt="LG" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" />
-            <img src={logoRoku} alt="Roku" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" />
+            <img src={logoSamsung} alt="Samsung" className="h-3.5 md:h-5 w-auto object-contain" loading="eager" decoding="async" />
+            <img src={logoAppleTV} alt="Apple TV" className="h-3.5 md:h-5 w-auto object-contain" loading="eager" decoding="async" />
+            <img src={logoPanasonic} alt="Panasonic" className="h-3.5 md:h-5 w-auto object-contain" loading="eager" decoding="async" />
+            <img src={logoChromecast} alt="Chromecast" className="h-3.5 md:h-5 w-auto object-contain" loading="eager" decoding="async" />
+            <img src={logoSony} alt="Sony" className="h-3.5 md:h-5 w-auto object-contain" loading="eager" decoding="async" />
+            <img src={logoLG} alt="LG" className="h-3.5 md:h-5 w-auto object-contain" loading="eager" decoding="async" />
+            <img src={logoRoku} alt="Roku" className="h-3.5 md:h-5 w-auto object-contain" loading="eager" decoding="async" />
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-8 md:gap-x-14 md:gap-y-10">
-            <img src={logoAmazonFire} alt="Amazon Fire TV" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" />
-            <img src={logoGooglePlay} alt="Google Play" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" />
-            <img src={logoAppStore} alt="App Store" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" />
-            <img src={logoPS5} alt="PS5" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" />
-            <img src={logoXbox} alt="Xbox" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" />
-            <img src={logoAndroidTV} alt="Android TV" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" />
-            <img src={logoHisense} alt="Hisense" className="h-3.5 md:h-5 w-auto object-contain" loading="lazy" />
+            <img src={logoAmazonFire} alt="Amazon Fire TV" className="h-3.5 md:h-5 w-auto object-contain" loading="eager" decoding="async" />
+            <img src={logoGooglePlay} alt="Google Play" className="h-3.5 md:h-5 w-auto object-contain" loading="eager" decoding="async" />
+            <img src={logoAppStore} alt="App Store" className="h-3.5 md:h-5 w-auto object-contain" loading="eager" decoding="async" />
+            <img src={logoPS5} alt="PS5" className="h-3.5 md:h-5 w-auto object-contain" loading="eager" decoding="async" />
+            <img src={logoXbox} alt="Xbox" className="h-3.5 md:h-5 w-auto object-contain" loading="eager" decoding="async" />
+            <img src={logoAndroidTV} alt="Android TV" className="h-3.5 md:h-5 w-auto object-contain" loading="eager" decoding="async" />
+            <img src={logoHisense} alt="Hisense" className="h-3.5 md:h-5 w-auto object-contain" loading="eager" decoding="async" />
           </div>
 
           <p className="text-gray-500 text-xs md:text-sm mt-10">

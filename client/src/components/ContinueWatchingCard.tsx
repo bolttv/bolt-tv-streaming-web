@@ -47,7 +47,8 @@ export default function ContinueWatchingCard({ item }: ContinueWatchingCardProps
             src={horizontalPosterLogoUrl}
             alt={item.title}
             className="w-full h-full object-cover"
-            loading="lazy"
+            loading="eager"
+            decoding="async"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
               if (target.src !== fallbackPosterUrl) {

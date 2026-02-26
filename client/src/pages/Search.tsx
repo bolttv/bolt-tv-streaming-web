@@ -70,7 +70,8 @@ export default function Search() {
                       src={item.verticalPosterImage || item.posterImage}
                       alt={item.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      loading="lazy"
+                      loading="eager"
+                      decoding="async"
                     />
                     {item.isNew && (
                       <div className="absolute top-2 left-2 bg-zinc-100 text-black text-[9px] md:text-[10px] font-bold px-1.5 py-0.5 rounded-sm uppercase tracking-wider shadow-sm">
