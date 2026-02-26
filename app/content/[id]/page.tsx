@@ -1,18 +1,12 @@
-import { Suspense } from "react";
-import ContentDetailContent from "@/components/ContentDetailContent";
+"use client";
 
-function PageLoading() {
-  return (
-    <div className="min-h-screen bg-black flex items-center justify-center">
-      <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-    </div>
-  );
-}
+import dynamic from "next/dynamic";
+
+const ContentDetailContent = dynamic(
+  () => import("@/components/ContentDetailContent"),
+  { ssr: false }
+);
 
 export default function ContentDetailPage() {
-  return (
-    <Suspense fallback={<PageLoading />}>
-      <ContentDetailContent />
-    </Suspense>
-  );
+  return <ContentDetailContent />;
 }

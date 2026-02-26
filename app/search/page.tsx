@@ -1,18 +1,12 @@
-import { Suspense } from "react";
-import SearchContent from "@/components/SearchContent";
+"use client";
 
-function PageLoading() {
-  return (
-    <div className="min-h-screen bg-black flex items-center justify-center">
-      <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-    </div>
-  );
-}
+import dynamic from "next/dynamic";
+
+const SearchContent = dynamic(
+  () => import("@/components/SearchContent"),
+  { ssr: false }
+);
 
 export default function SearchPage() {
-  return (
-    <Suspense fallback={<PageLoading />}>
-      <SearchContent />
-    </Suspense>
-  );
+  return <SearchContent />;
 }

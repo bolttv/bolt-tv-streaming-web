@@ -1,18 +1,12 @@
-import { Suspense } from "react";
-import LoginPageContent from "@/components/LoginPageContent";
+"use client";
 
-function PageLoading() {
-  return (
-    <div className="min-h-screen bg-black flex items-center justify-center">
-      <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-    </div>
-  );
-}
+import dynamic from "next/dynamic";
+
+const LoginPageContent = dynamic(
+  () => import("@/components/LoginPageContent"),
+  { ssr: false }
+);
 
 export default function LoginPage() {
-  return (
-    <Suspense fallback={<PageLoading />}>
-      <LoginPageContent />
-    </Suspense>
-  );
+  return <LoginPageContent />;
 }
