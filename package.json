@@ -1,5 +1,5 @@
 {
-  "name": "rest-express",
+  "name": "bolt-tv-streaming-web",
   "version": "1.0.0",
   "type": "module",
   "license": "MIT",
@@ -10,10 +10,8 @@
     "check": "tsc"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.72.1",
     "@cleeng/mediastore-sdk": "^5.25.0",
     "@hookform/resolvers": "^3.10.0",
-    "@jridgewell/trace-mapping": "^0.3.25",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-alert-dialog": "^1.1.15",
     "@radix-ui/react-aspect-ratio": "^1.1.8",
@@ -76,9 +74,6 @@
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.14",
     "typescript": "5.6.3"
-  },
-  "optionalDependencies": {
-    "bufferutil": "^4.1.0"
   },
   "engines": {
     "node": ">=20.18.0"
